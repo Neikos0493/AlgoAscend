@@ -1,0 +1,114 @@
+@import 'katex/dist/katex.min.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#0a0a14] text-gray-100 antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    overflow: hidden;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 px-4 py-2 rounded-lg font-medium
+           border border-primary-500/30 transition-all duration-300
+           hover:shadow-glow-sm disabled:opacity-30 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply bg-surface-50/60 hover:bg-surface-50 text-gray-300 px-4 py-2 rounded-lg font-medium
+           border border-gray-700/50 transition-all duration-300;
+  }
+  .card {
+    @apply bg-surface-50/80 backdrop-blur-xl rounded-xl border border-gray-700/30 p-6
+           hover:border-primary-500/30 hover:shadow-glow-sm transition-all duration-300;
+  }
+  .input-field {
+    @apply w-full px-4 py-2 bg-surface-300/50 border border-gray-600/50 rounded-lg
+           text-gray-100 placeholder:text-gray-500
+           focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/30 transition-all;
+  }
+}
+
+/* Markdown 渲染样式 */
+.markdown-body {
+  @apply text-gray-200 leading-relaxed;
+}
+.markdown-body h1 { @apply text-2xl font-bold mt-6 mb-4 text-white; }
+.markdown-body h2 { @apply text-xl font-bold mt-5 mb-3 text-gray-100; }
+.markdown-body h3 { @apply text-lg font-semibold mt-4 mb-2 text-gray-200; }
+.markdown-body p { @apply mb-3; }
+.markdown-body ul, .markdown-body ol { @apply mb-3 pl-6; }
+.markdown-body li { @apply mb-1; }
+.markdown-body ul li { @apply list-disc; }
+.markdown-body ol li { @apply list-decimal; }
+.markdown-body blockquote {
+  @apply border-l-4 border-primary-500/40 bg-primary-500/5 px-4 py-2 my-3 rounded-r-lg text-gray-300;
+}
+.markdown-body table { @apply w-full border-collapse my-4; }
+.markdown-body th {
+  @apply bg-surface-400/80 px-4 py-2 text-left font-semibold border border-gray-700/50 text-gray-100;
+}
+.markdown-body td { @apply px-4 py-2 border border-gray-700/30 text-gray-300; }
+.markdown-body strong { @apply font-bold text-white; }
+.markdown-body em { @apply italic; }
+.markdown-body hr { @apply my-6 border-gray-700/50; }
+.markdown-body a { @apply text-primary-400 hover:text-primary-300 underline; }
+
+/* 代码高亮 */
+.markdown-body pre { @apply rounded-xl my-4 overflow-x-auto; }
+.markdown-body pre code { @apply p-0; }
+.markdown-body pre code:not([class*="language-"]) {
+  @apply text-gray-200 bg-surface-400/60 block px-4 py-3 rounded-xl border border-gray-700/30;
+}
+.markdown-body :not(pre) > code {
+  @apply bg-surface-400/60 text-primary-300 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-700/30;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-gray-700 rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-gray-600; }
+
+/* 流式输出光标动画 */
+.streaming-cursor::after {
+  content: '▊';
+  animation: blink 1s step-end infinite;
+  @apply text-primary-400;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 消息动画 */
+.message-enter {
+  animation: messageSlideIn 0.3s ease-out;
+}
+@keyframes messageSlideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 粒子背景光晕呼吸动画 */
+@keyframes auroraPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* 设置弹窗打开时模糊动画 */
+@keyframes backdropIn {
+  from { backdrop-filter: blur(0px); opacity: 0; }
+  to { backdrop-filter: blur(12px); opacity: 1; }
+}
+
+/* 粒子微光浮动 */
+@keyframes particleFloat {
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-2px) scale(1.05); }
+  75% { transform: translateY(2px) scale(0.95); }
+}

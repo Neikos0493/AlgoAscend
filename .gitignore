@@ -1,0 +1,39 @@
+# ===== 环境变量（含 API Key，绝对不能提交） =====
+.env
+.env.local
+.env.production
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+
+# ===== SQLite 数据库 =====
+*.db
+
+# ===== 前端构建产物 =====
+frontend/dist/
+frontend/node_modules/
+
+# ===== IDE =====
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-*
+
+# ===== OS =====
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ===== 临时测试文件 =====
+*_test_*.py
+*_count.py
+*_kill_*.py
