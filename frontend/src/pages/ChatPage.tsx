@@ -19,7 +19,6 @@ export default function ChatPage() {
     addMessage, setStreaming, appendToStream, clearStream, setCurrentAgent,
     clearMessages, setProfile, setDimensionsFilled, setStats, setPathProgress, addAttachment,
     settings, setSettings,
-    settingsOpen, setSettingsOpen,
     profile, stats, pathProgress,
     isAnalyzing, setAnalyzing, lastAnalyzedMessageCount, setLastAnalyzedMessageCount,
     pendingEditorMessage, setPendingEditorMessage,
@@ -395,9 +394,6 @@ export default function ChatPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setSettingsOpen(true)} className="p-1.5 text-gray-400 hover:text-gray-200 hover:bg-white/[0.05] rounded-lg transition-colors" title="设置">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-          </button>
           {/* 模型选择器 — 基于三大分类注册表 */}
           <div ref={modelDropdownRef}>
             <button
@@ -450,7 +446,7 @@ export default function ChatPage() {
                       </div>
                       {!hasCreds && (
                         <span
-                          onClick={(e) => { e.stopPropagation(); setModelDropdownOpen(false); setSettingsOpen(true) }}
+                          onClick={(e) => { e.stopPropagation(); setModelDropdownOpen(false); useStore.getState().setSettingsOpen(true) }}
                           className="text-[10px] text-primary-400 hover:text-primary-300 cursor-pointer underline shrink-0"
                         >去配置</span>
                       )}
@@ -483,8 +479,12 @@ export default function ChatPage() {
         </div>
       )}
 
+      {messages.length === 0 && !isStreaming ? (
+        <div className="flex-1 flex items-start justify-center pt-8 -ml-24">
+          <WelcomeGuide />
+        </div>
+      ) : (
       <div ref={messagesContainerRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 py-6 relative">
-        {messages.length === 0 && !isStreaming && (<WelcomeGuide onSend={handleSend} />)}
         <div className="max-w-4xl mx-auto space-y-4">
           <AgentPipeline pipeline={pipeline} />
           {messages.map((msg) => (<ChatMessage key={msg.id} message={msg} />))}
@@ -533,9 +533,14 @@ export default function ChatPage() {
           </button>
         )}
       </div>
+      )}
 
       {messages.length < 3 && !isStreaming && (
-        <div className="px-4 pb-2"><div className="max-w-4xl mx-auto"><QuickActions onAction={handleSend} /></div></div>
+        <div className="px-4 pb-2">
+          <div className="max-w-4xl mx-auto pr-[108px]">
+            <QuickActions onFill={setInput} />
+          </div>
+        </div>
       )}
 
       <div className="p-4 bg-surface-100/80 backdrop-blur-xl border-t border-gray-700/30 shrink-0">
@@ -600,38 +605,14 @@ export default function ChatPage() {
   )
 }
 
-function WelcomeGuide({ onSend }: { onSend: (text: string) => void }) {
-  const examples = [
-    { icon: '🧠', title: '构建学习画像', desc: '我是计算机专业大二学生，学过C++基础，想参加蓝桥杯算法竞赛', action: '帮我分析一下我的学习画像' },
-    { icon: '📚', title: '生成学习资料', desc: '获取动态规划入门教程、思维导图、练习题等个性化资源', action: '请为我生成动态规划的入门学习资料' },
-    { icon: '🗺️', title: '规划学习路径', desc: '基于你的水平定制从入门到竞赛的完整学习路线', action: '请帮我规划C++算法的学习路径' },
-    { icon: '🎓', title: '提问与辅导', desc: '遇到算法难题？随时提问获得详细解答和代码示例', action: '二分查找中如何处理边界条件？请给出代码示例' },
-  ]
+function WelcomeGuide() {
   return (
-    <div className="max-w-3xl mx-auto text-center mb-8">
-      <div className="mb-8">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
-          <AppIcon name="⚡" size={34} className="text-white" />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">AlgoAscend</h1>
-        <p className="text-gray-400 max-w-md mx-auto">由六个专业AI智能体协作<br />为您提供C++从入门到竞赛的全方位算法学习支持</p>
+    <div className="max-w-md mx-auto text-center my-auto py-20">
+      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
+        <AppIcon name="⚡" size={34} className="text-white" />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {examples.map((ex, i) => (
-          <button key={i} onClick={() => onSend(ex.action)}
-            className="text-left p-4 rounded-xl bg-surface-50/60 backdrop-blur border border-gray-700/30 hover:border-primary-500/30 hover:shadow-glow-sm transition-all duration-300 group">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-300 shrink-0">
-                <AppIcon name={ex.icon} size={18} />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-200 group-hover:text-primary-300 transition-colors">{ex.title}</h3>
-                <p className="text-xs text-gray-500 mt-1">{ex.desc}</p>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
+      <h1 className="text-2xl font-bold text-white mb-2">AlgoAscend</h1>
+      <p className="text-gray-400">由六个专业AI智能体协作<br />为您提供C++从入门到竞赛的全方位算法学习支持</p>
     </div>
   )
 }

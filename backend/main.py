@@ -82,7 +82,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="AlgoAscend - 顶峰相见",
     description="基于多智能体架构的C++算法竞赛学习平台，支持对话式画像构建、个性化资源生成、学习路径规划和智能辅导",
-    version="3.0.0",
+    version="3.1.0",
     lifespan=lifespan,
 )
 

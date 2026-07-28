@@ -85,7 +85,7 @@ export default function ErrorNotebookPage() {
         </button>
         <div className="flex-1">
           <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            <AppIcon name="📓" size={19} className="text-primary-400" /> 我的笔记
+            <AppIcon name="📝" size={19} className="text-primary-400" /> 我的笔记
           </h2>
           <p className="text-xs text-gray-400">{entries.length} 条笔记 · 记录做题思路、代码笔记与学习感悟</p>
         </div>

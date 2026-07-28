@@ -172,7 +172,7 @@ interface AppState {
 
   // 侧边栏
   sidebarOpen: boolean
-  activeTab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path' | 'editor' | 'errors'
+  activeTab: 'chat' | 'dashboard' | 'resources' | 'vault' | 'profile' | 'path' | 'editor' | 'errors'
   pendingEditorMessage: string | null
   setPendingEditorMessage: (msg: string | null) => void
   pendingProblem: any | null
@@ -198,7 +198,7 @@ interface AppState {
   setAnalyzing: (val: boolean) => void
   setLastAnalyzedMessageCount: (n: number) => void
   toggleSidebar: () => void
-  setActiveTab: (tab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path' | 'editor' | 'errors') => void
+  setActiveTab: (tab: 'chat' | 'dashboard' | 'resources' | 'vault' | 'profile' | 'path' | 'editor' | 'errors') => void
   clearMessages: () => void
   resetAll: () => void
   addAttachment: (attachment: MessageAttachment) => void

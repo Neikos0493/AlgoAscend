@@ -7,6 +7,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 import ChatPage from './pages/ChatPage'
 import DashboardPage from './pages/DashboardPage'
 import ResourcesPage from './pages/ResourcesPage'
+import CodeVaultPage from './pages/CodeVaultPage'
 import ProfilePage from './pages/ProfilePage'
 import PathPage from './pages/PathPage'
 import CodeEditorPage from './pages/CodeEditorPage'
@@ -43,8 +44,11 @@ export default function App() {
               <ErrorBoundary fallbackName="学习仪表盘">
                 {activeTab === 'dashboard' && <DashboardPage />}
               </ErrorBoundary>
-              <ErrorBoundary fallbackName="学习资源">
+              <ErrorBoundary fallbackName="学习资源生成">
                 {activeTab === 'resources' && <ResourcesPage />}
+              </ErrorBoundary>
+              <ErrorBoundary fallbackName="代码宝库">
+                {activeTab === 'vault' && <CodeVaultPage />}
               </ErrorBoundary>
               <ErrorBoundary fallbackName="学习画像">
                 {activeTab === 'profile'   && <ProfilePage />}

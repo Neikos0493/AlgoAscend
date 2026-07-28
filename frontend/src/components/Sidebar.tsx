@@ -6,18 +6,10 @@ const navItems = [
   { id: 'dashboard' as const, label: '学习仪表盘', icon: '📊' },
   { id: 'path' as const, label: '学习路径', icon: '🗺️' },
   { id: 'editor' as const, label: '代码编辑器', icon: '💻' },
-  { id: 'resources' as const, label: '学习资源', icon: '📚' },
-  { id: 'errors' as const, label: '我的笔记', icon: '📓' },
+  { id: 'vault' as const, label: '代码宝库', icon: '🏛️' },
+  { id: 'resources' as const, label: '资源生成', icon: '🎨' },
   { id: 'profile' as const, label: '学习画像', icon: '🧠' },
-]
-
-const agentList = [
-  { name: '学习画像分析师', icon: '🧠' },
-  { name: '内容生成专家', icon: '📚' },
-  { name: '练习设计教练', icon: '🏋️' },
-  { name: '学习路径规划师', icon: '🗺️' },
-  { name: '智能辅导老师', icon: '🎓' },
-  { name: '学习评估分析师', icon: '📊' },
+  { id: 'errors' as const, label: '我的笔记', icon: '📝' },
 ]
 
 export default function Sidebar() {
@@ -84,27 +76,6 @@ export default function Sidebar() {
             </button>
           ))}
 
-          {/* 智能体状态 */}
-          <div className="mt-6">
-            <p className="px-3 mb-2 text-[10px] font-semibold text-gray-500 uppercase tracking-[0.15em]">
-              智能体状态
-            </p>
-            <div className="space-y-0.5">
-              {agentList.map((agent) => (
-                <div
-                  key={agent.name}
-                  className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors rounded-md"
-                >
-                  <AppIcon name={agent.icon} size={14} />
-                  <span className="truncate">{agent.name}</span>
-                  <span className="ml-auto relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-accent-400" />
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
         </nav>
 
         {/* 底部信息 */}
@@ -132,7 +103,7 @@ export default function Sidebar() {
           <div className="text-[10px] text-gray-500 text-center space-y-0.5">
             <p className="text-primary-500/60">终抵群星</p>
             <p>多智能体协作架构</p>
-            <p className="text-gray-600">v3.0 — 在线编译 · 笔记 · AI联动</p>
+            <p className="text-gray-600">v3.1 — 代码宝库 · 智能笔记 · 多Agent联动</p>
           </div>
         </div>
       </aside>
