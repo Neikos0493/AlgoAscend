@@ -5,6 +5,8 @@ import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MindmapRenderer from './MindmapRenderer'
+import { AppIcon } from './Icon'
+import { Copy } from 'lucide-react'
 
 interface MessageAttachment {
   type: 'mindmap' | 'image' | 'ppt' | 'video' | 'doc' | 'knowledge' | 'knowledge_entry' | 'problems'
@@ -42,7 +44,7 @@ export default function ChatMessage({ message }: { message: Message }) {
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         </div>
         <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white text-sm shrink-0 ml-3">
-          👤
+          <AppIcon name="👤" size={15} />
         </div>
       </div>
     )
@@ -53,7 +55,7 @@ export default function ChatMessage({ message }: { message: Message }) {
       <div
         className={`w-8 h-8 rounded-full bg-gradient-to-br ${agent.color} flex items-center justify-center text-white text-sm shrink-0`}
       >
-        {agent.icon}
+        <AppIcon name={agent.icon} size={15} />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
@@ -101,10 +103,10 @@ function MarkdownContent({ content }: { content: string }) {
               <div className="flex items-center justify-between bg-gray-800 rounded-t-lg px-4 py-2">
                 <span className="text-xs text-gray-400 font-mono">{match?.[1] || 'code'}</span>
                 <button
-                  className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors"
                   onClick={() => navigator.clipboard.writeText(String(children))}
                 >
-                  📋 复制
+                  <Copy size={12} /> 复制
                 </button>
               </div>
               <SyntaxHighlighter
@@ -161,7 +163,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-accent-400">🧠 思维导图</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-accent-400"><AppIcon name="🧠" size={13} /> 思维导图</span>
           </div>
           <div className="bg-[#0f1117] rounded-lg p-2 border border-gray-700/30">
             <MindmapRenderer tree={data.tree} />
@@ -173,7 +175,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-purple-400">🎨 AI 生成图片</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-purple-400"><AppIcon name="🎨" size={13} /> AI 生成图片</span>
           </div>
           {data.base64 ? (
             <div className="rounded-lg overflow-hidden border border-gray-600/30 max-w-md">
@@ -193,7 +195,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-orange-400">📊 PPT 课件</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-orange-400"><AppIcon name="📊" size={13} /> PPT 课件</span>
           </div>
           <div className="bg-surface-400/20 rounded-lg p-3 border border-gray-600/30">
             <div className="flex items-center justify-between">
@@ -212,7 +214,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-emerald-400">🏋️ 题库推荐</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400"><AppIcon name="🏋️" size={13} /> 题库推荐</span>
             {data.query && <span className="text-xs text-gray-500">关键词: {data.query}</span>}
             <span className="text-xs text-gray-500">{problems.length} 题</span>
           </div>
@@ -265,7 +267,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-sky-400">📖 知识库检索</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-sky-400"><AppIcon name="📖" size={13} /> 知识库检索</span>
             {data.query && <span className="text-xs text-gray-500">关键词: {data.query}</span>}
             <span className="text-xs text-gray-500">{items.length} 条</span>
           </div>
@@ -310,7 +312,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            <span className="text-xs font-medium text-sky-400">📄 知识库全文</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-sky-400"><AppIcon name="📄" size={13} /> 知识库全文</span>
             <span className="text-sm font-medium text-gray-200 truncate">{data.title}</span>
             {data.source && (
               <span className="text-[10px] text-gray-400 bg-surface-300/40 px-1.5 py-0.5 rounded">{data.source}</span>
@@ -326,9 +328,9 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
               href={data.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-block mt-2 text-xs text-sky-400 hover:text-sky-300 underline"
+              className="inline-flex items-center gap-1 mt-2 text-xs text-sky-400 hover:text-sky-300 underline"
             >
-              查看完整原文 →
+              查看完整原文 <AppIcon name="🔗" size={11} />
             </a>
           )}
         </div>
@@ -339,7 +341,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
       return (
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs font-medium text-rose-400">🎬 算法动画视频</span>
+            <span className="inline-flex items-center gap-1 text-xs font-medium text-rose-400"><AppIcon name="🎬" size={13} /> 算法动画视频</span>
           </div>
           {data.video_url ? (
             <div className="rounded-lg overflow-hidden border border-gray-600/30 max-w-lg">
@@ -348,7 +350,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
           ) : (
             <div className="bg-surface-400/30 rounded-lg p-3 border border-gray-600/30">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-200">📝 Manim 脚本已生成</span>
+                <span className="inline-flex items-center gap-1 text-sm text-gray-200"><AppIcon name="📝" size={14} /> Manim 脚本已生成</span>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${data.render_status === 'rendered' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>
                   {data.render_status === 'rendered' ? '已渲染' : '脚本模式'}
                 </span>

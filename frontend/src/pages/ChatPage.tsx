@@ -6,6 +6,8 @@ import ChatMessage from '../components/ChatMessage'
 import QuickActions from '../components/QuickActions'
 import AgentPipeline from '../components/AgentPipeline'
 import SettingsModal from '../components/SettingsModal'
+import { AppIcon } from '../components/Icon'
+import { ImagePlus, X } from 'lucide-react'
 
 interface PipelineData {
   agents: { key: string; name: string; icon: string }[]
@@ -401,7 +403,7 @@ export default function ChatPage() {
               disabled={isStreaming}
               className="flex items-center gap-1.5 bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-200 hover:border-primary-500/50 transition-colors disabled:opacity-50"
             >
-              <span>{selectedModelEntry?.multimodal ? '🖼️' : '💬'}</span>
+              <AppIcon name={selectedModelEntry?.multimodal ? '🖼️' : '💬'} size={14} />
               <span>{selectedModelEntry?.name || selectedModel}</span>
               <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -413,8 +415,8 @@ export default function ChatPage() {
                 style={{ top: dropdownPos.top, right: dropdownPos.right, width: 280, zIndex: 9999 }}
               >
                 {/* 仅展示 LLM 文字模型 */}
-                <div className="px-3 py-2 text-[10px] text-gray-500 border-b border-gray-700/30">
-                  💬 LLM 文字模型（其它模型在设置中配置）
+                <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] text-gray-500 border-b border-gray-700/30">
+                  <AppIcon name="💬" size={11} /> LLM 文字模型（其它模型在设置中配置）
                 </div>
                 {llmModels.map(m => {
                   const creds = settings.modelCreds?.[m.id] || {}
@@ -432,7 +434,7 @@ export default function ChatPage() {
                           : hasCreds ? 'text-gray-300 hover:bg-white/[0.03]' : 'text-gray-600'
                       }`}
                     >
-                      <span>{m.multimodal ? '🖼️' : '💬'}</span>
+                      <AppIcon name={m.multimodal ? '🖼️' : '💬'} size={14} className="shrink-0" />
                       <div className="flex-1">
                         <div className={`${selectedModel === m.id ? 'font-medium' : ''}`}>{m.name}</div>
                         <div className="text-[10px] opacity-60">{m.description}</div>
@@ -466,9 +468,9 @@ export default function ChatPage() {
       {/* 自动分析结果横幅 */}
       {analysisBanner && (
         <div className="mx-4 mt-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg flex items-center gap-2 animate-slide-up">
-          <span className="text-sm">🧠</span>
+          <AppIcon name="🧠" size={15} className="text-amber-400 shrink-0" />
           <p className="text-xs text-amber-300 flex-1">{analysisBanner}</p>
-          <button onClick={() => setAnalysisBanner(null)} className="text-amber-400 hover:text-amber-200 text-xs">✕</button>
+          <button onClick={() => setAnalysisBanner(null)} className="text-amber-400 hover:text-amber-200"><X size={13} /></button>
         </div>
       )}
 
@@ -480,7 +482,7 @@ export default function ChatPage() {
           {isStreaming && currentStreaming && (
             <div className="flex gap-3 message-enter">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center text-white text-sm shrink-0 shadow-glow-sm">
-                {currentAgent ? '🤖' : '💬'}
+                <AppIcon name={currentAgent ? '🤖' : '💬'} size={15} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -497,7 +499,7 @@ export default function ChatPage() {
           {toolStatus && (
             <div className="flex gap-3 message-enter">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent-500 to-amber-500 flex items-center justify-center text-white text-sm shrink-0 shadow-glow-sm">
-                🔧
+                <AppIcon name="🔧" size={15} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
@@ -541,8 +543,8 @@ export default function ChatPage() {
                   />
                   <button
                     onClick={() => setAttachedImages(prev => prev.filter((_, j) => j !== i))}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-[10px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >✕</button>
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  ><X size={10} /></button>
                   <span className="text-[9px] text-gray-400 block text-center truncate w-16">{img.name}</span>
                 </div>
               ))}
@@ -552,7 +554,7 @@ export default function ChatPage() {
             <div className="flex-1 relative">
               <textarea ref={inputRef} value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyDown}
                 placeholder={multimodalEnabled
-                  ? '输入问题，支持粘贴图片或点击🖼️上传图片... (Enter发送，Shift+Enter换行)'
+                  ? '输入问题，支持粘贴图片或点击右侧按钮上传图片... (Enter发送，Shift+Enter换行)'
                   : '输入你的问题，或描述你想要的学习内容... (Enter发送，Shift+Enter换行)'}
                 rows={2} disabled={isStreaming}
                 onPaste={handlePaste}
@@ -561,8 +563,8 @@ export default function ChatPage() {
             </div>
             {/* 图片上传按钮（仅多模态模型显示） */}
             {multimodalEnabled && (
-              <label className="flex items-center justify-center w-11 h-11 rounded-lg bg-surface-300/50 border border-gray-600/50 hover:border-primary-500/50 cursor-pointer transition-colors shrink-0" title="上传图片">
-                <span className="text-lg">🖼️</span>
+              <label className="flex items-center justify-center w-11 h-11 rounded-lg bg-surface-300/50 border border-gray-600/50 hover:border-primary-500/50 cursor-pointer transition-colors shrink-0 text-gray-300 hover:text-primary-300" title="上传图片">
+                <ImagePlus size={19} />
                 <input
                   type="file"
                   accept="image/*"
@@ -581,7 +583,7 @@ export default function ChatPage() {
           </div>
           <p className="mt-2 text-xs text-gray-500 text-center">
             AI生成内容仅供参考 | 支持Markdown渲染与代码高亮
-            {multimodalEnabled && ' | 🖼️ 当前模型支持图片输入'}
+            {multimodalEnabled && ' | 当前模型支持图片输入'}
           </p>
         </div>
       </div>
@@ -600,7 +602,9 @@ function WelcomeGuide({ onSend }: { onSend: (text: string) => void }) {
   return (
     <div className="max-w-3xl mx-auto text-center mb-8">
       <div className="mb-8">
-        <div className="text-6xl mb-4 animate-float">⚡</div>
+        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
+          <AppIcon name="⚡" size={34} className="text-white" />
+        </div>
         <h1 className="text-2xl font-bold text-white mb-2">C++算法学习助手</h1>
         <p className="text-gray-400 max-w-md mx-auto">由6个专业AI智能体协作，为你提供从入门到竞赛的全方位算法学习支持</p>
       </div>
@@ -609,7 +613,9 @@ function WelcomeGuide({ onSend }: { onSend: (text: string) => void }) {
           <button key={i} onClick={() => onSend(ex.action)}
             className="text-left p-4 rounded-xl bg-surface-50/60 backdrop-blur border border-gray-700/30 hover:border-primary-500/30 hover:shadow-glow-sm transition-all duration-300 group">
             <div className="flex items-start gap-3">
-              <span className="text-2xl">{ex.icon}</span>
+              <div className="w-9 h-9 rounded-lg bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-300 shrink-0">
+                <AppIcon name={ex.icon} size={18} />
+              </div>
               <div>
                 <h3 className="text-sm font-semibold text-gray-200 group-hover:text-primary-300 transition-colors">{ex.title}</h3>
                 <p className="text-xs text-gray-500 mt-1">{ex.desc}</p>

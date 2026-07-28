@@ -1,4 +1,5 @@
 import { useStore } from '../stores/useStore'
+import { AppIcon } from './Icon'
 
 const navItems = [
   { id: 'chat' as const, label: '智能对话', icon: '💬' },
@@ -43,7 +44,9 @@ export default function Sidebar() {
         {/* Logo区域 */}
         <div className="p-5 border-b border-gray-700/30">
           <div className="flex items-center gap-3">
-            <span className="text-3xl animate-float">⚡</span>
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
+              <AppIcon name="⚡" size={22} className="text-white" />
+            </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-wide">
                 C++算法学习平台
@@ -71,7 +74,7 @@ export default function Sidebar() {
                 }
               `}
             >
-              <span className="text-lg">{item.icon}</span>
+              <AppIcon name={item.icon} size={18} />
               <span>{item.label}</span>
               {activeTab === item.id && (
                 <span className="ml-auto w-1.5 h-6 bg-primary-400 rounded-full shadow-glow-sm" />
@@ -90,7 +93,7 @@ export default function Sidebar() {
                   key={agent.name}
                   className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-400 hover:text-gray-200 transition-colors rounded-md"
                 >
-                  <span>{agent.icon}</span>
+                  <AppIcon name={agent.icon} size={14} />
                   <span className="truncate">{agent.name}</span>
                   <span className="ml-auto relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent-400 opacity-75" />
@@ -107,7 +110,9 @@ export default function Sidebar() {
           {/* 当前账号 */}
           {currentAccount && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-300/20 border border-gray-700/30">
-              <span className="text-lg">{currentAccount.avatar}</span>
+              <div className="w-8 h-8 rounded-lg bg-primary-500/15 border border-primary-500/30 flex items-center justify-center text-primary-300">
+                <AppIcon name={currentAccount.avatar} size={17} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-medium text-gray-200 truncate">{currentAccount.name}</p>
                 <p className="text-[10px] text-gray-500">当前账号</p>
@@ -119,7 +124,7 @@ export default function Sidebar() {
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400
                        hover:bg-white/[0.04] hover:text-gray-200 transition-colors"
           >
-            <span>⚙️</span>
+            <AppIcon name="⚙️" size={16} />
             <span>设置</span>
           </button>
           <div className="text-[10px] text-gray-500 text-center space-y-0.5">

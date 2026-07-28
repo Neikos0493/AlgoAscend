@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../stores/useStore'
 import { clearAccounts } from '../services/platformService'
 import AccountBinding from '../components/AccountBinding'
+import { AppIcon } from '../components/Icon'
 
 const DIMENSION_INFO: Record<string, { name: string; icon: string; description: string; color: string }> = {
   knowledge_base: {
@@ -184,10 +185,10 @@ export default function ProfilePage() {
         </div>
         <button
           onClick={() => setShowResetConfirm(true)}
-          className="text-sm text-red-500 hover:text-red-600 ml-2"
+          className="inline-flex items-center gap-1 text-sm text-red-500 hover:text-red-600 ml-2"
           title="清除所有信息，重新构建画像"
         >
-          🔥 重置画像
+          <AppIcon name="🔥" size={15} /> 重置画像
         </button>
       </header>
 
@@ -195,12 +196,12 @@ export default function ProfilePage() {
         {/* 基本信息 */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">👤 基本信息</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="👤" size={19} className="text-primary-400" /> 基本信息</h3>
             <button
               onClick={() => setEditing(!editing)}
-              className="text-sm text-primary-400 hover:text-primary-300"
+              className="inline-flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300"
             >
-              {editing ? '取消' : '✏️ 编辑'}
+              {editing ? '取消' : <><AppIcon name="✏️" size={14} /> 编辑</>}
             </button>
           </div>
 
@@ -257,8 +258,8 @@ export default function ProfilePage() {
 
         {/* 画像完善度 */}
         <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            📊 画像完善度
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-4">
+            <AppIcon name="📊" size={19} className="text-primary-400" /> 画像完善度
           </h3>
           <div className="flex items-center gap-4 mb-3">
             <div className="flex-1 bg-surface-400/60 rounded-full h-3">
@@ -275,7 +276,7 @@ export default function ProfilePage() {
             {dimensionsFilled === 0 && '画像尚未构建。去「智能对话」页面，通过自然对话让AI了解你，自动构建学习画像。'}
             {dimensionsFilled > 0 && dimensionsFilled < 3 && '画像正在构建中。继续与AI对话，了解更多关于你的学习特征。'}
             {dimensionsFilled >= 3 && dimensionsFilled < 6 && '画像比较完善了。继续深入对话可以补充更多细节。'}
-            {dimensionsFilled >= 6 && '✅ 六维画像已全面构建！AI可以为你提供高度个性化的学习服务。'}
+            {dimensionsFilled >= 6 && '六维画像已全面构建！AI可以为你提供高度个性化的学习服务。'}
           </p>
         </div>
 
@@ -293,7 +294,7 @@ export default function ProfilePage() {
                 className={`card border-l-4 ${info.color} ${hasData ? '' : 'opacity-70'}`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl">{info.icon}</span>
+                  <AppIcon name={info.icon} size={24} className="text-gray-300 mt-0.5" />
                   <div className="flex-1">
                     <h4 className="font-semibold text-gray-200">{info.name}</h4>
                     <p className="text-xs text-gray-400 mb-3">{info.description}</p>
@@ -306,7 +307,7 @@ export default function ProfilePage() {
                         : 'bg-surface-300/30 text-gray-500 border border-gray-700/30'
                     }`}
                   >
-                    {hasData ? '✓' : '—'}
+                    {hasData ? <AppIcon name="✓" size={12} /> : '—'}
                   </span>
                 </div>
               </div>
@@ -317,7 +318,7 @@ export default function ProfilePage() {
         {/* 竞赛平台账号绑定 */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">🏆 竞赛平台绑定</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="🏆" size={19} className="text-primary-400" /> 竞赛平台绑定</h3>
             <span className="text-xs text-gray-400">绑定后自动拉取竞赛数据</span>
           </div>
           <p className="text-xs text-gray-500 mb-4">
@@ -352,8 +353,8 @@ export default function ProfilePage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-surface-100/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 p-6 max-w-md w-full mx-4">
             <div className="text-center mb-4">
-              <span className="text-5xl">⚠️</span>
-              <h3 className="text-xl font-bold text-gray-900 mt-2">确认重置画像？</h3>
+              <AppIcon name="⚠️" size={44} className="text-red-400" />
+              <h3 className="text-xl font-bold text-white mt-2">确认重置画像？</h3>
             </div>
             <div className="bg-red-50 rounded-xl p-4 mb-4 border border-red-100">
               <p className="text-sm text-red-700 leading-relaxed">

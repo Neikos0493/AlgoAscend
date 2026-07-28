@@ -7,6 +7,8 @@ import type { KBSection, KnowledgeEntry, KnowledgeFullEntry } from '../services/
 import MarkdownRenderer from '../components/MarkdownRenderer'
 import ResourceGenerator from '../components/ResourceGenerator'
 import AlgorithmAnimation from '../components/AlgorithmAnimation'
+import { AppIcon } from '../components/Icon'
+import { ArrowLeft, ArrowRight, Check, ChevronLeft, ChevronRight, ExternalLink, RefreshCw, Search, Trash2 } from 'lucide-react'
 
 // ===== 平台配置 =====
 
@@ -212,14 +214,14 @@ export default function ResourcesPage() {
         <div className="flex flex-col h-full overflow-y-auto">
           <header className="flex items-center gap-3 px-6 py-4 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
             <button onClick={handleKbDetailBack} className="text-sm text-primary-400 hover:text-primary-300 flex items-center gap-1">
-              ← 返回知识库
+              <ArrowLeft size={15} /> 返回知识库
             </button>
           </header>
 
           {kbDetailLoading ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-4xl animate-pulse-soft mb-3">{isAlgo ? '📘' : '📖'}</div>
+                <AppIcon name={isAlgo ? '📘' : '📖'} size={40} className="animate-pulse-soft mx-auto mb-3 text-primary-400" />
                 <p className="text-gray-400">加载章节内容...</p>
               </div>
             </div>
@@ -229,16 +231,16 @@ export default function ResourcesPage() {
                 {/* 标题 */}
                 <h2 className="text-2xl font-bold text-white mb-2">{kbDetail.title}</h2>
                 <div className="flex items-center gap-3 mb-6">
-                  <span className="text-xs bg-surface-300/50 text-gray-400 px-2.5 py-1 rounded-full border border-gray-700/30">
-                    {CATEGORY_ICONS[kbDetail.category] || '📄'} {kbDetail.category}
+                  <span className="inline-flex items-center gap-1.5 text-xs bg-surface-300/50 text-gray-400 px-2.5 py-1 rounded-full border border-gray-700/30">
+                    <AppIcon name={CATEGORY_ICONS[kbDetail.category] || '📄'} size={12} /> {kbDetail.category}
                   </span>
                   <a
                     href={kbDetail.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-primary-400 hover:text-primary-300 underline"
+                    className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 underline"
                   >
-                    查看原文 →
+                    查看原文 <ExternalLink size={12} />
                   </a>
                 </div>
 
@@ -264,14 +266,14 @@ export default function ResourcesPage() {
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-white">
               {isAlgo ? '算法教程' : '基础语法'}
-              <span className="ml-2 text-[10px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">📖 拓展阅读材料</span>
+              <span className="ml-2 inline-flex items-center gap-1 text-[10px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20"><AppIcon name="📖" size={10} /> 拓展阅读材料</span>
             </h2>
             <p className="text-xs text-gray-500">
               {isAlgo ? 'Hello 算法 中文教程 · ' : '菜鸟教程 C++ 中文文档 · '}{kbEntries.length} 章 · 点击章节阅读全文
             </p>
           </div>
-          <button onClick={() => loadKnowledgeBase(kbSection || undefined)} className="text-sm text-primary-400 hover:text-primary-300">
-            🔄 刷新
+          <button onClick={() => loadKnowledgeBase(kbSection || undefined)} className="inline-flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300">
+            <RefreshCw size={14} /> 刷新
           </button>
         </header>
 
@@ -288,7 +290,7 @@ export default function ResourcesPage() {
                     : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
-                <span className="mr-1.5">{tab.icon}</span>
+                <AppIcon name={tab.icon} size={15} className="mr-1.5 inline-block align-[-2px]" />
                 {tab.name}
               </button>
             ))}
@@ -306,7 +308,7 @@ export default function ResourcesPage() {
                       : 'bg-surface-300/30 text-gray-400 border border-gray-700/30 hover:border-primary-500/30 hover:bg-primary-500/5'
                   }`}
                 >
-                  📖 全部 ({kbSections.reduce((a,b)=>a+b.count,0)})
+                  <span className="inline-flex items-center gap-1"><AppIcon name="📖" size={12} /> 全部 ({kbSections.reduce((a,b)=>a+b.count,0)})</span>
                 </button>
               )}
               {kbSections.map((s) => (
@@ -319,7 +321,7 @@ export default function ResourcesPage() {
                       : 'bg-surface-300/30 text-gray-400 border border-gray-700/30 hover:border-primary-500/30 hover:bg-primary-500/5'
                   }`}
                 >
-                  {CATEGORY_ICONS[s.name] || '📄'} {s.name} ({s.count})
+                  <span className="inline-flex items-center gap-1"><AppIcon name={CATEGORY_ICONS[s.name] || '📄'} size={12} /> {s.name} ({s.count})</span>
                 </button>
               ))}
             </div>
@@ -337,7 +339,7 @@ export default function ResourcesPage() {
           {/* 加载中 */}
           {kbLoading && (
             <div className="text-center py-12">
-              <div className="text-4xl animate-pulse-soft">🔄</div>
+              <RefreshCw size={36} className="animate-spin mx-auto text-primary-400" />
               <p className="text-gray-400 mt-3">加载知识库...</p>
             </div>
           )}
@@ -351,9 +353,7 @@ export default function ResourcesPage() {
                   onClick={() => handleKbEntryClick(entry)}
                   className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] border border-transparent hover:border-gray-700/30 transition-all group"
                 >
-                  <span className="text-lg shrink-0">
-                    {CATEGORY_ICONS[entry.category] || '📄'}
-                  </span>
+                  <AppIcon name={CATEGORY_ICONS[entry.category] || '📄'} size={18} className="shrink-0 text-gray-400 group-hover:text-primary-300 transition-colors" />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium text-gray-200 group-hover:text-primary-300 transition-colors truncate">
                       {entry.title}
@@ -362,22 +362,22 @@ export default function ResourcesPage() {
                       <span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">
                         {entry.category}
                       </span>
-                      <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
-                        📖 拓展阅读
+                      <span className="inline-flex items-center gap-1 text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
+                        <AppIcon name="📖" size={10} /> 拓展阅读
                       </span>
                       <span className="text-xs text-gray-600 truncate hidden sm:inline">
                         {entry.summary.slice(0, 60)}
                       </span>
                     </div>
                   </div>
-                  <span className="text-xs text-gray-500 group-hover:text-primary-400 shrink-0">
-                    阅读 →
+                  <span className="inline-flex items-center gap-1 text-xs text-gray-500 group-hover:text-primary-400 shrink-0">
+                    阅读 <ArrowRight size={13} />
                   </span>
                 </button>
               ))}
               {filteredKBEntries.length === 0 && !kbLoading && (
                 <div className="text-center py-12">
-                  <div className="text-5xl mb-4">📭</div>
+                  <AppIcon name="📭" size={44} className="mx-auto mb-4 text-gray-600" />
                   <h3 className="text-lg font-semibold text-gray-200 mb-2">无匹配章节</h3>
                   <p className="text-gray-400">尝试更换搜索关键词或分类筛选</p>
                 </div>
@@ -404,8 +404,11 @@ export default function ResourcesPage() {
         </button>
         <div>
           <h2 className="text-lg font-semibold text-white">资源库</h2>
-          <p className="text-xs text-gray-500">
-            从洛谷/力扣/牛客精选题目 · {source === 'bank' ? '📚 内置题库' : source === 'live' ? '🌐 实时数据' : source === 'cache' ? '📦 缓存' : ''}
+          <p className="flex items-center gap-1.5 text-xs text-gray-500">
+            从洛谷/力扣/牛客精选题目
+            {source === 'bank' && <span className="inline-flex items-center gap-1"><AppIcon name="📚" size={12} /> 内置题库</span>}
+            {source === 'live' && <span className="inline-flex items-center gap-1"><AppIcon name="🌐" size={12} /> 实时数据</span>}
+            {source === 'cache' && <span className="inline-flex items-center gap-1"><AppIcon name="📦" size={12} /> 缓存</span>}
           </p>
         </div>
       </header>
@@ -428,11 +431,11 @@ export default function ResourcesPage() {
               onClick={() => setSelected(null)}
               className="mb-4 text-sm text-primary-400 hover:text-primary-300 flex items-center gap-1"
             >
-              ← 返回列表
+              <ArrowLeft size={15} /> 返回列表
             </button>
             <div className="card">
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-3xl">{selected.platform_icon}</span>
+                <AppIcon name={selected.platform_icon} size={30} className="text-primary-300" />
                 <div>
                   <h3 className="text-xl font-bold text-white">{selected.title}</h3>
                   <div className="flex items-center gap-2 mt-1">
@@ -470,7 +473,7 @@ export default function ResourcesPage() {
 
               {/* 跳转按钮 */}
               <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100 flex items-center gap-3">
-                <span className="text-blue-600 text-lg">{selected.platform_icon}</span>
+                <AppIcon name={selected.platform_icon} size={18} className="text-blue-600" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-blue-800">在 {selected.platform_name} 上查看完整题目</p>
                   <p className="text-xs text-blue-500 mt-0.5">{selected.url}</p>
@@ -479,9 +482,9 @@ export default function ResourcesPage() {
                   href={selected.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
                 >
-                  打开原题 →
+                  打开原题 <ExternalLink size={14} />
                 </a>
               </div>
             </div>
@@ -502,7 +505,7 @@ export default function ResourcesPage() {
                     : 'text-gray-400 hover:text-gray-200'
                 }`}
               >
-                <span className="mr-1.5">{tab.icon}</span>
+                <AppIcon name={tab.icon} size={15} className="mr-1.5 inline-block align-[-2px]" />
                 {tab.name}
               </button>
             ))}
@@ -523,7 +526,7 @@ export default function ResourcesPage() {
                 onClick={() => doSearch(1, false)}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-primary-400"
               >
-                🔍
+                <Search size={17} />
               </button>
             </div>
 
@@ -572,7 +575,7 @@ export default function ResourcesPage() {
               className="px-4 py-2.5 text-sm font-medium text-gray-400 bg-surface-300/50 border border-gray-600/50 rounded-xl hover:bg-surface-200 disabled:opacity-50 transition-colors"
               title={source === 'cache' ? '强制刷新（清除缓存）' : '刷新'}
             >
-              🔄
+              <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
             </button>
           </div>
 
@@ -588,7 +591,7 @@ export default function ResourcesPage() {
                     : 'bg-surface-300/30 text-gray-400 border border-gray-700/30 hover:border-primary-500/30 hover:bg-primary-500/5'
                 }`}
               >
-                {tag.icon} {tag.label}
+                <span className="inline-flex items-center gap-1"><AppIcon name={tag.icon} size={12} /> {tag.label}</span>
               </button>
             ))}
           </div>
@@ -598,12 +601,12 @@ export default function ResourcesPage() {
             <span>{total > 0 ? `共 ${total} 题` : ''}</span>
             <div className="flex gap-3">
               {source !== 'bank' && (
-                <button onClick={handleClearCache} className="hover:text-gray-400">
-                  🗑️ 清除缓存
+                <button onClick={handleClearCache} className="inline-flex items-center gap-1 hover:text-gray-400">
+                  <Trash2 size={12} /> 清除缓存
                 </button>
               )}
               {source === 'bank' && total > 0 && (
-                <span className="text-green-500">✓ 题库已加载</span>
+                <span className="inline-flex items-center gap-1 text-green-500"><Check size={13} /> 题库已加载</span>
               )}
             </div>
           </div>
@@ -611,7 +614,7 @@ export default function ResourcesPage() {
           {/* 加载中 */}
           {loading && (
             <div className="text-center py-12">
-              <div className="text-4xl animate-pulse-soft">🔄</div>
+              <RefreshCw size={36} className="animate-spin mx-auto text-primary-400" />
               <p className="text-gray-400 mt-3">
                 正在从 {PLATFORM_TABS.find(t => t.id === platform)?.name} 爬取题目...
               </p>
@@ -621,8 +624,8 @@ export default function ResourcesPage() {
           {/* 错误 */}
           {!loading && error && (
             <div className="text-center py-16">
-              <div className="text-5xl mb-4">
-                {error.includes('Failed to fetch') || error.includes('NetworkError') ? '🔌' : '⚠️'}
+              <div className="mb-4">
+                <AppIcon name={error.includes('Failed to fetch') || error.includes('NetworkError') ? '🔌' : '⚠️'} size={44} className="mx-auto text-gray-500" />
               </div>
               <h3 className="text-lg font-semibold text-gray-200 mb-2">
                 {error.includes('Failed to fetch') || error.includes('NetworkError')
@@ -652,7 +655,7 @@ export default function ResourcesPage() {
           {/* 空结果 */}
           {!loading && !error && resources.length === 0 && (
             <div className="text-center py-16">
-              <div className="text-5xl mb-4">📭</div>
+              <AppIcon name="📭" size={44} className="mx-auto mb-4 text-gray-600" />
               <h3 className="text-lg font-semibold text-gray-200 mb-2">开始探索题目</h3>
               <p className="text-gray-400 max-w-sm mx-auto">
                 输入关键词搜索，或点击快捷标签，从 {PLATFORM_TABS.find(t => t.id === platform)?.name} 获取题目资源
@@ -671,7 +674,7 @@ export default function ResourcesPage() {
                     className="card text-left hover:border-primary-300 transition-all duration-200 group"
                   >
                     <div className="flex items-start gap-3">
-                      <span className="text-2xl shrink-0">{res.platform_icon}</span>
+                      <AppIcon name={res.platform_icon} size={24} className="shrink-0 text-gray-400 group-hover:text-primary-300 transition-colors" />
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-gray-200 group-hover:text-primary-300 transition-colors text-sm leading-snug line-clamp-2">
                           {res.title}
@@ -698,7 +701,7 @@ export default function ResourcesPage() {
                           ))}
                         </div>
                       </div>
-                      <span className="text-gray-300 group-hover:text-primary-400 shrink-0">→</span>
+                      <ArrowRight size={16} className="text-gray-300 group-hover:text-primary-400 shrink-0" />
                     </div>
                   </button>
                 ))}
@@ -712,7 +715,7 @@ export default function ResourcesPage() {
                     disabled={page <= 1}
                     className="px-3 py-1.5 text-sm rounded-lg border border-gray-600/50 hover:bg-surface-300/30 disabled:opacity-30"
                   >
-                    ←
+                    <ChevronLeft size={15} />
                   </button>
                   {Array.from({ length: totalPages }, (_, i) => (
                     <button
@@ -732,7 +735,7 @@ export default function ResourcesPage() {
                     disabled={page >= totalPages}
                     className="px-3 py-1.5 text-sm rounded-lg border border-gray-600/50 hover:bg-surface-300/30 disabled:opacity-30"
                   >
-                    →
+                    <ChevronRight size={15} />
                   </button>
                 </div>
               )}

@@ -1,4 +1,5 @@
 import { Component, ReactNode } from 'react'
+import { AppIcon } from './Icon'
 
 interface Props { children: ReactNode; fallbackName?: string }
 interface State { hasError: boolean; error: string }
@@ -21,7 +22,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center h-full p-8">
-          <div className="text-4xl mb-4">⚠️</div>
+          <AppIcon name="⚠️" size={40} className="mb-4 text-amber-400" />
           <h2 className="text-lg font-semibold text-white mb-2">
             {this.props.fallbackName || '页面'} 加载失败
           </h2>

@@ -8,6 +8,8 @@ import {
   loadAccounts, saveAccounts,
   fetchPlatformStats, emptyStats, getProfileUrl,
 } from '../services/platformService'
+import { AppIcon } from './Icon'
+import { Check, ExternalLink, RefreshCw, X } from 'lucide-react'
 
 interface AccountBindingProps {
   onAccountsChange?: (accounts: PlatformAccount[]) => void
@@ -167,27 +169,27 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{info.icon}</span>
+                      <AppIcon name={info.icon} size={20} className="text-gray-300" />
                       <span className="font-semibold text-sm text-gray-200">{info.name}</span>
                       {account.verified && (
-                        <span className="text-green-500 text-xs" title="已验证">✓</span>
+                        <Check size={13} className="text-green-500" aria-label="已验证" />
                       )}
                     </div>
                     <div className="flex items-center gap-1">
                       <button
                         onClick={() => handleRefresh(info.id)}
                         disabled={isLoading}
-                        className="text-gray-400 hover:text-primary-500 text-xs p-1"
+                        className="text-gray-400 hover:text-primary-500 p-1"
                         title="刷新数据"
                       >
-                        {isLoading ? '⏳' : '🔄'}
+                        <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
                       </button>
                       <button
                         onClick={() => handleUnbind(info.id)}
-                        className="text-gray-400 hover:text-red-500 text-xs p-1"
+                        className="text-gray-400 hover:text-red-500 p-1"
                         title="解绑"
                       >
-                        ✕
+                        <X size={14} />
                       </button>
                     </div>
                   </div>
@@ -250,10 +252,10 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       href={account.profileUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="ml-auto text-primary-500 hover:underline"
+                      className="inline-flex items-center gap-1 ml-auto text-primary-500 hover:underline"
                       title="打开个人主页"
                     >
-                      主页 ↗
+                      主页 <ExternalLink size={11} />
                     </a>
                   </div>
                 </div>
@@ -261,7 +263,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                 /* 绑定中 */
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xl">{info.icon}</span>
+                    <AppIcon name={info.icon} size={20} className="text-gray-300" />
                     <span className="font-semibold text-sm text-gray-200">{info.name}</span>
                     <span className="text-xs text-primary-500">绑定中</span>
                   </div>
@@ -282,8 +284,8 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                     autoFocus
                   />
                   {info.id === 'nowcoder' && (
-                    <p className="text-[10px] text-gray-400 mb-2">
-                      💡 在浏览器打开 <code className="bg-surface-400/60 px-1 rounded">ac.nowcoder.com/acm/contest/profile/你的UID</code>，复制末尾的数字
+                    <p className="flex items-start gap-1 text-[10px] text-gray-400 mb-2">
+                      <AppIcon name="💡" size={11} className="mt-px shrink-0" /> <span>在浏览器打开 <code className="bg-surface-400/60 px-1 rounded">ac.nowcoder.com/acm/contest/profile/你的UID</code>，复制末尾的数字</span>
                     </p>
                   )}
 
@@ -344,7 +346,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                   className="w-full flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="text-xl opacity-50">{info.icon}</span>
+                    <AppIcon name={info.icon} size={20} className="text-gray-300 opacity-50" />
                     <span className="text-sm text-gray-500">{info.name}</span>
                   </div>
                   <span className="text-xs text-primary-500">+ 绑定</span>
@@ -381,8 +383,8 @@ function SummaryCard({ accounts }: { accounts: PlatformAccount[] }) {
 
   return (
     <div className="card bg-gradient-to-r from-primary-50 to-blue-50 border-primary-100">
-      <h4 className="text-sm font-semibold text-gray-200 mb-3">
-        📊 多平台汇总 ({verifiedAccounts.length} 个平台已验证)
+      <h4 className="flex items-center gap-1.5 text-sm font-semibold text-gray-200 mb-3">
+        <AppIcon name="📊" size={15} className="text-primary-400" /> 多平台汇总 ({verifiedAccounts.length} 个平台已验证)
       </h4>
       <div className="grid grid-cols-3 gap-4 text-center">
         <div>

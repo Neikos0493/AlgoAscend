@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import { AppIcon } from './Icon'
+import { ArrowRight, Check, ClipboardList, Hourglass, MessageCircle, Play, Search, Send } from 'lucide-react'
 
 interface AgentInfo {
   key: string
@@ -116,7 +118,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
         className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-lg">🔍</span>
+          <Search size={17} className="text-primary-400" />
           <span className="text-sm font-semibold text-gray-200">多智能体协作过程</span>
           <span className="text-xs text-gray-400 bg-surface-400/60 px-2 py-0.5 rounded-full">
             {agents.length} Agent{agents.length > 1 ? 's' : ''}
@@ -161,7 +163,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                       <span className="flex h-5 w-5">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75" />
                         <span className="relative inline-flex rounded-full h-5 w-5 bg-primary-500 items-center justify-center">
-                          <span className="text-white text-[10px]">💭</span>
+                          <MessageCircle size={10} className="text-white" />
                         </span>
                       </span>
                     )}
@@ -174,12 +176,12 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                     )}
                     {agent.status === 'active' && (
                       <span className="flex h-5 w-5 bg-primary-500 rounded-full items-center justify-center animate-pulse-soft">
-                        <span className="text-white text-[10px]">▶</span>
+                        <Play size={9} className="text-white fill-white" />
                       </span>
                     )}
                   </div>
 
-                  <span className="text-2xl mb-1">{agent.icon}</span>
+                  <AppIcon name={agent.icon} size={24} className="mb-1" />
                   <span className="text-xs font-medium text-gray-200 text-center leading-tight">
                     {agent.name}
                   </span>
@@ -187,7 +189,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                     {agent.status === 'waiting' && '等待中'}
                     {agent.status === 'active' && '准备中'}
                     {agent.status === 'thinking' && '思考中...'}
-                    {agent.status === 'done' && '✓ 完成'}
+                    {agent.status === 'done' && <span className="inline-flex items-center gap-0.5"><Check size={10} /> 完成</span>}
                   </span>
                 </div>
 
@@ -206,7 +208,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                         <polygon points="30,7 40,12 30,17" fill={agents[idx + 1].status !== 'waiting' ? '#2563eb' : '#d1d5db'} />
                       </svg>
                       {agents[idx].status === 'done' && (
-                        <span className="absolute -top-1 left-2 text-[10px] animate-fade-in">📤</span>
+                        <span className="absolute -top-1.5 left-2 animate-fade-in"><Send size={10} className="text-green-500" /></span>
                       )}
                     </div>
                   </div>
@@ -217,7 +219,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
 
           {/* 任务分配表 */}
           <div className="mt-1 mb-3">
-            <div className="text-xs text-gray-400 mb-2">📋 任务分配</div>
+            <div className="flex items-center gap-1 text-xs text-gray-400 mb-2"><ClipboardList size={12} /> 任务分配</div>
             <div className="space-y-1">
               {agents.map((agent, idx) => (
                 <div
@@ -231,15 +233,15 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                   }`}
                 >
                   <span className="font-mono text-gray-400 w-4">{idx + 1}.</span>
-                  <span>{agent.icon}</span>
+                  <AppIcon name={agent.icon} size={13} />
                   <span className="font-medium">{agent.name}</span>
-                  <span className="text-gray-300">→</span>
+                  <ArrowRight size={11} className="text-gray-500" />
                   <span>{agent.taskName}</span>
-                  <span className="ml-auto">
-                    {agent.status === 'waiting' && '⏳'}
-                    {agent.status === 'active' && '🟡'}
-                    {agent.status === 'thinking' && '💭'}
-                    {agent.status === 'done' && '✅'}
+                  <span className="ml-auto inline-flex items-center">
+                    {agent.status === 'waiting' && <Hourglass size={12} className="text-gray-500" />}
+                    {agent.status === 'active' && <AppIcon name="🟡" size={14} />}
+                    {agent.status === 'thinking' && <MessageCircle size={12} className="text-primary-400" />}
+                    {agent.status === 'done' && <AppIcon name="✅" size={13} className="text-green-500" />}
                   </span>
                 </div>
               ))}

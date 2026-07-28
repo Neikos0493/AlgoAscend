@@ -1,4 +1,6 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
+import { AppIcon } from './Icon'
+import { CheckCircle2, Download, Flag, Pause, Play, RotateCcw, Shuffle, SkipForward, Square, Video } from 'lucide-react'
 
 // ==================== 类型定义 ====================
 
@@ -852,7 +854,7 @@ export default function AlgorithmAnimation() {
     <div className="bg-surface-200/80 rounded-xl border border-gray-700/30 p-4 space-y-4">
       {/* 标题 */}
       <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-        <span>🎬</span> 算法动画演示器
+        <AppIcon name="🎬" size={16} className="text-primary-400" /> 算法动画演示器
         <span className="text-[10px] text-gray-500 font-normal ml-auto">
           {isGraph ? 'Grid Maze' : 'Canvas Bar Chart'} · {ALGOS.length}种算法
         </span>
@@ -862,21 +864,21 @@ export default function AlgorithmAnimation() {
       <div className="flex gap-1 bg-surface-400/60 rounded-lg p-1">
         {CATEGORIES.map(cat => (
           <button key={cat.id} onClick={() => switchCategory(cat.id)}
-            className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all ${
+            className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 rounded-md text-xs font-medium transition-all ${
               category === cat.id
                 ? 'bg-surface-300/60 text-white shadow-sm'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
-            {cat.icon} {cat.name}
+            <AppIcon name={cat.icon} size={13} /> {cat.name}
           </button>
         ))}
       </div>
 
       {/* 算法选择 */}
       <div>
-        <label className="text-[10px] text-gray-500 mb-1.5 block">
-          {CATEGORIES.find(c => c.id === category)?.icon} 选择算法 ({currentAlgos.length}种)
+        <label className="flex items-center gap-1 text-[10px] text-gray-500 mb-1.5">
+          <AppIcon name={CATEGORIES.find(c => c.id === category)?.icon || '🔍'} size={11} /> 选择算法 ({currentAlgos.length}种)
         </label>
         <div className="flex gap-1.5 flex-wrap">
           {currentAlgos.map(a => (
@@ -887,7 +889,7 @@ export default function AlgorithmAnimation() {
                   : 'bg-surface-300/20 text-gray-400 border-transparent hover:text-gray-200 hover:border-gray-600/30'
               }`}
               title={a.desc}
-            >{a.icon} {a.name}</button>
+            ><span className="inline-flex items-center gap-1"><AppIcon name={a.icon} size={11} /> {a.name}</span></button>
           ))}
         </div>
       </div>
@@ -919,8 +921,8 @@ export default function AlgorithmAnimation() {
         <canvas ref={canvasRef} className="w-full h-auto" style={{ width: '100%', aspectRatio: '680/400' }} />
         {done && (
           <div className="absolute inset-0 bg-green-500/10 flex items-center justify-center pointer-events-none">
-            <span className="text-green-400 text-2xl font-bold animate-pulse-soft">
-              {isGraph ? '🏁 路径找到!' : '✅ 完成!'}
+            <span className="inline-flex items-center gap-2 text-green-400 text-2xl font-bold animate-pulse-soft">
+              {isGraph ? <><Flag size={24} /> 路径找到!</> : <><CheckCircle2 size={24} /> 完成!</>}
             </span>
           </div>
         )}
@@ -936,31 +938,31 @@ export default function AlgorithmAnimation() {
         <button onClick={togglePlay}
           className="px-4 py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
         >
-          {playing ? '⏸️ 暂停' : done ? '🔄 重播' : '▶️ 播放'}
+          {playing ? <><Pause size={15} /> 暂停</> : done ? <><RotateCcw size={15} /> 重播</> : <><Play size={15} /> 播放</>}
         </button>
         <button onClick={stepFrame} disabled={playing || done}
-          className="px-3 py-2 bg-surface-300/30 hover:bg-surface-300/50 text-gray-300 rounded-lg text-sm transition-colors disabled:opacity-30"
-        >⏭️ 单步</button>
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-300/30 hover:bg-surface-300/50 text-gray-300 rounded-lg text-sm transition-colors disabled:opacity-30"
+        ><SkipForward size={15} /> 单步</button>
         <button onClick={init}
-          className="px-3 py-2 bg-surface-300/30 hover:bg-surface-300/50 text-gray-300 rounded-lg text-sm transition-colors"
-        >🔀 换数据</button>
+          className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface-300/30 hover:bg-surface-300/50 text-gray-300 rounded-lg text-sm transition-colors"
+        ><Shuffle size={15} /> 换数据</button>
 
         <div className="w-px h-6 bg-gray-600/50 mx-1" />
 
         {recording ? (
           <button onClick={stopRecord}
             className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 animate-pulse-soft"
-          >⏹️ 停止录制</button>
+          ><Square size={14} className="fill-current" /> 停止录制</button>
         ) : (
           <button onClick={startRecord}
             className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5"
-          >🎥 录制 MP4</button>
+          ><Video size={15} /> 录制 MP4</button>
         )}
 
         {downloadUrl && (
           <a href={downloadUrl} download="algorithm-animation.webm"
             className="px-3 py-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm transition-colors flex items-center gap-1"
-          >⬇️ 下载</a>
+          ><Download size={14} /> 下载</a>
         )}
       </div>
 

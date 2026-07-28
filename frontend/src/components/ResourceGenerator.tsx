@@ -3,6 +3,8 @@ import { useStore } from '../stores/useStore'
 import { generateImage, generatePPT, generateMindmap, generateVideo, generateCodeCase, generateProject, getLLMApiKey, getSelectedModelId } from '../services/api'
 import MindmapRenderer from './MindmapRenderer'
 import MarkdownRenderer from './MarkdownRenderer'
+import { AppIcon } from './Icon'
+import { CheckCircle2, Download, Loader2 } from 'lucide-react'
 
 type GenTab = 'image' | 'ppt' | 'mindmap' | 'video' | 'code_case' | 'project'
 type VideoMode = 'manim' | 'xfyun'
@@ -209,7 +211,7 @@ export default function ResourceGenerator() {
   return (
     <div className="bg-surface-200/80 rounded-xl border border-gray-700/30 p-4 space-y-4">
       <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
-        <span>🪄</span> AI 资源生成器
+        <AppIcon name="🪄" size={16} className="text-primary-400" /> AI 资源生成器
       </h3>
 
       {/* Tab 切换 */}
@@ -218,13 +220,13 @@ export default function ResourceGenerator() {
           <button
             key={t.key}
             onClick={() => { setTab(t.key); setResult(null); setError('') }}
-            className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
+            className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
               tab === t.key
                 ? 'bg-primary-500/20 text-primary-300'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
-            {t.icon} {t.label}
+            <AppIcon name={t.icon} size={13} /> {t.label}
           </button>
         ))}
       </div>
@@ -274,7 +276,10 @@ export default function ResourceGenerator() {
             disabled={loading || !imgPrompt.trim() || !xfyunReady}
             className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? '🎨 生成中...' : '🎨 生成图片'}
+            {loading
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> 生成中...</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name="🎨" size={14} /> 生成图片</span>
+            }
           </button>
         </div>
       )}
@@ -317,10 +322,10 @@ export default function ResourceGenerator() {
             {/* 两阶段进度提示 */}
             {loading && (
               <div className="flex items-center gap-2 text-xs text-primary-400">
-                <span className="animate-pulse-soft">
-                  {pptStage === 'outline' && '🧠 正在设计大纲...'}
-                  {pptStage === 'detail' && '📝 正在细化内容...'}
-                  {pptStage === 'building' && '📊 正在生成 PPTX...'}
+                <span className="inline-flex items-center gap-1.5 animate-pulse-soft">
+                  {pptStage === 'outline' && <><AppIcon name="🧠" size={13} /> 正在设计大纲...</>}
+                  {pptStage === 'detail' && <><AppIcon name="📝" size={13} /> 正在细化内容...</>}
+                  {pptStage === 'building' && <><AppIcon name="📊" size={13} /> 正在生成 PPTX...</>}
                 </span>
               </div>
             )}
@@ -330,7 +335,10 @@ export default function ResourceGenerator() {
             disabled={loading || !pptTopic.trim()}
             className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? '⏳ AI 正在生成...' : '📊 AI 生成 PPT'}
+            {loading
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在生成...</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name="📊" size={14} /> AI 生成 PPT</span>
+            }
           </button>
           
           {error && (
@@ -361,7 +369,10 @@ export default function ResourceGenerator() {
             disabled={loading || !mmPrompt.trim()}
             className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? '🧠 AI 正在梳理知识结构...' : '🧠 AI 生成导图'}
+            {loading
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在梳理知识结构...</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name="🧠" size={14} /> AI 生成导图</span>
+            }
           </button>
         </div>
       )}
@@ -381,7 +392,7 @@ export default function ResourceGenerator() {
                     : 'bg-surface-300/30 text-gray-400 hover:text-gray-200'
                 }`}
               >
-                🎬 Manim 算法动画
+                <span className="inline-flex items-center justify-center gap-1.5"><AppIcon name="🎬" size={14} /> Manim 算法动画</span>
               </button>
               <button
                 onClick={() => setVideoMode('xfyun')}
@@ -391,7 +402,7 @@ export default function ResourceGenerator() {
                     : 'bg-surface-300/30 text-gray-400 hover:text-gray-200'
                 }`}
               >
-                🤖 讯飞数字人讲解
+                <span className="inline-flex items-center justify-center gap-1.5"><AppIcon name="🤖" size={14} /> 讯飞数字人讲解</span>
               </button>
             </div>
           </div>
@@ -415,13 +426,13 @@ export default function ResourceGenerator() {
                         localStorage.setItem('algoascend_settings', JSON.stringify(s))
                       } catch {}
                     }}
-                    className={`px-2.5 py-1.5 rounded-md text-xs transition-all ${
+                    className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs transition-all ${
                       xfyunAvatar === a.id
                         ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/30'
                         : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
                     }`}
                   >
-                    {a.icon} {a.name}
+                    <AppIcon name={a.icon} size={13} /> {a.name}
                   </button>
                 ))}
               </div>
@@ -502,8 +513,8 @@ export default function ResourceGenerator() {
             }`}
           >
             {loading
-              ? (videoMode === 'xfyun' ? '🤖 AI 正在生成数字人讲解...' : '🎬 AI 正在生成动画脚本...')
-              : (videoMode === 'xfyun' ? '🤖 生成数字人讲解视频' : '🎬 生成算法动画视频')
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> {videoMode === 'xfyun' ? 'AI 正在生成数字人讲解...' : 'AI 正在生成动画脚本...'}</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name={videoMode === 'xfyun' ? '🤖' : '🎬'} size={14} /> {videoMode === 'xfyun' ? '生成数字人讲解视频' : '生成算法动画视频'}</span>
             }
           </button>
 
@@ -560,7 +571,10 @@ export default function ResourceGenerator() {
             disabled={loading || !codeCaseTopic.trim()}
             className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? '💻 AI 正在生成代码案例...' : '💻 生成代码实操案例'}
+            {loading
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在生成代码案例...</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name="💻" size={14} /> 生成代码实操案例</span>
+            }
           </button>
           {codeCaseContent && (
             <div className="max-h-96 overflow-y-auto bg-[#0f1117] rounded-lg p-4 border border-gray-700/30">
@@ -606,7 +620,10 @@ export default function ResourceGenerator() {
             disabled={loading || !projectTopic.trim()}
             className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? '🏗️ AI 正在设计项目方案...' : '🏗️ 生成实践项目案例'}
+            {loading
+              ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在设计项目方案...</span>
+              : <span className="inline-flex items-center gap-1.5"><AppIcon name="🏗️" size={14} /> 生成实践项目案例</span>
+            }
           </button>
           {projectContent && (
             <div className="max-h-96 overflow-y-auto bg-[#0f1117] rounded-lg p-4 border border-gray-700/30">
@@ -670,17 +687,19 @@ export default function ResourceGenerator() {
                 <div className="rounded-lg overflow-hidden border border-gray-600/30 bg-black">
                   <video src={result.data.video_url} controls className="w-full max-h-80" autoPlay={false} />
                   <div className="px-3 py-1.5 bg-surface-300/50 flex items-center justify-between">
-                    <span className="text-xs text-green-400">✅ Manim 渲染成功</span>
-                    <a href={result.data.video_url} download className="text-xs text-primary-400 hover:text-primary-300 underline">
-                      ⬇️ 下载视频
+                    <span className="inline-flex items-center gap-1 text-xs text-green-400"><CheckCircle2 size={13} /> Manim 渲染成功</span>
+                    <a href={result.data.video_url} download className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 underline">
+                      <Download size={12} /> 下载视频
                     </a>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-400">
-                      {result.data.render_status === 'rendered' ? '✅ 已渲染' : '📝 Manim 脚本已生成'}
+                    <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                      {result.data.render_status === 'rendered'
+                        ? <><CheckCircle2 size={13} className="text-green-400" /> 已渲染</>
+                        : <><AppIcon name="📝" size={13} /> Manim 脚本已生成</>}
                     </span>
                     {result.data.render_output && (
                       <span className="text-[10px] text-amber-400 truncate max-w-[200px]">
@@ -699,8 +718,8 @@ export default function ResourceGenerator() {
                         const a = document.createElement('a'); a.href = url; a.download = result.data.script_filename; a.click()
                         URL.revokeObjectURL(url)
                       }}
-                      className="px-3 py-1.5 bg-primary-500/20 text-primary-300 rounded-lg text-xs"
-                    >⬇️ 下载脚本</button>
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500/20 text-primary-300 rounded-lg text-xs"
+                    ><Download size={13} /> 下载脚本</button>
                     {result.data.render_output && (
                       <details className="text-xs">
                         <summary className="text-gray-500 cursor-pointer hover:text-gray-300">查看渲染日志</summary>
@@ -719,17 +738,17 @@ export default function ResourceGenerator() {
                 <div className="rounded-lg overflow-hidden border border-gray-600/30 bg-black">
                   <video src={result.data.video_url} controls className="w-full max-h-80" autoPlay={false} />
                   <div className="px-3 py-1.5 bg-surface-300/50 flex items-center justify-between">
-                    <span className="text-xs text-green-400">✅ 数字人视频已录制</span>
-                    <a href={result.data.video_url} download className="text-xs text-purple-400 hover:text-purple-300 underline">
-                      ⬇️ 下载视频
+                    <span className="inline-flex items-center gap-1 text-xs text-green-400"><CheckCircle2 size={13} /> 数字人视频已录制</span>
+                    <a href={result.data.video_url} download className="inline-flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 underline">
+                      <Download size={12} /> 下载视频
                     </a>
                   </div>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs text-purple-400">
-                      🤖 数字人「{result.data.avatar || '默认'}」讲解文稿
+                    <span className="inline-flex items-center gap-1 text-xs text-purple-400">
+                      <AppIcon name="🤖" size={13} /> 数字人「{result.data.avatar || '默认'}」讲解文稿
                     </span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${
                       result.data.drive_status === 'success' ? 'bg-green-500/10 text-green-400' : 'bg-amber-500/10 text-amber-400'

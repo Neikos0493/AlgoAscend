@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useStore } from '../stores/useStore'
+import { AppIcon } from '../components/Icon'
 
 interface Milestone { name: string; desc: string; estimated: string; resourceIds: number[]; resourceLabels: string[] }
 interface Stage { id: number; title: string; icon: string; colorClass: string; bgClass: string; borderClass: string; milestones: Milestone[] }
@@ -77,7 +78,7 @@ export default function PathPage() {
 
       <div className="p-6">
         <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4"><h3 className="text-base font-semibold text-white">📊 各阶段完成度</h3><span className="text-xs text-gray-500">每日更新</span></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="flex items-center gap-2 text-base font-semibold text-white"><AppIcon name="📊" size={17} className="text-primary-400" /> 各阶段完成度</h3><span className="text-xs text-gray-500">每日更新</span></div>
           <div className="space-y-2">
             {STAGES.map((stage) => {
               const pct = progress[stage.id] || 0
@@ -103,7 +104,7 @@ export default function PathPage() {
               <div key={stage.id} className={`card border ${isExpanded ? stage.borderClass : 'border-transparent'} cursor-pointer`}
                 onClick={() => setExpandedStage(isExpanded ? null : stage.id)}>
                 <div className="flex items-center gap-4">
-                  <div className={`w-12 h-12 rounded-xl ${stage.bgClass} flex items-center justify-center text-2xl`}>{stage.icon}</div>
+                  <div className={`w-12 h-12 rounded-xl ${stage.bgClass} flex items-center justify-center ${stage.colorClass}`}><AppIcon name={stage.icon} size={24} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">阶段 {stage.id}</span>
@@ -131,13 +132,13 @@ export default function PathPage() {
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                             : 'bg-primary-500/10 text-primary-300 border-primary-500/20'
                         }`}>
-                          {isCompleted ? '✓' : idx + 1}
+                          {isCompleted ? <AppIcon name="✓" size={13} /> : idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <span className={`text-sm font-medium ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{m.name}</span>
                             <span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">{m.estimated}</span>
-                            {isCompleted && <span className="text-xs text-emerald-400">✅ 已完成</span>}
+                            {isCompleted && <span className="inline-flex items-center gap-1 text-xs text-emerald-400"><AppIcon name="✅" size={12} /> 已完成</span>}
                           </div>
                           <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
                         </div>
@@ -152,7 +153,7 @@ export default function PathPage() {
 
         <div className="mt-6 p-4 bg-primary-500/5 rounded-xl border border-primary-500/20">
           <div className="flex items-start gap-3">
-            <span className="text-2xl">💡</span>
+            <AppIcon name="💡" size={22} className="text-primary-400 mt-0.5" />
             <div>
               <h4 className="text-sm font-semibold text-primary-300">路径调整建议</h4>
               <p className="text-xs text-gray-400 mt-1">以上学习路径基于你的六维画像动态生成。在「智能对话」中说<strong className="text-primary-400">"我已学完XX"</strong>，AI会自动更新进度并调整后续路径。</p>

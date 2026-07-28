@@ -5,6 +5,8 @@ import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useEffect, useRef } from 'react'
+import { AppIcon } from './Icon'
+import { Copy } from 'lucide-react'
 
 /** Mermaid 图表渲染组件 */
 function MermaidBlock({ code }: { code: string }) {
@@ -45,7 +47,7 @@ function MermaidBlock({ code }: { code: string }) {
   return (
     <div className="my-4 rounded-xl overflow-hidden border border-gray-700/50 bg-[#0f1117]">
       <div className="flex items-center px-4 py-2 bg-gray-800/90 border-b border-gray-700/30">
-        <span className="text-xs text-teal-400 font-mono">📊 Mermaid 图表</span>
+        <span className="inline-flex items-center gap-1 text-xs text-teal-400 font-mono"><AppIcon name="📊" size={12} /> Mermaid 图表</span>
       </div>
       <div ref={containerRef} className="p-4 flex justify-center overflow-x-auto">
         <div className="text-gray-400 text-sm">加载中...</div>
@@ -82,10 +84,10 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                     {match[1] === 'cpp' ? 'C++' : match[1]}
                   </span>
                   <button
-                    className="text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded hover:bg-gray-700/50"
+                    className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors px-2 py-0.5 rounded hover:bg-gray-700/50"
                     onClick={() => navigator.clipboard.writeText(String(children))}
                   >
-                    📋 复制
+                    <Copy size={12} /> 复制
                   </button>
                 </div>
                 <SyntaxHighlighter

@@ -4,6 +4,8 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getRandomProblem, type RandomProblem } from '../services/randomProblem'
+import { AppIcon } from './Icon'
+import { ExternalLink } from 'lucide-react'
 
 // ===== 参数 =====
 const PARTICLE_COUNT = 3500
@@ -493,7 +495,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
               ) : problem ? (
                 <div>
                   <div className="flex items-start gap-3">
-                    <span className="mt-0.5 text-xl" aria-hidden="true">{problem.platform_icon || '💻'}</span>
+                    <AppIcon name={problem.platform_icon || '💻'} size={20} className="mt-0.5 text-cyan-200" />
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-semibold leading-6 text-gray-100">{problem.title}</h3>
                       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -511,7 +513,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
                     rel="noopener noreferrer"
                     className="mt-4 flex w-full items-center justify-center rounded-xl border border-cyan-300/25 bg-cyan-300/10 px-4 py-2.5 text-sm font-medium text-cyan-100 transition hover:border-cyan-200/50 hover:bg-cyan-300/20 focus:outline-none focus:ring-2 focus:ring-cyan-300/60"
                   >
-                    打开原题 <span className="ml-1" aria-hidden="true">↗</span>
+                    打开原题 <ExternalLink size={14} className="ml-1" aria-hidden="true" />
                   </a>
                 </div>
               ) : (

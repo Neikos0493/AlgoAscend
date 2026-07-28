@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useStore, AppSettings, Account } from '../stores/useStore'
 import { DEFAULT_SYSTEM_PROMPT, PROVIDERS, MODEL_REGISTRY, CATEGORY_LABELS, getModelEntry, type ModelCategory, type ModelEntry } from '../services/api'
+import { AppIcon } from './Icon'
+import { Copy, Eye, EyeOff, PenLine, Trash2, X } from 'lucide-react'
 
 const TABS = [
   { key: 'accounts' as const, label: '账号管理', icon: '👤' },
@@ -27,12 +29,12 @@ export default function SettingsModal() {
       <div className="relative bg-surface-200/95 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/50 border border-gray-700/40 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col">
         {/* 标题栏 */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700/30">
-          <h2 className="text-lg font-bold text-white">⚙️ 设置</h2>
+          <h2 className="flex items-center gap-2 text-lg font-bold text-white"><AppIcon name="⚙️" size={19} className="text-primary-400" /> 设置</h2>
           <button
             onClick={() => setSettingsOpen(false)}
-            className="text-gray-400 hover:text-gray-400 text-xl leading-none"
+            className="text-gray-400 hover:text-gray-200 leading-none"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
@@ -78,7 +80,7 @@ function SettingsContent({
                 : 'border-transparent text-gray-500 hover:text-gray-200'
             }`}
           >
-            <span>{tab.icon}</span> {tab.label}
+            <AppIcon name={tab.icon} size={15} /> {tab.label}
           </button>
         ))}
       </div>
@@ -100,7 +102,9 @@ function SettingsContent({
                       : 'bg-surface-300/20 border-gray-700/30 hover:border-gray-600/50'
                   }`}
                 >
-                  <span className="text-2xl">{acc.avatar}</span>
+                  <div className="w-10 h-10 rounded-xl bg-primary-500/15 border border-primary-500/30 flex items-center justify-center text-primary-300">
+                    <AppIcon name={acc.avatar} size={20} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     {editingAccountId === acc.id ? (
                       <input
@@ -140,7 +144,7 @@ function SettingsContent({
                       className="text-xs px-2 py-1 text-gray-400 hover:text-gray-200 hover:bg-surface-300/30 rounded-lg transition-colors"
                       title="重命名"
                     >
-                      ✏️
+                      <PenLine size={14} />
                     </button>
                     {accounts.length > 1 && (
                       <button
@@ -152,7 +156,7 @@ function SettingsContent({
                         className="text-xs px-2 py-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
                         title="删除账号"
                       >
-                        🗑️
+                        <Trash2 size={14} />
                       </button>
                     )}
                   </div>
@@ -291,8 +295,8 @@ function SettingsContent({
             </div>
 
             <div className="p-3 bg-amber-500/10 rounded-lg border border-amber-200">
-              <p className="text-xs text-amber-300">
-                💡 <strong>建议</strong>：算法教学保持 Temperature 0.3-0.7，代码生成用 0.1-0.3。
+              <p className="flex items-start gap-1.5 text-xs text-amber-300">
+                <AppIcon name="💡" size={13} className="mt-px shrink-0" /> <span><strong>建议</strong>：算法教学保持 Temperature 0.3-0.7，代码生成用 0.1-0.3。</span>
               </p>
             </div>
           </>
@@ -331,8 +335,8 @@ function SettingsContent({
             </div>
 
             <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-200">
-              <p className="text-xs text-blue-300">
-                📊 每轮对话包含：用户问题 + AI 回答。设为 10 表示记住最近 20 条消息（10问10答）。
+              <p className="flex items-start gap-1.5 text-xs text-blue-300">
+                <AppIcon name="📊" size={13} className="mt-px shrink-0" /> <span>每轮对话包含：用户问题 + AI 回答。设为 10 表示记住最近 20 条消息（10问10答）。</span>
               </p>
             </div>
 
@@ -370,9 +374,9 @@ function SettingsContent({
                     const text = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT
                     navigator.clipboard.writeText(text)
                   }}
-                  className="absolute top-2 right-2 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs transition-colors"
+                  className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs transition-colors"
                 >
-                  📋 复制
+                  <Copy size={12} /> 复制
                 </button>
               </div>
               <p className="text-xs text-gray-400 mt-2">
@@ -383,8 +387,8 @@ function SettingsContent({
             </div>
 
             <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-200">
-              <p className="text-xs text-blue-300">
-                💡 提示词决定了 AI 的角色、知识范围和回复风格。内置提示词已包含知识库索引和格式要求。
+              <p className="flex items-start gap-1.5 text-xs text-blue-300">
+                <AppIcon name="💡" size={13} className="mt-px shrink-0" /> <span>提示词决定了 AI 的角色、知识范围和回复风格。内置提示词已包含知识库索引和格式要求。</span>
               </p>
             </div>
           </>
@@ -405,7 +409,7 @@ function SettingsContent({
         </button>
         <div className="flex items-center gap-3">
           {saved && (
-            <span className="text-xs text-green-600 animate-pulse-soft">✓ 已保存</span>
+            <span className="inline-flex items-center gap-1 text-xs text-green-600 animate-pulse-soft"><AppIcon name="✓" size={12} /> 已保存</span>
           )}
           <button
             onClick={() => setSettingsOpen(false)}
@@ -459,7 +463,7 @@ function ModelCategorySection({
     }`}>
       {/* 标题行 */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-lg">{info.icon}</span>
+        <AppIcon name={info.icon} size={20} className="text-primary-300" />
         <div>
           <label className="text-sm font-medium text-gray-200">{info.name}</label>
           <p className="text-[10px] text-gray-500">{info.desc}</p>
@@ -518,9 +522,9 @@ function ModelCategorySection({
                 {cred.type === 'password' && (
                   <button
                     onClick={() => setShowKey(!showKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 text-sm"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
                   >
-                    {showKey ? '🙈' : '👁️'}
+                    {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
                 )}
               </div>
@@ -546,8 +550,8 @@ function ModelCategorySection({
 
       {/* 多模态标记 */}
       {selectedModel?.multimodal && category === 'llm' && (
-        <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] text-blue-300">
-          🖼️ 此模型支持多模态输入，配置后可在对话中发送图片提问。
+        <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] text-blue-300 flex items-center gap-1.5">
+          <AppIcon name="🖼️" size={12} className="shrink-0" /> 此模型支持多模态输入，配置后可在对话中发送图片提问。
         </div>
       )}
     </div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useStore } from '../stores/useStore'
 import RadarChart, { computeRadarDimensions } from '../components/RadarChart'
 import KnowledgeGraph from '../components/KnowledgeGraph'
+import { AppIcon } from '../components/Icon'
 import { loadAccounts } from '../services/platformService'
 
 interface Recommendation {
@@ -16,17 +17,19 @@ interface Recommendation {
 const RESOURCE_TYPE_ICONS: Record<string, string> = {
   doc: '📄', mindmap: '🧠', reading: '📖', video: '🎬',
   code_case: '💻', exercise: '🏋️', project: '🏗️',
+  ppt: '📊', image: '🎨',
 }
 const RESOURCE_TYPE_LABELS: Record<string, string> = {
   doc: '讲解文档', mindmap: '思维导图', reading: '拓展阅读',
   video: '教学视频', code_case: '代码实操', exercise: '练习题', project: '实践项目',
+  ppt: '课件PPT', image: 'AI插图',
 }
 const PRIORITY_COLORS: Record<string, string> = {
   high: 'border-red-500/30 bg-red-500/5', medium: 'border-amber-500/30 bg-amber-500/5',
   low: 'border-gray-600/30 bg-gray-500/5',
 }
-const PRIORITY_BADGES: Record<string, string> = {
-  high: '🔴 优先', medium: '🟡 推荐', low: '🟢 拓展',
+const PRIORITY_META: Record<string, { dot: string; label: string }> = {
+  high: { dot: '🔴', label: '优先' }, medium: { dot: '🟡', label: '推荐' }, low: { dot: '🟢', label: '拓展' },
 }
 
 const statCards = [
@@ -37,11 +40,7 @@ const statCards = [
   { key: 'total_assessments', label: '评估次数', icon: '📊', color: 'from-pink-500/10 to-pink-500/5 text-pink-300 border-pink-500/20' },
 ]
 
-const RESOURCE_TYPE_NAMES: Record<string, string> = {
-  doc: '📄 讲解文档', mindmap: '🧠 思维导图', reading: '📖 拓展阅读',
-  video: '🎬 教学视频', code_case: '💻 代码实操', exercise: '🏋️ 练习题',
-  project: '🏗️ 实践项目', ppt: '📊 课件PPT', image: '🎨 AI插图',
-}
+const RESOURCE_TYPE_NAMES: Record<string, string> = RESOURCE_TYPE_LABELS
 
 export default function DashboardPage() {
   const { stats, profile, messages } = useStore()
@@ -90,9 +89,9 @@ export default function DashboardPage() {
               alert('评估失败: ' + (e.message || '未知错误'))
             }
           }}
-          className="px-4 py-2 text-sm bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg border border-primary-500/20 transition-colors shrink-0"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg border border-primary-500/20 transition-colors shrink-0"
         >
-          📊 立即评估
+          <AppIcon name="📊" size={15} /> 立即评估
         </button>
       </header>
 
@@ -103,7 +102,7 @@ export default function DashboardPage() {
             const displayValue = typeof value === 'number' ? (card.key === 'accuracy' ? value.toFixed(1) : value) : 0
             return (
               <div key={card.key} className={`card bg-gradient-to-br ${card.color} border`}>
-                <div className="flex items-center justify-between mb-2"><span className="text-2xl">{card.icon}</span></div>
+                <div className="flex items-center justify-between mb-2"><AppIcon name={card.icon} size={24} /></div>
                 <div className="text-2xl font-bold">{displayValue}{card.suffix || ''}</div>
                 <div className="text-sm opacity-60 mt-1">{card.label}</div>
               </div>
@@ -113,13 +112,13 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="card">
-            <h3 className="text-lg font-semibold text-white mb-4">🎯 五维评估雷达图</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-4"><AppIcon name="🎯" size={19} className="text-primary-400" /> 五维评估雷达图</h3>
             <RadarChart dimensions={radarDimensions} size={260} />
             <p className="text-xs text-gray-500 text-center mt-1">基于画像六维数据、练习统计和对话历史动态计算</p>
           </div>
           <div className="card">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-white">🕸️ 课程知识图谱</h3>
+              <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="🕸️" size={19} className="text-primary-400" /> 课程知识图谱</h3>
               <button onClick={() => setShowKnowledgeGraph(!showKnowledgeGraph)}
                 className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${showKnowledgeGraph ? 'bg-primary-500/10 text-primary-300 border-primary-500/30' : 'bg-surface-300/30 text-gray-400 border-gray-700/30 hover:border-gray-600'}`}>
                 {showKnowledgeGraph ? '收起' : '展开'}
@@ -128,19 +127,19 @@ export default function DashboardPage() {
             {showKnowledgeGraph ? (
               <div className="overflow-x-auto"><KnowledgeGraph width={500} height={480} /></div>
             ) : (
-              <div className="text-center py-16 text-gray-500"><div className="text-4xl mb-2">🕸️</div><p className="text-sm">展开查看 C++ 算法课程体系</p><p className="text-xs mt-1">17 个课程模块前置依赖关系</p></div>
+              <div className="text-center py-16 text-gray-500"><AppIcon name="🕸️" size={40} className="mx-auto mb-3 text-gray-600" /><p className="text-sm">展开查看 C++ 算法课程体系</p><p className="text-xs mt-1">17 个课程模块前置依赖关系</p></div>
             )}
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="card">
-            <h3 className="text-lg font-semibold text-white mb-4">📦 资源类型分布</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-4"><AppIcon name="📦" size={19} className="text-primary-400" /> 资源类型分布</h3>
             {stats?.resources_by_type && Object.keys(stats.resources_by_type).length > 0 ? (
               <div className="space-y-3">
                 {Object.entries(stats.resources_by_type).map(([type, count]) => (
                   <div key={type} className="flex items-center gap-3">
-                    <span className="text-sm min-w-[120px] text-gray-300">{RESOURCE_TYPE_NAMES[type] || type}</span>
+                    <span className="flex items-center gap-1.5 text-sm min-w-[120px] text-gray-300"><AppIcon name={RESOURCE_TYPE_ICONS[type] || '📦'} size={14} className="text-gray-500" />{RESOURCE_TYPE_NAMES[type] || type}</span>
                     <div className="flex-1 bg-gray-700/50 rounded-full h-2.5">
                       <div className="bg-gradient-to-r from-primary-500 to-accent-500 h-2.5 rounded-full transition-all duration-500"
                         style={{ width: `${Math.min(100, (count as number) / Math.max(1, stats.total_resources) * 100)}%` }} />
@@ -149,10 +148,10 @@ export default function DashboardPage() {
                   </div>
                 ))}
               </div>
-            ) : (<p className="text-gray-500 text-sm">暂无资源数据，去对话页面生成学习资料吧 🚀</p>)}
+            ) : (<p className="flex items-center gap-1.5 text-gray-500 text-sm">暂无资源数据，去对话页面生成学习资料吧 <AppIcon name="🚀" size={14} /></p>)}
           </div>
           <div className="card">
-            <h3 className="text-lg font-semibold text-white mb-4">🧠 画像完善度</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-4"><AppIcon name="🧠" size={19} className="text-primary-400" /> 画像完善度</h3>
             {profile ? (
               <div className="space-y-4">
                 {[
@@ -164,10 +163,10 @@ export default function DashboardPage() {
                   const filled = data && typeof data === 'object' && Object.values(data).some(v => v)
                   return (
                     <div key={dim.key} className="flex items-center gap-3">
-                      <span className="text-lg">{dim.icon}</span>
+                      <AppIcon name={dim.icon} size={17} className="text-gray-400" />
                       <span className="text-sm text-gray-300 flex-1">{dim.label}</span>
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${filled ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-gray-700/30 text-gray-500'}`}>
-                        {filled ? '✓ 已收集' : '待收集'}
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${filled ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-gray-700/30 text-gray-500'}`}>
+                        {filled ? <><AppIcon name="✓" size={12} /> 已收集</> : '待收集'}
                       </span>
                     </div>
                   )
@@ -183,21 +182,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            ) : (<p className="text-gray-500 text-sm">画像尚未构建，去对话页面和AI聊聊吧 💬</p>)}
+            ) : (<p className="flex items-center gap-1.5 text-gray-500 text-sm">画像尚未构建，去对话页面和AI聊聊吧 <AppIcon name="💬" size={14} /></p>)}
           </div>
         </div>
 
         {/* 为你推荐 */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-white">🎯 为你推荐</h3>
-            {studyTip && <span className="text-xs text-primary-400 italic">💬 {studyTip}</span>}
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="🎯" size={19} className="text-primary-400" /> 为你推荐</h3>
+            {studyTip && <span className="inline-flex items-center gap-1 text-xs text-primary-400 italic"><AppIcon name="💬" size={12} /> {studyTip}</span>}
           </div>
           {recLoading ? (
-            <div className="text-center py-8"><div className="text-3xl animate-pulse-soft">🔄</div><p className="text-gray-400 text-sm mt-2">AI 正在分析你的学习画像...</p></div>
+            <div className="text-center py-8"><AppIcon name="🔄" size={30} className="mx-auto text-primary-400 animate-spin" /><p className="text-gray-400 text-sm mt-2">AI 正在分析你的学习画像...</p></div>
           ) : recommendations.length === 0 ? (
             <div className="text-center py-8">
-              <div className="text-4xl mb-2">📭</div>
+              <AppIcon name="📭" size={40} className="mx-auto mb-2 text-gray-600" />
               <p className="text-gray-400 text-sm">去对话页面和AI聊聊，完成学习画像后获得个性化推荐</p>
             </div>
           ) : (
@@ -205,13 +204,15 @@ export default function DashboardPage() {
               {recommendations.map((rec, i) => (
                 <div key={i} className={`p-4 rounded-xl border ${PRIORITY_COLORS[rec.priority]} hover:border-primary-500/30 transition-all cursor-pointer group`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{RESOURCE_TYPE_ICONS[rec.type] || '📦'}</span>
+                    <AppIcon name={RESOURCE_TYPE_ICONS[rec.type] || '📦'} size={20} className="text-primary-300" />
                     <span className="text-xs font-medium text-gray-500">{RESOURCE_TYPE_LABELS[rec.type] || rec.type}</span>
-                    <span className="text-[10px] text-gray-500 ml-auto">{PRIORITY_BADGES[rec.priority]}</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] text-gray-500 ml-auto">
+                      <AppIcon name={PRIORITY_META[rec.priority]?.dot || '🟢'} size={12} />{PRIORITY_META[rec.priority]?.label || ''}
+                    </span>
                   </div>
                   <h4 className="text-sm font-semibold text-gray-200 group-hover:text-primary-300 transition-colors mb-1">{rec.title}</h4>
                   <p className="text-xs text-gray-400 mb-2">{rec.description}</p>
-                  <p className="text-[10px] text-gray-500 italic">💡 {rec.reason}</p>
+                  <p className="flex items-start gap-1 text-[10px] text-gray-500 italic"><AppIcon name="💡" size={11} className="mt-px" /> {rec.reason}</p>
                 </div>
               ))}
             </div>
@@ -231,14 +232,14 @@ function PlatformStatsWidget() {
   return (
     <div className="card">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-white">🏆 竞赛平台数据</h3>
+        <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="🏆" size={19} className="text-primary-400" /> 竞赛平台数据</h3>
         <span className="text-xs text-gray-500">{verified.length} 个平台已绑定</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {verified.map((acc) => (
           <a key={acc.platform} href={acc.profileUrl} target="_blank" rel="noopener noreferrer"
             className="flex flex-col items-center p-3 rounded-xl bg-surface-400/40 hover:bg-surface-300/40 transition-colors border border-gray-700/20">
-            <span className="text-lg mb-1">{{ codeforces: '🇷🇺', atcoder: '🇯🇵', luogu: '🏔️', nowcoder: '🐮', leetcode: '💻', acwing: '🧪', lanqiao: '🏅' }[acc.platform] || '🏆'}</span>
+            <AppIcon name={{ codeforces: '🏆', atcoder: '🏆', luogu: '🏔️', nowcoder: '🐮', leetcode: '💻', acwing: '🧪', lanqiao: '🏅' }[acc.platform] || '🏆'} size={22} className="mb-1 text-primary-300" />
             <span className="text-[10px] text-gray-500 mb-1">@{acc.handle}</span>
             {acc.stats?.rating ? <span className="text-lg font-bold text-primary-300">{acc.stats.rating}</span> : null}
             {acc.stats?.problemsSolved ? <span className="text-xs text-emerald-400">{acc.stats.problemsSolved} 题</span> : null}
