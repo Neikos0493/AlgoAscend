@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useStore } from '../stores/useStore'
-import { fetchProfile, resetProfile, clearHistory, updateStudent } from '../services/api'
 import { clearAccounts } from '../services/platformService'
 import AccountBinding from '../components/AccountBinding'
 
@@ -73,48 +72,49 @@ export default function ProfilePage() {
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
 
+  // 从 localStorage 加载学生信息（按账号隔离）
   useEffect(() => {
-    loadProfile()
+    const id = useStore.getState().activeAccountId
+    if (id) {
+      try {
+        const raw = localStorage.getItem(`algoascend_student_${id}`)
+        if (raw) {
+          const info = JSON.parse(raw)
+          setStudentInfo(info)
+          setName(info.name || '')
+          setMajor(info.major || '')
+          setGrade(info.grade || '')
+        }
+      } catch { /* ignore */ }
+    }
   }, [])
 
-  const loadProfile = async () => {
-    try {
-      const data = await fetchProfile(1)
-      setProfile(data.profile)
-      setDimensionsFilled(data.dimensions_filled || 0)
-      if (data.student) {
-        setStudentInfo(data.student)
-        setName(data.student.name || '')
-        setMajor(data.student.major || '')
-        setGrade(data.student.grade || '')
-      }
-    } catch (err) {
-      console.log('加载画像失败', err)
-    }
-  }
-
   const handleSaveInfo = async () => {
-    try {
-      await updateStudent(1, { name, major, grade })
-      setEditing(false)
-      loadProfile()
-    } catch (err) {
-      console.log('保存失败', err)
+    const info = { name, major, grade }
+    setStudentInfo(info)
+    setEditing(false)
+
+    // 保存到 localStorage
+    const id = useStore.getState().activeAccountId
+    if (id) {
+      try { localStorage.setItem(`algoascend_student_${id}`, JSON.stringify(info)) } catch { /* ignore */ }
     }
   }
 
   const handleReset = async () => {
     setResetting(true)
     try {
-      await resetProfile(1)           // 后端：清除画像 + 聊天历史
-      await clearHistory(1)           // 确保前端聊天历史也清除
-      clearAccounts()                 // 清除竞赛平台绑定
-      localStorage.removeItem('algoascend_settings')  // 清除设置
-      resetAll()                      // 清除 Zustand store
+      clearAccounts()
+      localStorage.removeItem('algoascend_settings')
+
+      // 清除当前账号数据
+      const id = useStore.getState().activeAccountId
+      if (id) {
+        localStorage.removeItem(`algoascend_student_${id}`)
+      }
+
+      resetAll()
       setShowResetConfirm(false)
-      // 重新加载画像（显示空状态）
-      setProfile(null as any)
-      setDimensionsFilled(0)
       setStudentInfo({})
       setName('')
       setMajor('')
@@ -180,14 +180,8 @@ export default function ProfilePage() {
         </button>
         <div>
           <h2 className="text-lg font-semibold text-white">学习画像</h2>
-          <p className="text-xs text-gray-400">AI对话式构建的六维动态学习画像</p>
+          <p className="text-xs text-gray-400">AI对话式构建的六维动态学习画像（对话自动更新）</p>
         </div>
-        <button
-          onClick={loadProfile}
-          className="text-sm text-primary-400 hover:text-primary-300"
-        >
-          🔄 刷新
-        </button>
         <button
           onClick={() => setShowResetConfirm(true)}
           className="text-sm text-red-500 hover:text-red-600 ml-2"

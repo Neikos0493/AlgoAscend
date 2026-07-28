@@ -4,14 +4,21 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import MindmapRenderer from './MindmapRenderer'
+
+interface MessageAttachment {
+  type: 'mindmap' | 'image' | 'ppt' | 'video' | 'doc' | 'knowledge' | 'knowledge_entry' | 'problems'
+  data: any
+}
 
 interface Message {
   id: string
-  role: 'user' | 'assistant' | 'system'
+  role: 'user' | 'assistant' | 'system' | 'tool'
   agentType: string
   content: string
   contentType: string
   metadata?: any
+  attachments?: MessageAttachment[]
   timestamp: Date
 }
 
@@ -66,6 +73,14 @@ export default function ChatMessage({ message }: { message: Message }) {
           <div className="markdown-body">
             <MarkdownContent content={message.content} />
           </div>
+          {/* 附件渲染 */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mt-4 space-y-3 border-t border-gray-700/30 pt-4">
+              {message.attachments.map((att, i) => (
+                <AttachmentRenderer key={i} attachment={att} />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -134,4 +149,226 @@ function MarkdownContent({ content }: { content: string }) {
       {content}
     </ReactMarkdown>
   )
+}
+
+// ===== 附件渲染器 =====
+
+function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
+  const { type, data } = attachment
+
+  switch (type) {
+    case 'mindmap':
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-accent-400">🧠 思维导图</span>
+          </div>
+          <div className="bg-[#0f1117] rounded-lg p-2 border border-gray-700/30">
+            <MindmapRenderer tree={data.tree} />
+          </div>
+        </div>
+      )
+
+    case 'image':
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-purple-400">🎨 AI 生成图片</span>
+          </div>
+          {data.base64 ? (
+            <div className="rounded-lg overflow-hidden border border-gray-600/30 max-w-md">
+              <img
+                src={`data:image/png;base64,${data.base64}`}
+                alt="AI 生成图片"
+                className="w-full"
+              />
+            </div>
+          ) : (
+            <div className="text-xs text-gray-500">图片数据为空</div>
+          )}
+        </div>
+      )
+
+    case 'ppt':
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-orange-400">📊 PPT 课件</span>
+          </div>
+          <div className="bg-surface-400/20 rounded-lg p-3 border border-gray-600/30">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-300">{data.filename || '课件.pptx'}</span>
+              <span className="text-xs text-gray-500">{data.slides || '?'} 页</span>
+            </div>
+            <div className="mt-2 text-xs text-gray-500">
+              PPT 已保存到服务器，可在「学习资源」页面下载
+            </div>
+          </div>
+        </div>
+      )
+
+    case 'problems': {
+      const problems: any[] = data.results || []
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-emerald-400">🏋️ 题库推荐</span>
+            {data.query && <span className="text-xs text-gray-500">关键词: {data.query}</span>}
+            <span className="text-xs text-gray-500">{problems.length} 题</span>
+          </div>
+          {problems.length === 0 ? (
+            <div className="text-xs text-gray-500 bg-surface-400/20 rounded-lg p-3">
+              {data.message || '未找到相关题目，建议换关键词重试'}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {problems.map((p, i) => {
+                const diff = p.difficulty || ''
+                const isHard = diff.includes('困难') || diff.includes('HARD')
+                const isMid = diff.includes('中等') || diff.includes('MEDIUM')
+                return (
+                  <a
+                    key={i}
+                    href={p.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block bg-surface-400/30 hover:bg-surface-400/50 rounded-lg p-3 border border-gray-600/30 hover:border-emerald-500/40 transition-all group"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-gray-200 group-hover:text-emerald-300 transition-colors truncate flex-1">
+                        {p.title}
+                      </span>
+                      {diff && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${
+                          isHard ? 'bg-red-500/15 text-red-300' : isMid ? 'bg-amber-500/15 text-amber-300' : 'bg-emerald-500/15 text-emerald-300'
+                        }`}>{diff}</span>
+                      )}
+                    </div>
+                    {p.tags && p.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {p.tags.slice(0, 5).map((t: string, j: number) => (
+                          <span key={j} className="text-[10px] text-gray-400 bg-surface-300/40 px-1.5 py-0.5 rounded">#{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </a>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    case 'knowledge': {
+      const items: any[] = data.results || []
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-sky-400">📖 知识库检索</span>
+            {data.query && <span className="text-xs text-gray-500">关键词: {data.query}</span>}
+            <span className="text-xs text-gray-500">{items.length} 条</span>
+          </div>
+          {items.length === 0 ? (
+            <div className="text-xs text-gray-500 bg-surface-400/20 rounded-lg p-3">
+              {data.message || '未找到相关内容'}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {items.map((it, i) => (
+                <div key={i} className="bg-surface-400/30 rounded-lg p-3 border border-gray-600/30">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <a
+                      href={it.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-sky-300 hover:text-sky-200 hover:underline truncate"
+                    >
+                      {it.title}
+                    </a>
+                    {it.source && (
+                      <span className="text-[10px] text-gray-400 bg-surface-300/40 px-1.5 py-0.5 rounded shrink-0">{it.source}</span>
+                    )}
+                  </div>
+                  {it.category && (
+                    <div className="text-[10px] text-gray-500 mb-1">分类: {it.category}</div>
+                  )}
+                  {it.content && (
+                    <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{it.content}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    case 'knowledge_entry': {
+      const content: string = data.content || ''
+      const preview = content.length > 1200 ? content.slice(0, 1200) + '\n\n... (内容已截断，点击下方链接查看完整原文)' : content
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="text-xs font-medium text-sky-400">📄 知识库全文</span>
+            <span className="text-sm font-medium text-gray-200 truncate">{data.title}</span>
+            {data.source && (
+              <span className="text-[10px] text-gray-400 bg-surface-300/40 px-1.5 py-0.5 rounded">{data.source}</span>
+            )}
+          </div>
+          <div className="bg-surface-400/30 rounded-lg p-3 border border-gray-600/30 max-h-96 overflow-y-auto">
+            <div className="markdown-body text-sm">
+              <MarkdownContent content={preview} />
+            </div>
+          </div>
+          {data.url && (
+            <a
+              href={data.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-2 text-xs text-sky-400 hover:text-sky-300 underline"
+            >
+              查看完整原文 →
+            </a>
+          )}
+        </div>
+      )
+    }
+
+    case 'video':
+      return (
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-medium text-rose-400">🎬 算法动画视频</span>
+          </div>
+          {data.video_url ? (
+            <div className="rounded-lg overflow-hidden border border-gray-600/30 max-w-lg">
+              <video src={data.video_url} controls className="w-full" />
+            </div>
+          ) : (
+            <div className="bg-surface-400/30 rounded-lg p-3 border border-gray-600/30">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-200">📝 Manim 脚本已生成</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${data.render_status === 'rendered' ? 'bg-emerald-500/15 text-emerald-300' : 'bg-amber-500/15 text-amber-300'}`}>
+                  {data.render_status === 'rendered' ? '已渲染' : '脚本模式'}
+                </span>
+              </div>
+              <details className="mt-2">
+                <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-300">查看脚本代码</summary>
+                <pre className="mt-2 text-[11px] text-gray-300 bg-[#0f1117] p-3 rounded-lg overflow-x-auto max-h-64 overflow-y-auto font-mono border border-gray-700/30">
+                  {data.script?.slice(0, 2000)}
+                  {data.script?.length > 2000 && '\n\n... (代码已截断)'}
+                </pre>
+              </details>
+              <div className="mt-2 text-xs text-gray-500">
+                将此脚本保存为 .py 文件，安装 Manim 后运行即可渲染视频
+              </div>
+            </div>
+          )}
+        </div>
+      )
+
+    default:
+      return null
+  }
 }

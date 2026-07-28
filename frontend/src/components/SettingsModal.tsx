@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useStore, AppSettings } from '../stores/useStore'
-import { DEFAULT_SYSTEM_PROMPT } from '../services/api'
+import { useStore, AppSettings, Account } from '../stores/useStore'
+import { DEFAULT_SYSTEM_PROMPT, PROVIDERS, MODEL_REGISTRY, CATEGORY_LABELS, getModelEntry, type ModelCategory, type ModelEntry } from '../services/api'
 
 const TABS = [
-  { key: 'account' as const, label: '账号', icon: '🔑' },
-  { key: 'model' as const, label: '模型', icon: '🧠' },
+  { key: 'accounts' as const, label: '账号管理', icon: '👤' },
+  { key: 'apikey' as const, label: '模型配置', icon: '🔑' },
+  { key: 'model' as const, label: '参数', icon: '🧠' },
   { key: 'context' as const, label: '上下文', icon: '📝' },
   { key: 'prompt' as const, label: '提示词', icon: '📋' },
 ]
@@ -50,9 +51,13 @@ function SettingsContent({
   resetSettings: () => void
   setSettingsOpen: (open: boolean) => void
 }) {
-  const [activeTab, setActiveTab] = useState('account')
+  const { accounts, activeAccountId, createAccount, switchAccount, deleteAccount, renameAccount } = useStore()
+  const [activeTab, setActiveTab] = useState('accounts')
   const [showKey, setShowKey] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [newAccountName, setNewAccountName] = useState('')
+  const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
+  const [editingName, setEditingName] = useState('')
 
   const flashSaved = () => {
     setSaved(true)
@@ -80,39 +85,128 @@ function SettingsContent({
 
       {/* 内容 */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-        {/* ===== 账号 ===== */}
-        {activeTab === 'account' && (
+        {/* ===== 账号管理 ===== */}
+        {activeTab === 'accounts' && (
           <>
-            <div>
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
-                DeepSeek API Key
-              </label>
-              <div className="relative">
-                <input
-                  type={showKey ? 'text' : 'password'}
-                  value={settings.apiKey}
-                  onChange={(e) => {
-                    setSettings({ apiKey: e.target.value })
-                    flashSaved()
-                  }}
-                  placeholder="留空使用默认 Key"
-                  className="w-full input-field pr-10 font-mono text-sm"
-                />
-                <button
-                  onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-400 text-sm"
-                  title={showKey ? '隐藏' : '显示'}
+            {/* 当前账号 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-200 mb-2">当前账号</label>
+              {accounts.map((acc) => (
+                <div
+                  key={acc.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border mb-2 transition-colors ${
+                    acc.id === activeAccountId
+                      ? 'bg-primary-500/10 border-primary-500/30'
+                      : 'bg-surface-300/20 border-gray-700/30 hover:border-gray-600/50'
+                  }`}
                 >
-                  {showKey ? '🙈' : '👁️'}
-                </button>
-              </div>
-              <p className="text-xs text-gray-400 mt-1">
-                留空则使用内置共享 Key。修改后立即生效，无需保存。
-              </p>
+                  <span className="text-2xl">{acc.avatar}</span>
+                  <div className="flex-1 min-w-0">
+                    {editingAccountId === acc.id ? (
+                      <input
+                        value={editingName}
+                        onChange={(e) => setEditingName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') { renameAccount(acc.id, editingName); setEditingAccountId(null) }
+                          if (e.key === 'Escape') setEditingAccountId(null)
+                        }}
+                        onBlur={() => { renameAccount(acc.id, editingName); setEditingAccountId(null) }}
+                        className="input-field text-sm py-1"
+                        autoFocus
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-200 truncate">{acc.name}</span>
+                        {acc.id === activeAccountId && (
+                          <span className="text-xs bg-primary-500/20 text-primary-300 px-1.5 py-0.5 rounded-full">当前</span>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      创建于 {new Date(acc.createdAt).toLocaleDateString('zh-CN')}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {acc.id !== activeAccountId && (
+                      <button
+                        onClick={() => switchAccount(acc.id)}
+                        className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-lg hover:bg-primary-500/30 transition-colors"
+                      >
+                        切换
+                      </button>
+                    )}
+                    <button
+                      onClick={() => { setEditingAccountId(acc.id); setEditingName(acc.name) }}
+                      className="text-xs px-2 py-1 text-gray-400 hover:text-gray-200 hover:bg-surface-300/30 rounded-lg transition-colors"
+                      title="重命名"
+                    >
+                      ✏️
+                    </button>
+                    {accounts.length > 1 && (
+                      <button
+                        onClick={() => {
+                          if (confirm(`确定删除账号"${acc.name}"？\n该账号的所有数据（画像、对话、进度）将被永久删除。`)) {
+                            deleteAccount(acc.id)
+                          }
+                        }}
+                        className="text-xs px-2 py-1 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="删除账号"
+                      >
+                        🗑️
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
+            {/* 新建账号 */}
+            <div className="p-3 bg-surface-300/20 rounded-xl border border-gray-700/30">
+              <label className="block text-sm font-medium text-gray-200 mb-2">新建账号</label>
+              <div className="flex gap-2">
+                <input
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' && newAccountName.trim()) { createAccount(newAccountName.trim(), ''); setNewAccountName('') } }}
+                  placeholder="输入账号名称..."
+                  className="input-field flex-1 text-sm"
+                />
+                <button
+                  onClick={() => { if (newAccountName.trim()) { createAccount(newAccountName.trim(), ''); setNewAccountName('') } }}
+                  disabled={!newAccountName.trim()}
+                  className="btn-primary text-sm px-4 disabled:opacity-50"
+                >
+                  创建
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mt-1.5">
+                每个账号拥有独立的学习画像、仪表盘数据、对话记录和学习路径。
+              </p>
+            </div>
+          </>
+        )}
+
+        {/* ===== 模型配置 ===== */}
+        {activeTab === 'apikey' && (
+          <div className="space-y-5">
+            <p className="text-xs text-gray-400">
+              为三大类场景分别选择模型并配置鉴权。配置后即可在对话、生图、数字人等功能中使用。
+            </p>
+
+            {(['llm', 'image_gen', 'digital_human'] as ModelCategory[]).map(cat => (
+              <ModelCategorySection
+                key={cat}
+                category={cat}
+                settings={settings}
+                setSettings={setSettings}
+                flashSaved={flashSaved}
+                showKey={showKey}
+                setShowKey={setShowKey}
+              />
+            ))}
+
             {/* 系统提示词 */}
-            <div>
+            <div className="pt-2 border-t border-gray-700/30">
               <label className="block text-sm font-medium text-gray-200 mb-1.5">
                 自定义系统提示词
                 <button
@@ -129,14 +223,14 @@ function SettingsContent({
                   flashSaved()
                 }}
                 placeholder="留空使用内置提示词..."
-                rows={8}
+                rows={6}
                 className="w-full input-field resize-none text-xs font-mono"
               />
               <p className="text-xs text-gray-400 mt-1">
-                自定义 AI 的角色和行为规则。空 = 使用内置的专业提示词。
+                自定义 AI 的角色和行为规则。留空使用内置的专业提示词。
               </p>
             </div>
-          </>
+          </div>
         )}
 
         {/* ===== 模型参数 ===== */}
@@ -331,5 +425,131 @@ function TokenEstimate({ rounds }: { rounds: number }) {
     <p className="text-xs text-gray-500">
       {rounds === 0 ? '不记忆' : `${rounds} 轮`}：{tokens} tokens/次
     </p>
+  )
+}
+
+// ===== 三大分类模型选择区 =====
+
+function ModelCategorySection({
+  category, settings, setSettings, flashSaved, showKey, setShowKey,
+}: {
+  category: ModelCategory
+  settings: AppSettings
+  setSettings: (s: Partial<AppSettings>) => void
+  flashSaved: () => void
+  showKey: boolean
+  setShowKey: (v: boolean) => void
+}) {
+  const info = CATEGORY_LABELS[category]
+  const models = MODEL_REGISTRY.filter(m => m.category === category)
+  const selectedModelId = settings.selectedModelIds?.[category] || models[0]?.id || ''
+  const selectedModel = getModelEntry(selectedModelId)
+  const creds = settings.modelCreds?.[selectedModelId] || {}
+
+  // 检查是否已配置
+  const allFieldsFilled = selectedModel
+    ? selectedModel.creds.every(c => !!(creds[c.key]))
+    : false
+
+  return (
+    <div className={`p-4 rounded-xl border transition-colors ${
+      allFieldsFilled
+        ? 'bg-green-500/5 border-green-500/20'
+        : 'bg-surface-300/20 border-gray-700/30'
+    }`}>
+      {/* 标题行 */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-lg">{info.icon}</span>
+        <div>
+          <label className="text-sm font-medium text-gray-200">{info.name}</label>
+          <p className="text-[10px] text-gray-500">{info.desc}</p>
+        </div>
+        {allFieldsFilled && (
+          <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full ml-auto">
+            已配置
+          </span>
+        )}
+      </div>
+
+      {/* 模型下拉选择 */}
+      <div className="mb-3">
+        <label className="text-[11px] text-gray-400 mb-1 block">选择模型</label>
+        <select
+          value={selectedModelId}
+          onChange={(e) => {
+            setSettings({
+              selectedModelIds: { ...settings.selectedModelIds, [category]: e.target.value }
+            })
+            flashSaved()
+          }}
+          className="w-full input-field text-sm py-2"
+        >
+          {models.map(m => (
+            <option key={m.id} value={m.id}>
+              {m.multimodal ? '🖼️ ' : ''}{m.name} — {m.description}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 鉴权字段 */}
+      {selectedModel && selectedModel.creds.length > 0 && (
+        <div className="space-y-2">
+          {selectedModel.creds.map(cred => (
+            <div key={cred.key}>
+              <label className="text-[11px] text-gray-400 mb-0.5 block">{cred.label}</label>
+              <div className="relative">
+                <input
+                  type={cred.type === 'password' ? (showKey ? 'text' : 'password') : 'text'}
+                  value={creds[cred.key] || ''}
+                  onChange={(e) => {
+                    const newCreds = {
+                      ...settings.modelCreds,
+                      [selectedModelId]: { ...creds, [cred.key]: e.target.value }
+                    }
+                    setSettings({ modelCreds: newCreds })
+                    flashSaved()
+                  }}
+                  placeholder={cred.placeholder}
+                  className={`w-full input-field pr-10 font-mono text-xs ${
+                    creds[cred.key] ? 'border-green-500/30' : ''
+                  }`}
+                />
+                {cred.type === 'password' && (
+                  <button
+                    onClick={() => setShowKey(!showKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 text-sm"
+                  >
+                    {showKey ? '🙈' : '👁️'}
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 额外说明 */}
+      {selectedModel?.requiresExtra && (
+        <p className="text-[10px] text-gray-500 mt-2">
+          <a
+            href="https://console.xfyun.cn/"
+            target="_blank"
+            rel="noopener"
+            className="text-primary-500 underline"
+          >
+            获取地址: console.xfyun.cn
+          </a>
+          {' '}{selectedModel.requiresExtra.replace('获取地址: console.xfyun.cn → ', '→ ')}
+        </p>
+      )}
+
+      {/* 多模态标记 */}
+      {selectedModel?.multimodal && category === 'llm' && (
+        <div className="mt-2 p-2 bg-blue-500/10 border border-blue-500/20 rounded text-[10px] text-blue-300">
+          🖼️ 此模型支持多模态输入，配置后可在对话中发送图片提问。
+        </div>
+      )}
+    </div>
   )
 }

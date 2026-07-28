@@ -1,0 +1,164 @@
+- generic [ref=e3]:
+  - generic "可交互粒子轨道"
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: ⚡
+        - generic [ref=e9]:
+          - heading "C++算法学习平台" [level=1] [ref=e10]
+          - paragraph [ref=e11]: 多智能体AI辅助系统
+      - navigation [ref=e12]:
+        - paragraph [ref=e13]: 功能导航
+        - button "💬 智能对话" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: 💬
+          - generic [ref=e16]: 智能对话
+        - button "📊 学习仪表盘" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]: 📊
+          - generic [ref=e20]: 学习仪表盘
+        - button "🗺️ 学习路径" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: 🗺️
+          - generic [ref=e23]: 学习路径
+        - button "📚 学习资源" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: 📚
+          - generic [ref=e26]: 学习资源
+        - button "🧠 学习画像" [ref=e27] [cursor=pointer]:
+          - generic [ref=e28]: 🧠
+          - generic [ref=e29]: 学习画像
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: 智能体状态
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: 🧠
+              - generic [ref=e35]: 学习画像分析师
+            - generic [ref=e39]:
+              - generic [ref=e40]: 📚
+              - generic [ref=e41]: 内容生成专家
+            - generic [ref=e45]:
+              - generic [ref=e46]: 🏋️
+              - generic [ref=e47]: 练习设计教练
+            - generic [ref=e51]:
+              - generic [ref=e52]: 🗺️
+              - generic [ref=e53]: 学习路径规划师
+            - generic [ref=e57]:
+              - generic [ref=e58]: 🎓
+              - generic [ref=e59]: 智能辅导老师
+            - generic [ref=e63]:
+              - generic [ref=e64]: 📊
+              - generic [ref=e65]: 学习评估分析师
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: 🧑‍💻
+          - generic [ref=e72]:
+            - paragraph [ref=e73]: 默认用户
+            - paragraph [ref=e74]: 当前账号
+        - button "⚙️ 设置" [ref=e75] [cursor=pointer]:
+          - generic [ref=e76]: ⚙️
+          - generic [ref=e77]: 设置
+        - generic [ref=e78]:
+          - paragraph [ref=e79]: 基于 DeepSeek / OpenAI
+          - paragraph [ref=e80]: 多智能体协作架构
+          - paragraph [ref=e81]: v2.1 — 多账号 · 自动分析
+    - main [ref=e82]:
+      - generic [ref=e166]:
+        - generic [ref=e168]:
+          - heading "资源库" [level=2] [ref=e169]
+          - paragraph [ref=e170]: 从洛谷/力扣/牛客精选题目 ·
+        - generic [ref=e172]:
+          - heading "🪄 AI 资源生成器" [level=3] [ref=e173]:
+            - generic [ref=e174]: 🪄
+            - text: AI 资源生成器
+          - generic [ref=e175]:
+            - button "🎨 AI 生图" [ref=e176] [cursor=pointer]
+            - button "📊 AI PPT" [active] [ref=e177] [cursor=pointer]
+            - button "🧠 思维导图" [ref=e178] [cursor=pointer]
+            - button "🎬 AI 视频" [ref=e179] [cursor=pointer]
+          - generic [ref=e263]:
+            - generic [ref=e264]:
+              - generic [ref=e265]: 输入需求，AI 自动设计标题大纲并细化内容
+              - textbox "描述你想要的PPT，越详细越好，例如： 帮我做一个关于快速排序算法的教学PPT，需要包含： - 算法原理和思想 - 分区过程详解 - 时间复杂度分析 - C++ 代码实现 - 与其他排序算法的对比" [ref=e266]:
+                - /placeholder: "描述你想要的PPT，越详细越好，例如：\n\n帮我做一个关于快速排序算法的教学PPT，需要包含：\n- 算法原理和思想\n- 分区过程详解\n- 时间复杂度分析\n- C++ 代码实现\n- 与其他排序算法的对比"
+            - generic [ref=e268]:
+              - generic [ref=e269]: 页数
+              - combobox [ref=e270]:
+                - option "4 页"
+                - option "6 页" [selected]
+                - option "8 页"
+                - option "10 页"
+                - option "12 页"
+            - button "📊 AI 生成 PPT" [disabled] [ref=e271]
+        - generic [ref=e194]:
+          - heading "🎬 算法动画演示器 Canvas Bar Chart · 15种算法" [level=3] [ref=e195]:
+            - generic [ref=e196]: 🎬
+            - text: 算法动画演示器
+            - generic [ref=e197]: Canvas Bar Chart · 15种算法
+          - generic [ref=e198]:
+            - button "📶 排序" [ref=e199] [cursor=pointer]
+            - button "🔍 搜索" [ref=e200] [cursor=pointer]
+            - button "🕸️ 图论" [ref=e201] [cursor=pointer]
+          - generic [ref=e202]:
+            - generic [ref=e203]: 📶 选择算法 (10种)
+            - generic [ref=e204]:
+              - button "🫧 冒泡排序" [ref=e205] [cursor=pointer]
+              - button "⚡ 快速排序" [ref=e206] [cursor=pointer]
+              - button "🔀 归并排序" [ref=e207] [cursor=pointer]
+              - button "📥 插入排序" [ref=e208] [cursor=pointer]
+              - button "🎯 选择排序" [ref=e209] [cursor=pointer]
+              - button "🐚 希尔排序" [ref=e210] [cursor=pointer]
+              - button "⛰️ 堆排序" [ref=e211] [cursor=pointer]
+              - button "🔢 计数排序" [ref=e212] [cursor=pointer]
+              - button "🔟 基数排序" [ref=e213] [cursor=pointer]
+              - button "🍸 鸡尾酒排序" [ref=e214] [cursor=pointer]
+          - generic [ref=e215]:
+            - generic [ref=e216]:
+              - generic [ref=e217]: 速度 3/5
+              - slider [ref=e218]: "3"
+            - generic [ref=e219]:
+              - generic [ref=e220]: 数量 25
+              - combobox [ref=e221]:
+                - option "10"
+                - option "25" [selected]
+                - option "40"
+                - option "60"
+            - generic [ref=e222]: O(n²) · 相邻比较交换
+          - generic [ref=e226]: 点击播放开始动画
+          - generic [ref=e227]:
+            - button "▶️ 播放" [ref=e228] [cursor=pointer]
+            - button "⏭️ 单步" [ref=e229] [cursor=pointer]
+            - button "🔀 换数据" [ref=e230] [cursor=pointer]
+            - button "🎥 录制 MP4" [ref=e232] [cursor=pointer]
+          - paragraph [ref=e233]: 录制时自动重播完整动画，录制完成后下载 WebM 格式视频。也可使用 OBS/FFmpeg 进行更高质量录制。
+        - generic [ref=e234]:
+          - generic [ref=e235]:
+            - button "🏔️洛谷" [ref=e236] [cursor=pointer]
+            - button "💻力扣" [ref=e237] [cursor=pointer]
+            - button "🐮牛客" [ref=e238] [cursor=pointer]
+            - button "📗基础语法" [ref=e239] [cursor=pointer]
+            - button "📘算法教程" [ref=e240] [cursor=pointer]
+          - generic [ref=e241]:
+            - generic [ref=e242]:
+              - textbox "在 洛谷 中搜索题目..." [ref=e243]
+              - button "🔍" [ref=e244] [cursor=pointer]
+            - combobox [ref=e245]:
+              - option "全部难度" [selected]
+              - option "入门"
+              - option "普及−"
+              - option "普及/提高−"
+              - option "普及+/提高"
+              - option "提高+/省选−"
+              - option "省选/NOI−"
+              - option "NOI/NOI+"
+            - button "🔄" [ref=e246] [cursor=pointer]
+          - generic [ref=e247]:
+            - button "🧩 动态规划" [ref=e248] [cursor=pointer]
+            - button "🕸️ 图论" [ref=e249] [cursor=pointer]
+            - button "🌳 数据结构" [ref=e250] [cursor=pointer]
+            - button "🔍 搜索" [ref=e251] [cursor=pointer]
+            - button "📝 字符串" [ref=e252] [cursor=pointer]
+            - button "🔢 数学" [ref=e253] [cursor=pointer]
+            - button "⚡ 贪心" [ref=e254] [cursor=pointer]
+            - button "📊 排序" [ref=e255] [cursor=pointer]
+          - button "🗑️ 清除缓存" [ref=e258] [cursor=pointer]
+          - generic [ref=e259]:
+            - generic [ref=e260]: 📭
+            - heading "开始探索题目" [level=3] [ref=e261]
+            - paragraph [ref=e262]: 输入关键词搜索，或点击快捷标签，从 洛谷 获取题目资源

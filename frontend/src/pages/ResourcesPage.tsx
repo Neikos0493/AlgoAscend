@@ -2,6 +2,11 @@ import { useState, useEffect, useCallback } from 'react'
 import { useStore } from '../stores/useStore'
 import { scrapeResources, SEARCH_TAGS, clearScrapeCache } from '../services/scrapeResources'
 import type { ScrapedResource, ScrapeParams } from '../services/scrapeResources'
+import { fetchKBSections, fetchKBEntries, fetchKBEntryContent } from '../services/knowledgeService'
+import type { KBSection, KnowledgeEntry, KnowledgeFullEntry } from '../services/knowledgeService'
+import MarkdownRenderer from '../components/MarkdownRenderer'
+import ResourceGenerator from '../components/ResourceGenerator'
+import AlgorithmAnimation from '../components/AlgorithmAnimation'
 
 // ===== 平台配置 =====
 
@@ -9,9 +14,13 @@ const PLATFORM_TABS = [
   { id: 'luogu', name: '洛谷', icon: '🏔️', color: '#3498db' },
   { id: 'leetcode', name: '力扣', icon: '💻', color: '#ffa116' },
   { id: 'nowcoder', name: '牛客', icon: '🐮', color: '#ff6b6b' },
+  { id: 'runoob_kb', name: '基础语法', icon: '📗', color: '#10b981', badge: '拓展阅读' },
+  { id: 'hello_algo_kb', name: '算法教程', icon: '📘', color: '#6366f1', badge: '拓展阅读' },
 ] as const
 
 type PlatformTab = typeof PLATFORM_TABS[number]['id']
+const KB_TABS: PlatformTab[] = ['runoob_kb', 'hello_algo_kb']
+const KB_SOURCE_MAP: Record<string, string> = { runoob_kb: 'runoob', hello_algo_kb: 'hello-algo' }
 
 // ===== 力扣难度选项 =====
 const LEETCODE_DIFFICULTIES = [
@@ -28,12 +37,21 @@ const NOWCODER_DIFFICULTIES = [
   { value: '3', label: '困难' },
 ]
 
+// ===== 知识库分类图标映射 =====
+const CATEGORY_ICONS: Record<string, string> = {
+  'c++基础': '📗', 'c++面向对象': '🏛️', 'c++高级': '📘', 'c++参考': '📙', 'STL库': '🧩',
+  '序': '📖', '前言': '📝', '初识算法': '🎯', '复杂度分析': '📊', '数据结构': '🏗️',
+  '数组与链表': '🔗', '栈与队列': '📋', '哈希表': '🔑', '树': '🌳', '堆': '⛰️',
+  '图': '🕸️', '搜索': '🔍', '排序': '📶', '分治': '✂️', '回溯': '↩️',
+  '动态规划': '🧩', '贪心': '🎯', '附录': '📎',
+}
+
 // ===== 组件 =====
 
 export default function ResourcesPage() {
   const { toggleSidebar } = useStore()
 
-  // 状态
+  // 状态 — 题库
   const [platform, setPlatform] = useState<PlatformTab>('luogu')
   const [keyword, setKeyword] = useState('')
   const [difficulty, setDifficulty] = useState('')
@@ -41,11 +59,20 @@ export default function ResourcesPage() {
   const [resources, setResources] = useState<ScrapedResource[]>([])
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [source, setSource] = useState('') // 'bank' | 'live' | 'cache' | 'error'
+  const [source, setSource] = useState('')
   const [error, setError] = useState('')
   const [selected, setSelected] = useState<ScrapedResource | null>(null)
 
-  // 搜索
+  // 状态 — 知识库
+  const [kbSections, setKbSections] = useState<KBSection[]>([])
+  const [kbEntries, setKbEntries] = useState<KnowledgeEntry[]>([])
+  const [kbSection, setKbSection] = useState('')      // 当前筛选分类
+  const [kbSearch, setKbSearch] = useState('')         // 知识库内搜索
+  const [kbLoading, setKbLoading] = useState(false)
+  const [kbDetail, setKbDetail] = useState<KnowledgeFullEntry | null>(null)
+  const [kbDetailLoading, setKbDetailLoading] = useState(false)
+
+  // ===== 题库搜索 =====
   const doSearch = useCallback(async (p: number = 1, force: boolean = false) => {
     setLoading(true)
     setError('')
@@ -78,16 +105,80 @@ export default function ResourcesPage() {
     }
   }, [platform, keyword, difficulty])
 
+  // ===== 知识库加载 =====
+  const loadKnowledgeBase = useCallback(async (section?: string, sourceId?: string) => {
+    setKbLoading(true)
+    try {
+      const src = sourceId || KB_SOURCE_MAP[platform as string] || ''
+      const [sectionsData, entries] = await Promise.all([
+        fetchKBSections(src),
+        fetchKBEntries(section, src),
+      ])
+      setKbSections(sectionsData.sections)
+      setKbEntries(entries)
+    } catch {
+      setKbSections([])
+      setKbEntries([])
+    } finally {
+      setKbLoading(false)
+    }
+  }, [platform])
+
   // 切换平台时重置
   useEffect(() => {
-    setKeyword('')
-    setDifficulty('')
-    setPage(1)
-    setResources([])
-    setTotal(0)
-    setError('')
-    setSelected(null)
+    if (KB_TABS.includes(platform as PlatformTab)) {
+      setKeyword('')
+      setDifficulty('')
+      setPage(1)
+      setResources([])
+      setTotal(0)
+      setError('')
+      setSelected(null)
+      setKbSection('')
+      setKbSearch('')
+      setKbDetail(null)
+      loadKnowledgeBase()
+    } else {
+      setKeyword('')
+      setDifficulty('')
+      setPage(1)
+      setResources([])
+      setTotal(0)
+      setError('')
+      setSelected(null)
+    }
   }, [platform])
+
+  // 知识库分类切换
+  const handleKbSectionChange = (section: string) => {
+    const s = kbSection === section ? '' : section
+    setKbSection(s)
+    loadKnowledgeBase(s || undefined)
+  }
+
+  // 知识库搜索过滤（前端本地过滤）
+  const filteredKBEntries = kbSearch
+    ? kbEntries.filter(e =>
+        e.title.toLowerCase().includes(kbSearch.toLowerCase()) ||
+        e.summary.toLowerCase().includes(kbSearch.toLowerCase()) ||
+        e.category.toLowerCase().includes(kbSearch.toLowerCase())
+      )
+    : kbEntries
+
+  // 知识库条目点击 — 加载全文
+  const handleKbEntryClick = async (entry: KnowledgeEntry) => {
+    setKbDetailLoading(true)
+    const content = await fetchKBEntryContent(entry.url)
+    if (content) {
+      setKbDetail(content)
+    }
+    setKbDetailLoading(false)
+  }
+
+  // 关闭知识库详情
+  const handleKbDetailBack = () => {
+    setKbDetail(null)
+  }
 
   // 快捷标签搜索
   const handleTagClick = (tag: typeof SEARCH_TAGS[keyof typeof SEARCH_TAGS][number]) => {
@@ -110,9 +201,195 @@ export default function ResourcesPage() {
     setSource('')
   }
 
-  // 分页
   const totalPages = Math.min(Math.ceil(total / 20), 10)
 
+  // ===== 渲染知识库（基础语法 / 算法教程） =====
+  if (KB_TABS.includes(platform as PlatformTab)) {
+    const isAlgo = platform === 'hello_algo_kb'
+    // 内置阅读器模式
+    if (kbDetail) {
+      return (
+        <div className="flex flex-col h-full overflow-y-auto">
+          <header className="flex items-center gap-3 px-6 py-4 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
+            <button onClick={handleKbDetailBack} className="text-sm text-primary-400 hover:text-primary-300 flex items-center gap-1">
+              ← 返回知识库
+            </button>
+          </header>
+
+          {kbDetailLoading ? (
+            <div className="flex-1 flex items-center justify-center">
+              <div className="text-center">
+                <div className="text-4xl animate-pulse-soft mb-3">{isAlgo ? '📘' : '📖'}</div>
+                <p className="text-gray-400">加载章节内容...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="max-w-3xl mx-auto">
+                {/* 标题 */}
+                <h2 className="text-2xl font-bold text-white mb-2">{kbDetail.title}</h2>
+                <div className="flex items-center gap-3 mb-6">
+                  <span className="text-xs bg-surface-300/50 text-gray-400 px-2.5 py-1 rounded-full border border-gray-700/30">
+                    {CATEGORY_ICONS[kbDetail.category] || '📄'} {kbDetail.category}
+                  </span>
+                  <a
+                    href={kbDetail.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-primary-400 hover:text-primary-300 underline"
+                  >
+                    查看原文 →
+                  </a>
+                </div>
+
+                {/* 正文 */}
+                <MarkdownRenderer content={kbDetail.content} />
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+
+    // 列表模式
+    return (
+      <div className="flex flex-col h-full overflow-y-auto">
+        {/* 头部 */}
+        <header className="flex items-center gap-3 px-6 py-4 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
+          <button className="lg:hidden text-gray-400 hover:text-gray-200" onClick={toggleSidebar}>
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-white">
+              {isAlgo ? '算法教程' : '基础语法'}
+              <span className="ml-2 text-[10px] bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/20">📖 拓展阅读材料</span>
+            </h2>
+            <p className="text-xs text-gray-500">
+              {isAlgo ? 'Hello 算法 中文教程 · ' : '菜鸟教程 C++ 中文文档 · '}{kbEntries.length} 章 · 点击章节阅读全文
+            </p>
+          </div>
+          <button onClick={() => loadKnowledgeBase(kbSection || undefined)} className="text-sm text-primary-400 hover:text-primary-300">
+            🔄 刷新
+          </button>
+        </header>
+
+        {/* 平台 Tab + 分类 + 搜索（保持不变） */}
+        <div className="px-6 pt-4">
+          <div className="flex gap-1 mb-4 bg-surface-400/60 rounded-xl p-1">
+            {PLATFORM_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setPlatform(tab.id as PlatformTab)}
+                className={`flex-1 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  platform === tab.id
+                    ? 'bg-surface-300/50 text-white border border-gray-600/50'
+                    : 'text-gray-400 hover:text-gray-200'
+                }`}
+              >
+                <span className="mr-1.5">{tab.icon}</span>
+                {tab.name}
+              </button>
+            ))}
+          </div>
+
+          {/* 分类筛选 + 搜索 */}
+          <div className="flex gap-2 mb-4">
+            <div className="flex flex-wrap gap-1.5 flex-1">
+              {kbSections.length > 0 && (
+                <button
+                  onClick={() => handleKbSectionChange('')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    kbSection === ''
+                      ? 'bg-primary-500/20 text-primary-300 border border-primary-500/30'
+                      : 'bg-surface-300/30 text-gray-400 border border-gray-700/30 hover:border-primary-500/30 hover:bg-primary-500/5'
+                  }`}
+                >
+                  📖 全部 ({kbSections.reduce((a,b)=>a+b.count,0)})
+                </button>
+              )}
+              {kbSections.map((s) => (
+                <button
+                  key={s.name}
+                  onClick={() => handleKbSectionChange(s.name)}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                    kbSection === s.name
+                      ? 'bg-primary-500/20 text-primary-300 border border-primary-500/30 shadow-glow-sm'
+                      : 'bg-surface-300/30 text-gray-400 border border-gray-700/30 hover:border-primary-500/30 hover:bg-primary-500/5'
+                  }`}
+                >
+                  {CATEGORY_ICONS[s.name] || '📄'} {s.name} ({s.count})
+                </button>
+              ))}
+            </div>
+            <div className="relative w-48 shrink-0">
+              <input
+                type="text"
+                value={kbSearch}
+                onChange={(e) => setKbSearch(e.target.value)}
+                placeholder="搜索章节..."
+                className="w-full px-3 py-2 text-sm bg-surface-300/50 border border-gray-600/50 rounded-xl text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+              />
+            </div>
+          </div>
+
+          {/* 加载中 */}
+          {kbLoading && (
+            <div className="text-center py-12">
+              <div className="text-4xl animate-pulse-soft">🔄</div>
+              <p className="text-gray-400 mt-3">加载知识库...</p>
+            </div>
+          )}
+
+          {/* 章节列表 — 点击打开内置阅读器 */}
+          {!kbLoading && (
+            <div className="space-y-1">
+              {filteredKBEntries.map((entry, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleKbEntryClick(entry)}
+                  className="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/[0.04] border border-transparent hover:border-gray-700/30 transition-all group"
+                >
+                  <span className="text-lg shrink-0">
+                    {CATEGORY_ICONS[entry.category] || '📄'}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-medium text-gray-200 group-hover:text-primary-300 transition-colors truncate">
+                      {entry.title}
+                    </h4>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">
+                        {entry.category}
+                      </span>
+                      <span className="text-[10px] text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20">
+                        📖 拓展阅读
+                      </span>
+                      <span className="text-xs text-gray-600 truncate hidden sm:inline">
+                        {entry.summary.slice(0, 60)}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-500 group-hover:text-primary-400 shrink-0">
+                    阅读 →
+                  </span>
+                </button>
+              ))}
+              {filteredKBEntries.length === 0 && !kbLoading && (
+                <div className="text-center py-12">
+                  <div className="text-5xl mb-4">📭</div>
+                  <h3 className="text-lg font-semibold text-gray-200 mb-2">无匹配章节</h3>
+                  <p className="text-gray-400">尝试更换搜索关键词或分类筛选</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // ===== 渲染题库（原有逻辑） =====
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* 头部 */}
@@ -132,6 +409,16 @@ export default function ResourcesPage() {
           </p>
         </div>
       </header>
+
+      {/* AI 资源生成器 */}
+      <div className="px-6 pt-4 shrink-0">
+        <ResourceGenerator />
+      </div>
+
+      {/* 算法动画演示器 */}
+      <div className="px-6 pt-4 shrink-0">
+        <AlgorithmAnimation />
+      </div>
 
       {selected ? (
         /* === 题目详情 === */

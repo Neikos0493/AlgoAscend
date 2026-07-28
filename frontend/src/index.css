@@ -58,6 +58,13 @@
 .markdown-body hr { @apply my-6 border-gray-700/50; }
 .markdown-body a { @apply text-primary-400 hover:text-primary-300 underline; }
 
+/* KaTeX 深色主题适配 */
+.katex { color: #e2e8f0 !important; }
+.katex .mathnormal { color: #e2e8f0; }
+.katex .mord { color: #e2e8f0; }
+.katex-display { overflow-x: auto; overflow-y: hidden; }
+.katex-display > .katex { display: inline-block; white-space: nowrap; max-width: 100%; }
+
 /* 代码高亮 */
 .markdown-body pre { @apply rounded-xl my-4 overflow-x-auto; }
 .markdown-body pre code { @apply p-0; }

@@ -284,11 +284,11 @@ export function computeRadarDimensions(
 
 // ===== 各维度计算函数 =====
 
-function computeKnowledgeScore(kb: Record<string, string>): number {
+function computeKnowledgeScore(kb: Record<string, unknown>): number {
   const fields = ['cpp_level', 'algorithm_level', 'math_level', 'data_structure_level']
   const scores = fields
     .map((f) => {
-      const val = kb[f]
+      const val = safeStr(kb[f])
       if (!val) return null
       return LEVEL_SCORE[val] || LEVEL_SCORE_LOOSE[val] || 30
     })
@@ -314,23 +314,30 @@ function computePracticeScore(ss: StatsData): number {
   return Math.round(volumeScore * 0.3 + accuracyScore * 0.7)
 }
 
-function computeEngagementScore(lp: Record<string, string>, conversationCount: number): number {
+function safeStr(v: unknown): string {
+  if (typeof v === 'string') return v
+  if (typeof v === 'number') return String(v)
+  if (Array.isArray(v) && v.length > 0) return safeStr(v[0])
+  return ''
+}
+
+function computeEngagementScore(lp: Record<string, unknown>, conversationCount: number): number {
   let score = 0
   let factors = 0
 
   // 每周学习时间
-  const hours = lp['weekly_hours']
+  const hours = safeStr(lp['weekly_hours'])
   if (hours) {
     const match = hours.match(/(\d+)/)
     if (match) {
       const h = parseInt(match[1])
-      score += Math.min(h * 5, 100) // 20小时封顶
+      score += Math.min(h * 5, 100)
       factors++
     }
   }
 
   // 学习频率
-  const freq = lp['study_frequency']
+  const freq = safeStr(lp['study_frequency'])
   if (freq) {
     if (freq.includes('每天')) { score += 90; factors++ }
     else if (freq.includes('经常')) { score += 70; factors++ }
@@ -339,12 +346,12 @@ function computeEngagementScore(lp: Record<string, string>, conversationCount: n
   }
 
   // 专注时长
-  const session = lp['session_duration']
+  const session = safeStr(lp['session_duration'])
   if (session) {
     const match = session.match(/(\d+)/)
     if (match) {
       const m = parseInt(match[1])
-      score += Math.min(m / 3 * 100, 100) // 3小时封顶
+      score += Math.min(m / 3 * 100, 100)
       factors++
     }
   }
@@ -381,7 +388,7 @@ function computeCompletenessScore(profile: ProfileData): number {
   return Math.round((filled / 6) * 70 + confidence * 30)
 }
 
-function computeWeaknessScore(ep: Record<string, string | string[]>): number {
+function computeWeaknessScore(ep: Record<string, unknown>): number {
   let score = 0
 
   // 常见错误
@@ -401,12 +408,13 @@ function computeWeaknessScore(ep: Record<string, string | string[]>): number {
 
 // ===== 详情文本 =====
 
-function getKnowledgeDetail(kb: Record<string, string>): string {
+function getKnowledgeDetail(kb: Record<string, unknown>): string {
+  const ss = (k: string) => safeStr(kb[k])
   const parts: string[] = []
-  if (kb.cpp_level) parts.push(`C++: ${kb.cpp_level}`)
-  if (kb.algorithm_level) parts.push(`算法: ${kb.algorithm_level}`)
-  if (kb.math_level) parts.push(`数学: ${kb.math_level}`)
-  if (kb.data_structure_level) parts.push(`数据结构: ${kb.data_structure_level}`)
+  if (ss('cpp_level')) parts.push(`C++: ${ss('cpp_level')}`)
+  if (ss('algorithm_level')) parts.push(`算法: ${ss('algorithm_level')}`)
+  if (ss('math_level')) parts.push(`数学: ${ss('math_level')}`)
+  if (ss('data_structure_level')) parts.push(`数据结构: ${ss('data_structure_level')}`)
   return parts.length > 0 ? parts.join(' / ') : '未收集'
 }
 
@@ -417,10 +425,12 @@ function getPracticeDetail(ss: StatsData): string {
   return `${total}题 / 正确率 ${accuracy}%`
 }
 
-function getEngagementDetail(lp: Record<string, string>, cc: number): string {
+function getEngagementDetail(lp: Record<string, unknown>, cc: number): string {
   const parts: string[] = []
-  if (lp.weekly_hours) parts.push(`周${lp.weekly_hours}`)
-  if (lp.study_frequency) parts.push(lp.study_frequency)
+  const wh = safeStr(lp.weekly_hours)
+  if (wh) parts.push(`周${wh}`)
+  const sf = safeStr(lp.study_frequency)
+  if (sf) parts.push(sf)
   if (cc > 0) parts.push(`${cc}轮对话`)
   return parts.length > 0 ? parts.join(' / ') : '未收集'
 }
@@ -443,7 +453,7 @@ function getCompletenessDetail(profile: ProfileData): string {
   return `${filled}/6 维度已填充 · 置信度 ${((profile.confidence_score || 0) * 100).toFixed(0)}%`
 }
 
-function getWeaknessDetail(ep: Record<string, string | string[]>): string {
+function getWeaknessDetail(ep: Record<string, unknown>): string {
   const parts: string[] = []
   const errors = ep['common_errors']
   const weak = ep['weak_areas']

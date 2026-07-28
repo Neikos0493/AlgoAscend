@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Mindmap Zoom Test</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1a1a2e;color:#eee;font-family:system-ui;padding:20px}
+#wrap{width:900px;margin:0 auto}
+#ct{width:100%;height:520px;overflow:hidden;cursor:grab;user-select:none;touch-action:none;background:#0f172a;border-radius:12px 12px 0 0;border:2px solid #4a4a6a}
+#ct:active{cursor:grabbing}
+#tb{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#1e293b;border:2px solid #4a4a6a;border-top:none;border-radius:0 0 12px 12px}
+#tb span{font-size:12px;color:#888}
+#tb button{width:28px;height:28px;border:none;border-radius:6px;background:rgba(255,255,255,0.1);color:white;cursor:pointer;font-size:16px}
+#tb button:hover{background:rgba(255,255,255,0.2)}
+#tb .pct{font-size:13px;color:#aaa;padding:2px 10px;background:rgba(255,255,255,0.05);border-radius:6px}
+#log{width:900px;margin-top:12px;font-size:12px;color:#888}
+</style></head><body>
+<div id="wrap">
+<h2 style="margin-bottom:12px">在真实页面上测试：viewBox 缩放 + 拖拽</h2>
+<div id="ct"></div>
+<div id="tb"><span>滚轮缩放 · 拖拽平移</span>
+<div style="display:flex;gap:4px">
+<button id="bo">−</button><span class="pct" id="pct">100%</span><button id="bi">+</button>
+<button id="br" style="width:auto;padding:0 10px;font-size:12px">重置</button>
+</div></div>
+<div id="log">就绪</div>
+</div>
+<script>
+const N='http://www.w3.org/2000/svg',CW=1800,CH=900;
+const CO=['#10b981','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#f97316','#6366f1','#14b8a6'];
+const ct=document.getElementById('ct');
+const svg=document.createElementNS(N,'svg');
+svg.setAttribute('viewBox','0 0 '+CW+' '+CH);
+svg.setAttribute('width','100%');svg.setAttribute('height','100%');
+svg.setAttribute('preserveAspectRatio','none');
+
+const bg=document.createElementNS(N,'rect');
+bg.setAttribute('width',CW);bg.setAttribute('height',CH);bg.setAttribute('fill','transparent');
+svg.appendChild(bg);
+
+const ns=[
+  {x:120,y:450,w:120,h:48,t:'排序算法',c:'#3b82f6',r:14,s:20,b:700},
+  {x:350,y:180,w:100,h:40,t:'比较排序',c:CO[0],r:8,s:16,b:500},
+  {x:580,y:50,w:100,h:36,t:'冒泡排序',c:CO[0],r:8,s:14,b:500},
+  {x:800,y:15,w:80,h:32,t:'O(n²)',c:CO[0],r:6,s:12,b:500},
+  {x:800,y:65,w:80,h:32,t:'稳定',c:CO[0],r:6,s:12,b:500},
+  {x:580,y:180,w:100,h:36,t:'快速排序',c:CO[1],r:8,s:14,b:500},
+  {x:800,y:145,w:100,h:32,t:'O(n log n)',c:CO[1],r:6,s:12,b:500},
+  {x:580,y:310,w:100,h:36,t:'归并排序',c:CO[2],r:8,s:14,b:500},
+  {x:800,y:275,w:100,h:32,t:'O(n log n)',c:CO[2],r:6,s:12,b:500},
+  {x:350,y:500,w:110,h:40,t:'非比较排序',c:CO[4],r:8,s:16,b:500},
+  {x:580,y:470,w:100,h:36,t:'计数排序',c:CO[4],r:8,s:14,b:500},
+  {x:800,y:440,w:80,h:32,t:'O(n+k)',c:CO[4],r:6,s:12,b:500},
+  {x:580,y:560,w:80,h:36,t:'桶排序',c:CO[5],r:8,s:14,b:500},
+  {x:800,y:530,w:60,h:32,t:'O(n)',c:CO[5],r:6,s:12,b:500},
+  {x:350,y:730,w:100,h:40,t:'排序应用',c:CO[7],r:8,s:16,b:500},
+  {x:580,y:710,w:100,h:36,t:'TopK问题',c:CO[7],r:8,s:14,b:500},
+];
+const es=[
+  [120,450,350,180,CO[0]],[120,450,350,500,CO[4]],[120,450,350,730,CO[7]],
+  [350,180,580,50,CO[0]],[580,50,800,15,CO[0]],[580,50,800,65,CO[0]],
+  [350,180,580,180,CO[1]],[580,180,800,145,CO[1]],
+  [350,180,580,310,CO[2]],[580,310,800,275,CO[2]],
+  [350,500,580,470,CO[4]],[580,470,800,440,CO[4]],
+  [350,500,580,560,CO[5]],[580,560,800,530,CO[5]],
+  [350,730,580,710,CO[7]],
+];
+for(const[x1,y1,x2,y2,c]of es){
+  const p=document.createElementNS(N,'path'),dx=x2-x1;
+  p.setAttribute('d','M'+x1+','+y1+' C'+(x1+dx*.5)+','+y1+' '+(x2-dx*.5)+','+y2+' '+x2+','+y2);
+  p.setAttribute('fill','none');p.setAttribute('stroke',c);p.setAttribute('stroke-width','2');p.setAttribute('opacity','0.7');
+  svg.appendChild(p);
+}
+for(const n of ns){
+  const g=document.createElementNS(N,'g'),l=n.x-n.w/2,t=n.y-n.h/2;
+  const r=document.createElementNS(N,'rect');
+  r.setAttribute('x',l);r.setAttribute('y',t);r.setAttribute('width',n.w);r.setAttribute('height',n.h);
+  r.setAttribute('rx',n.r);r.setAttribute('fill',n.c);r.setAttribute('stroke',n.c);
+  g.appendChild(r);
+  const tx=document.createElementNS(N,'text');
+  tx.setAttribute('x',n.x);tx.setAttribute('y',n.y+n.s/3);tx.setAttribute('text-anchor','middle');
+  tx.setAttribute('fill','#fff');tx.setAttribute('font-size',n.s);tx.setAttribute('font-weight',n.b);
+  tx.setAttribute('font-family','system-ui, sans-serif');tx.textContent=n.t;
+  g.appendChild(tx);svg.appendChild(g);
+}
+ct.appendChild(svg);
+
+let vb={x:0,y:0,w:CW,h:CH},drag=false,ds={mx:0,my:0,vx:0,vy:0};
+const MW=CW/5,MW2=CW*3,ZS=1.25,log=document.getElementById('log');
+
+function upd(){svg.setAttribute('viewBox',vb.x+' '+vb.y+' '+vb.w+' '+vb.h);document.getElementById('pct').textContent=Math.round(CW/vb.w*100)+'%'}
+
+ct.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const r=ct.getBoundingClientRect(),mx=e.clientX-r.left,my=e.clientY-r.top;
+  const sx=vb.x+(mx/r.width)*vb.w,sy=vb.y+(my/r.height)*vb.h;
+  const d=e.deltaY>0?1:-1,f=d>0?ZS:1/ZS;
+  vb.w=Math.min(MW2,Math.max(MW,vb.w*f));vb.h=vb.w*(CH/CW);
+  vb.x=sx-(mx/r.width)*vb.w;vb.y=sy-(my/r.height)*vb.h;
+  upd();log.textContent='滚轮缩放: '+Math.round(CW/vb.w*100)+'%  viewBox=['+vb.x.toFixed(0)+','+vb.y.toFixed(0)+','+vb.w.toFixed(0)+','+vb.h.toFixed(0)+']';
+},{passive:false});
+
+ct.addEventListener('mousedown',e=>{if(e.button)return;drag=true;ds={mx:e.clientX,my:e.clientY,vx:vb.x,vy:vb.y};e.preventDefault()});
+window.addEventListener('mousemove',e=>{if(!drag)return;const r=ct.getBoundingClientRect();vb.x=ds.vx-(e.clientX-ds.mx)*(vb.w/r.width);vb.y=ds.vy-(e.clientY-ds.my)*(vb.h/r.height);upd()});
+window.addEventListener('mouseup',()=>{drag=false});
+
+document.getElementById('bi').onclick=()=>{const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;vb.w=Math.max(MW,vb.w/ZS);vb.h=vb.w*(CH/CW);vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;upd();log.textContent='按钮放大: '+Math.round(CW/vb.w*100)+'%'};
+document.getElementById('bo').onclick=()=>{const cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;vb.w=Math.min(MW2,vb.w*ZS);vb.h=vb.w*(CH/CW);vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;upd();log.textContent='按钮缩小: '+Math.round(CW/vb.w*100)+'%'};
+document.getElementById('br').onclick=()=>{vb={x:0,y:0,w:CW,h:CH};upd();log.textContent='重置'};
+
+upd();
+</script></body></html>

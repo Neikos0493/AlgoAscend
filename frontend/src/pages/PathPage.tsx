@@ -43,10 +43,26 @@ const STAGES: Stage[] = [
 ]
 
 export default function PathPage() {
-  const { toggleSidebar, dimensionsFilled } = useStore()
+  const { toggleSidebar, dimensionsFilled, pathProgress } = useStore()
   const [expandedStage, setExpandedStage] = useState<number | null>(0)
-  const progress: Record<number, number> = dimensionsFilled > 0
-    ? { 0: 75, 1: 60, 2: 45, 3: 20, 4: 10, 5: 5, 6: 0 } : { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 }
+
+  // 基于存储的 pathProgress 计算各阶段进度
+  const progressMap = new Map(pathProgress.map(p => [p.stageId, p.progress]))
+  const completedMap = new Map(pathProgress.map(p => [p.stageId, p.completedMilestones]))
+
+  const progress: Record<number, number> = {}
+  for (let i = 0; i < 7; i++) {
+    const stored = progressMap.get(i)
+    if (stored !== undefined) {
+      progress[i] = stored
+    } else if (dimensionsFilled > 0) {
+      // 有画像但无精确数据，按阶段推算
+      const estimates = [75, 60, 45, 20, 10, 5, 0]
+      progress[i] = estimates[i]
+    } else {
+      progress[i] = 0
+    }
+  }
   const totalProgress = Math.round(Object.values(progress).reduce((a, b) => a + b, 0) / Object.keys(progress).length)
 
   return (
@@ -106,15 +122,27 @@ export default function PathPage() {
                 </div>
                 {isExpanded && (
                   <div className="mt-4 pt-4 border-t border-gray-700/30 space-y-3">
-                    {stage.milestones.map((m, idx) => (
-                      <div key={idx} className="flex items-start gap-3 pl-2">
-                        <div className="mt-1.5 w-6 h-6 rounded-full bg-primary-500/10 text-primary-300 flex items-center justify-center text-xs font-bold shrink-0 border border-primary-500/20">{idx+1}</div>
+                    {stage.milestones.map((m, idx) => {
+                      const isCompleted = completedMap.get(stage.id)?.includes(m.name)
+                      return (
+                      <div key={idx} className={`flex items-start gap-3 pl-2 ${isCompleted ? 'opacity-60' : ''}`}>
+                        <div className={`mt-1.5 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 border ${
+                          isCompleted
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                            : 'bg-primary-500/10 text-primary-300 border-primary-500/20'
+                        }`}>
+                          {isCompleted ? '✓' : idx + 1}
+                        </div>
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2"><span className="text-sm font-medium text-gray-200">{m.name}</span><span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">{m.estimated}</span></div>
+                          <div className="flex items-center gap-2">
+                            <span className={`text-sm font-medium ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{m.name}</span>
+                            <span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">{m.estimated}</span>
+                            {isCompleted && <span className="text-xs text-emerald-400">✅ 已完成</span>}
+                          </div>
                           <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </div>
                 )}
               </div>

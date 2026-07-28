@@ -32,6 +32,8 @@ from routes.profile import router as profile_router
 from routes.resources import router as resources_router
 from routes.platform import router as platform_router
 from routes.scrape import router as scrape_router
+from routes.knowledge import router as knowledge_router
+from routes.assessment import router as assessment_router
 
 # 初始化配置
 config = AppConfig()
@@ -100,6 +102,8 @@ app.include_router(profile_router)
 app.include_router(resources_router)
 app.include_router(platform_router)
 app.include_router(scrape_router)
+app.include_router(knowledge_router)
+app.include_router(assessment_router)
 
 
 @app.get("/api")
@@ -118,6 +122,8 @@ async def root():
             "resources": "/api/resources/1",
             "history": "/api/chat/history/1",
             "scrape": "/api/resources/scrape/{platform}",
+            "knowledge": "/api/knowledge/search?q=关键字",
+            "problems": "/api/knowledge/problems/search?q=关键字",
         },
     }
 

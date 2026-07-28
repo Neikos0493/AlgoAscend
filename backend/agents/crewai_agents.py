@@ -4,13 +4,74 @@ CrewAI 多智能体定义 — 6个专业Agent + 协同Crew配置
 import os
 from crewai import Agent, Task, Crew, Process, LLM
 
+# 模型 → (provider, api_base, api_model) 精确映射
+_MODEL_PROVIDER_MAP = {
+    # 讯飞星火 — 不同模型路径不同
+    "spark-x2":            ("openai", "https://spark-api-open.xf-yun.com/x2",         "spark-x"),
+    "spark-x2-flash":      ("openai", "https://spark-api-open.xf-yun.com/agent/v1",   "spark-x"),
+    "spark-pro":           ("openai", "https://spark-api-open.xf-yun.com/v1",         "generalv3"),
+    "spark-ultra":         ("openai", "https://spark-api-open.xf-yun.com/v1",         "4.0Ultra"),
+    "spark-max":           ("openai", "https://spark-api-open.xf-yun.com/v1",         "generalv3.5"),
+    "spark-lite":          ("openai", "https://spark-api-open.xf-yun.com/v1",         "lite"),
+    # Kimi
+    "kimi":                ("openai", "https://api.moonshot.cn/v1",                   None),
+    # GLM
+    "glm":                 ("openai", "https://open.bigmodel.cn/api/paas/v4",          None),
+    # Qwen
+    "qwen":                ("openai", "https://dashscope.aliyuncs.com/compatible-mode/v1", None),
+    # DeepSeek（默认）
+    "deepseek":            ("deepseek", "https://api.deepseek.com",                    None),
+}
 
-def get_llm():
-    """获取配置好的LLM实例"""
+
+def get_llm(api_key: str = "", model: str = "deepseek-chat", api_base: str = "", api_model: str = ""):
+    """获取配置好的LLM实例。根据模型名自动匹配 provider + base_url。
+
+    优先级：传入的 api_base/api_model > _MODEL_PROVIDER_MAP 匹配 > 默认值
+    """
+    key = api_key or os.getenv("DEEPSEEK_API_KEY") or os.getenv("LLM_API_KEY", "")
+    os.environ["DEEPSEEK_API_KEY"] = key
+
+    model_name = os.getenv('LLM_MODEL', model)
+
+    provider_prefix = "deepseek"
+    actual_base = api_base or "https://api.deepseek.com"
+    actual_model = api_model or model_name
+
+    # 先精确匹配
+    if model_name.lower() in _MODEL_PROVIDER_MAP:
+        prov, base, am = _MODEL_PROVIDER_MAP[model_name.lower()]
+        provider_prefix = prov
+        if not api_base:
+            actual_base = base
+        if not api_model and am:
+            actual_model = am
+    else:
+        # 前缀匹配（kimi-* / glm-* / qwen-* 等）
+        for prefix, (prov, base, am) in _MODEL_PROVIDER_MAP.items():
+            if model_name.lower().startswith(prefix):
+                provider_prefix = prov
+                actual_base = api_base or base
+                if not api_model and am:
+                    actual_model = am
+                break
+
+    # 设置环境变量供 LiteLLM 使用
+    if provider_prefix == "openai":
+        os.environ["OPENAI_API_KEY"] = key
+        os.environ["OPENAI_API_BASE"] = actual_base
+
+    # LiteLLM 会在 api_base 后追加 /chat/completions，所以要去掉末尾的 /chat/completions
+    litellm_base = actual_base
+    if litellm_base.endswith("/chat/completions"):
+        litellm_base = litellm_base[: -len("/chat/completions")]
+    elif litellm_base.endswith("/chat/completions/"):
+        litellm_base = litellm_base[: -len("/chat/completions/")]
+
     return LLM(
-        model=f"openai/{os.getenv('LLM_MODEL', 'deepseek-chat')}",
-        base_url=os.getenv("LLM_API_BASE", "https://api.deepseek.com"),
-        api_key=os.getenv("LLM_API_KEY", ""),
+        model=f"{provider_prefix}/{actual_model}",
+        api_key=key,
+        api_base=litellm_base,
         temperature=0.7,
     )
 

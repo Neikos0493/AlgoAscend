@@ -46,10 +46,10 @@ AGENT_META = {
 class CrewAIOrchestrator:
     """基于CrewAI的多智能体编排器 — 支持思考过程实时可见"""
 
-    def __init__(self, student_id: int = 1):
+    def __init__(self, student_id: int = 1, api_key: str = "", model: str = "deepseek-chat", api_base: str = "", api_model: str = ""):
         self.student_id = student_id
         self.db = get_db_sync()
-        self._llm = get_llm()
+        self._llm = get_llm(api_key, model, api_base=api_base, api_model=api_model)
 
     def _make_agent(self, creator_fn, agent_key: str) -> Agent:
         """创建Agent实例"""

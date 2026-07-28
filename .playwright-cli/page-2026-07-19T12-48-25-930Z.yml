@@ -1,0 +1,128 @@
+- generic [ref=e3]:
+  - generic "可交互粒子轨道"
+  - generic [ref=e4]:
+    - complementary [ref=e5]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: ⚡
+        - generic [ref=e9]:
+          - heading "C++算法学习平台" [level=1] [ref=e10]
+          - paragraph [ref=e11]: 多智能体AI辅助系统
+      - navigation [ref=e12]:
+        - paragraph [ref=e13]: 功能导航
+        - button "💬 智能对话" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: 💬
+          - generic [ref=e16]: 智能对话
+        - button "📊 学习仪表盘" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]: 📊
+          - generic [ref=e20]: 学习仪表盘
+        - button "🗺️ 学习路径" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: 🗺️
+          - generic [ref=e23]: 学习路径
+        - button "📚 学习资源" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: 📚
+          - generic [ref=e26]: 学习资源
+        - button "🧠 学习画像" [ref=e27] [cursor=pointer]:
+          - generic [ref=e28]: 🧠
+          - generic [ref=e29]: 学习画像
+        - generic [ref=e30]:
+          - paragraph [ref=e31]: 智能体状态
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: 🧠
+              - generic [ref=e35]: 学习画像分析师
+            - generic [ref=e39]:
+              - generic [ref=e40]: 📚
+              - generic [ref=e41]: 内容生成专家
+            - generic [ref=e45]:
+              - generic [ref=e46]: 🏋️
+              - generic [ref=e47]: 练习设计教练
+            - generic [ref=e51]:
+              - generic [ref=e52]: 🗺️
+              - generic [ref=e53]: 学习路径规划师
+            - generic [ref=e57]:
+              - generic [ref=e58]: 🎓
+              - generic [ref=e59]: 智能辅导老师
+            - generic [ref=e63]:
+              - generic [ref=e64]: 📊
+              - generic [ref=e65]: 学习评估分析师
+      - generic [ref=e69]:
+        - generic [ref=e70]:
+          - generic [ref=e71]: 🧑‍💻
+          - generic [ref=e72]:
+            - paragraph [ref=e73]: 默认用户
+            - paragraph [ref=e74]: 当前账号
+        - button "⚙️ 设置" [ref=e75] [cursor=pointer]:
+          - generic [ref=e76]: ⚙️
+          - generic [ref=e77]: 设置
+        - generic [ref=e78]:
+          - paragraph [ref=e79]: 基于 DeepSeek / OpenAI
+          - paragraph [ref=e80]: 多智能体协作架构
+          - paragraph [ref=e81]: v2.1 — 多账号 · 自动分析
+    - main [ref=e82]:
+      - generic [ref=e84]:
+        - generic [ref=e85]:
+          - generic [ref=e87]:
+            - heading "智能对话" [level=2] [ref=e88]
+            - paragraph [ref=e89]: 多智能体协同工作中
+          - generic [ref=e90]:
+            - button "设置" [ref=e91] [cursor=pointer]
+            - button "🔮 V4 Flash" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: 🔮
+              - generic [ref=e98]: V4 Flash
+            - button "清空对话" [ref=e101] [cursor=pointer]
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - generic [ref=e105]: ⚡
+            - heading "C++算法学习助手" [level=1] [ref=e106]
+            - paragraph [ref=e107]: 由6个专业AI智能体协作，为你提供从入门到竞赛的全方位算法学习支持
+          - generic [ref=e108]:
+            - button "🧠 构建学习画像 我是计算机专业大二学生，学过C++基础，想参加蓝桥杯算法竞赛" [ref=e109] [cursor=pointer]:
+              - generic [ref=e110]:
+                - generic [ref=e111]: 🧠
+                - generic [ref=e112]:
+                  - heading "构建学习画像" [level=3] [ref=e113]
+                  - paragraph [ref=e114]: 我是计算机专业大二学生，学过C++基础，想参加蓝桥杯算法竞赛
+            - button "📚 生成学习资料 获取动态规划入门教程、思维导图、练习题等个性化资源" [ref=e115] [cursor=pointer]:
+              - generic [ref=e116]:
+                - generic [ref=e117]: 📚
+                - generic [ref=e118]:
+                  - heading "生成学习资料" [level=3] [ref=e119]
+                  - paragraph [ref=e120]: 获取动态规划入门教程、思维导图、练习题等个性化资源
+            - button "🗺️ 规划学习路径 基于你的水平定制从入门到竞赛的完整学习路线" [ref=e121] [cursor=pointer]:
+              - generic [ref=e122]:
+                - generic [ref=e123]: 🗺️
+                - generic [ref=e124]:
+                  - heading "规划学习路径" [level=3] [ref=e125]
+                  - paragraph [ref=e126]: 基于你的水平定制从入门到竞赛的完整学习路线
+            - button "🎓 提问与辅导 遇到算法难题？随时提问获得详细解答和代码示例" [ref=e127] [cursor=pointer]:
+              - generic [ref=e128]:
+                - generic [ref=e129]: 🎓
+                - generic [ref=e130]:
+                  - heading "提问与辅导" [level=3] [ref=e131]
+                  - paragraph [ref=e132]: 遇到算法难题？随时提问获得详细解答和代码示例
+        - generic [ref=e135]:
+          - button "🧠 分析我的学习画像" [ref=e136] [cursor=pointer]:
+            - generic [ref=e137]: 🧠
+            - generic [ref=e138]: 分析我的学习画像
+          - button "📚 生成思维导图" [ref=e139] [cursor=pointer]:
+            - generic [ref=e140]: 📚
+            - generic [ref=e141]: 生成思维导图
+          - button "🏋️ 出几道练习题" [ref=e142] [cursor=pointer]:
+            - generic [ref=e143]: 🏋️
+            - generic [ref=e144]: 出几道练习题
+          - button "🗺️ 规划学习路径" [ref=e145] [cursor=pointer]:
+            - generic [ref=e146]: 🗺️
+            - generic [ref=e147]: 规划学习路径
+          - button "📊 评估学习效果" [ref=e148] [cursor=pointer]:
+            - generic [ref=e149]: 📊
+            - generic [ref=e150]: 评估学习效果
+          - button "💻 生成代码案例" [ref=e151] [cursor=pointer]:
+            - generic [ref=e152]: 💻
+            - generic [ref=e153]: 生成代码案例
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - generic [ref=e157]:
+              - textbox "输入你的问题，或描述你想要的学习内容... (Enter发送，Shift+Enter换行)" [ref=e158]
+              - generic [ref=e159]: 0/2000
+            - button "发送" [disabled] [ref=e160]
+          - paragraph [ref=e163]: AI生成内容仅供参考 | 支持Markdown渲染与代码高亮

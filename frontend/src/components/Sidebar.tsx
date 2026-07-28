@@ -18,7 +18,8 @@ const agentList = [
 ]
 
 export default function Sidebar() {
-  const { activeTab, setActiveTab, sidebarOpen, toggleSidebar } = useStore()
+  const { activeTab, setActiveTab, sidebarOpen, toggleSidebar, accounts, activeAccountId } = useStore()
+  const currentAccount = accounts.find(a => a.id === activeAccountId)
 
   return (
     <>
@@ -103,6 +104,16 @@ export default function Sidebar() {
 
         {/* 底部信息 */}
         <div className="p-4 border-t border-gray-700/30 space-y-2">
+          {/* 当前账号 */}
+          {currentAccount && (
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-300/20 border border-gray-700/30">
+              <span className="text-lg">{currentAccount.avatar}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-200 truncate">{currentAccount.name}</p>
+                <p className="text-[10px] text-gray-500">当前账号</p>
+              </div>
+            </div>
+          )}
           <button
             onClick={() => useStore.getState().setSettingsOpen(true)}
             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-400
@@ -114,6 +125,7 @@ export default function Sidebar() {
           <div className="text-[10px] text-gray-500 text-center space-y-0.5">
             <p className="text-primary-500/60">基于 DeepSeek / OpenAI</p>
             <p>多智能体协作架构</p>
+            <p className="text-gray-600">v2.1 — 多账号 · 自动分析</p>
           </div>
         </div>
       </aside>

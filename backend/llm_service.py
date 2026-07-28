@@ -49,16 +49,34 @@ async def chat_completion(
     history: list = None,
     temperature: float = None,
     max_tokens: int = None,
+    api_key: str = None,
+    model: str = None,
+    api_base: str = None,
 ) -> str:
-    """非流式对话补全"""
+    """非流式对话补全。支持传入动态 api_key/model/api_base 覆盖全局配置"""
     messages = _build_messages(system_prompt, user_message, history)
+
+    key = api_key or _config.llm.api_key
+    base_url = (api_base or _config.llm.api_base).rstrip("/")
+    mdl = model or _config.llm.model
+
+    # 智能构造 URL：如果 base_url 已经包含 /chat/completions，直接用；否则追加
+    if "/chat/completions" in base_url:
+        url = base_url
+    elif base_url.endswith("/v1"):
+        url = f"{base_url}/chat/completions"
+    else:
+        url = f"{base_url}/v1/chat/completions"
 
     async with httpx.AsyncClient(timeout=120.0) as client:
         resp = await client.post(
-            f"{_config.llm.api_base}/v1/chat/completions",
-            headers=_get_headers(),
+            url,
+            headers={
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+            },
             json={
-                "model": _config.llm.model,
+                "model": mdl,
                 "messages": messages,
                 "temperature": temperature or _config.llm.temperature,
                 "max_tokens": max_tokens or _config.llm.max_tokens,
@@ -112,10 +130,16 @@ async def chat_with_json_output(
     system_prompt: str,
     user_message: str,
     history: list = None,
+    api_key: str = None,
+    model: str = None,
+    api_base: str = None,
 ) -> dict:
-    """对话并返回JSON结构化输出"""
+    """对话并返回JSON结构化输出。支持动态 api_key/model/api_base"""
     full_prompt = f"{system_prompt}\n\n请以JSON格式返回你的分析结果。确保输出是有效的JSON。"
-    response = await chat_completion(full_prompt, user_message, history, temperature=0.3)
+    response = await chat_completion(
+        full_prompt, user_message, history, temperature=0.3,
+        api_key=api_key, model=model, api_base=api_base,
+    )
 
     # 尝试从响应中提取JSON
     try:
