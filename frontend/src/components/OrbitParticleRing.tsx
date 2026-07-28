@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { getRandomProblem, type RandomProblem } from '../services/randomProblem'
+import { useStore } from '../stores/useStore'
 import { AppIcon } from './Icon'
 import { ExternalLink } from 'lucide-react'
 
@@ -515,6 +516,22 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
                   >
                     打开原题 <ExternalLink size={14} className="ml-1" aria-hidden="true" />
                   </a>
+                  <button
+                    onClick={() => {
+                      sessionStorage.setItem('__EDITOR_PROBLEM', JSON.stringify({
+                        p: {
+                          id: problem.id, title: problem.title,
+                          platform: problem.platform, platform_name: problem.platform_name,
+                          difficulty: problem.difficulty, tags: problem.tags, url: problem.url,
+                        },
+                        ts: Date.now(),
+                      }))
+                      useStore.getState().setActiveTab('editor')
+                    }}
+                    className="mt-2 flex w-full items-center justify-center rounded-xl border border-primary-500/25 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-300 transition hover:border-primary-400/50 hover:bg-primary-500/20"
+                  >
+                    <AppIcon name="💻" size={14} className="mr-1.5" /> 在编辑器中打开
+                  </button>
                 </div>
               ) : (
                 <p className="py-3 text-sm text-gray-400">题目加载失败，请点击"换一题"重试。</p>

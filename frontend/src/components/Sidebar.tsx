@@ -5,7 +5,9 @@ const navItems = [
   { id: 'chat' as const, label: '智能对话', icon: '💬' },
   { id: 'dashboard' as const, label: '学习仪表盘', icon: '📊' },
   { id: 'path' as const, label: '学习路径', icon: '🗺️' },
+  { id: 'editor' as const, label: '代码编辑器', icon: '💻' },
   { id: 'resources' as const, label: '学习资源', icon: '📚' },
+  { id: 'errors' as const, label: '我的笔记', icon: '📓' },
   { id: 'profile' as const, label: '学习画像', icon: '🧠' },
 ]
 
@@ -49,9 +51,9 @@ export default function Sidebar() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-white tracking-wide">
-                C++算法学习平台
+                AlgoAscend
               </h1>
-              <p className="text-xs text-primary-400">多智能体AI辅助系统</p>
+              <p className="text-xs text-primary-400">顶峰相见</p>
             </div>
           </div>
         </div>
@@ -128,9 +130,9 @@ export default function Sidebar() {
             <span>设置</span>
           </button>
           <div className="text-[10px] text-gray-500 text-center space-y-0.5">
-            <p className="text-primary-500/60">基于 DeepSeek / OpenAI</p>
+            <p className="text-primary-500/60">终抵群星</p>
             <p>多智能体协作架构</p>
-            <p className="text-gray-600">v2.1 — 多账号 · 自动分析</p>
+            <p className="text-gray-600">v3.0 — 在线编译 · 笔记 · AI联动</p>
           </div>
         </div>
       </aside>

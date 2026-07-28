@@ -172,7 +172,11 @@ interface AppState {
 
   // 侧边栏
   sidebarOpen: boolean
-  activeTab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path'
+  activeTab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path' | 'editor' | 'errors'
+  pendingEditorMessage: string | null
+  setPendingEditorMessage: (msg: string | null) => void
+  pendingProblem: any | null
+  setPendingProblem: (p: any | null) => void
 
   // 设置
   settings: AppSettings
@@ -194,7 +198,7 @@ interface AppState {
   setAnalyzing: (val: boolean) => void
   setLastAnalyzedMessageCount: (n: number) => void
   toggleSidebar: () => void
-  setActiveTab: (tab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path') => void
+  setActiveTab: (tab: 'chat' | 'dashboard' | 'resources' | 'profile' | 'path' | 'editor' | 'errors') => void
   clearMessages: () => void
   resetAll: () => void
   addAttachment: (attachment: MessageAttachment) => void
@@ -403,6 +407,10 @@ export const useStore = create<AppState>((set, get) => ({
   // 侧边栏
   sidebarOpen: false,
   activeTab: 'chat',
+  pendingEditorMessage: null,
+  setPendingEditorMessage: (msg) => set({ pendingEditorMessage: msg }),
+  pendingProblem: null,
+  setPendingProblem: (p) => set({ pendingProblem: p }),
 
   // 设置
   settings: loadSettings(),

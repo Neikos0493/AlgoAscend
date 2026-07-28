@@ -34,6 +34,8 @@ from routes.platform import router as platform_router
 from routes.scrape import router as scrape_router
 from routes.knowledge import router as knowledge_router
 from routes.assessment import router as assessment_router
+from routes.code_execution import router as code_router
+from routes.error_notebook import router as error_notebook_router
 
 # 初始化配置
 config = AppConfig()
@@ -67,7 +69,7 @@ async def lifespan(app: FastAPI):
     init_db()
     # 不再自动创建默认学生 — 由前端本地存档驱动，用户首次对话时才创建
     print("=" * 60)
-    print("[C++算法学习平台] 服务已启动")
+    print("[AlgoAscend] 服务已启动")
     print(f"后端API: http://{config.host}:{config.port}")
     print(f"已加载 {len(AGENT_ROLES)} 个智能体:")
     for agent_id, agent_info in AGENT_ROLES.items():
@@ -78,9 +80,9 @@ async def lifespan(app: FastAPI):
 
 # 创建FastAPI应用
 app = FastAPI(
-    title="C++算法学习平台 - 多智能体AI辅助系统",
+    title="AlgoAscend - 顶峰相见",
     description="基于多智能体架构的C++算法竞赛学习平台，支持对话式画像构建、个性化资源生成、学习路径规划和智能辅导",
-    version="1.0.0",
+    version="3.0.0",
     lifespan=lifespan,
 )
 
@@ -104,13 +106,15 @@ app.include_router(platform_router)
 app.include_router(scrape_router)
 app.include_router(knowledge_router)
 app.include_router(assessment_router)
+app.include_router(code_router)
+app.include_router(error_notebook_router)
 
 
 @app.get("/api")
 async def root():
     """API根路径"""
     return {
-        "name": "C++算法学习平台 API",
+        "name": "AlgoAscend API",
         "version": "1.0.0",
         "agents": [
             {"id": k, "name": v["name"], "icon": v["icon"], "description": v["description"]}

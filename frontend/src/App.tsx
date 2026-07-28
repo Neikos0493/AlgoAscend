@@ -9,6 +9,9 @@ import DashboardPage from './pages/DashboardPage'
 import ResourcesPage from './pages/ResourcesPage'
 import ProfilePage from './pages/ProfilePage'
 import PathPage from './pages/PathPage'
+import CodeEditorPage from './pages/CodeEditorPage'
+import ErrorNotebookPage from './pages/ErrorNotebookPage'
+import SettingsModal from './components/SettingsModal'
 
 export default function App() {
   const { activeTab, ensureAccount } = useStore()
@@ -49,10 +52,17 @@ export default function App() {
               <ErrorBoundary fallbackName="学习路径">
                 {activeTab === 'path'      && <PathPage />}
               </ErrorBoundary>
+              <ErrorBoundary fallbackName="代码编辑器">
+                {activeTab === 'editor'    && <CodeEditorPage />}
+              </ErrorBoundary>
+              <ErrorBoundary fallbackName="错题本">
+                {activeTab === 'errors'    && <ErrorNotebookPage />}
+              </ErrorBoundary>
             </PageTransition>
           </ErrorBoundary>
         </main>
       </div>
+      <SettingsModal />
     </div>
   )
 }

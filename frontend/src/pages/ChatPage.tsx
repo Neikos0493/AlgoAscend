@@ -5,7 +5,6 @@ import { searchKnowledge, searchProblems, buildEnhancedSystemPrompt } from '../s
 import ChatMessage from '../components/ChatMessage'
 import QuickActions from '../components/QuickActions'
 import AgentPipeline from '../components/AgentPipeline'
-import SettingsModal from '../components/SettingsModal'
 import { AppIcon } from '../components/Icon'
 import { ImagePlus, X } from 'lucide-react'
 
@@ -23,9 +22,19 @@ export default function ChatPage() {
     settingsOpen, setSettingsOpen,
     profile, stats, pathProgress,
     isAnalyzing, setAnalyzing, lastAnalyzedMessageCount, setLastAnalyzedMessageCount,
+    pendingEditorMessage, setPendingEditorMessage,
   } = useStore()
 
   const [input, setInput] = useState('')
+
+  // 接收来自代码编辑器的消息
+  useEffect(() => {
+    if (pendingEditorMessage) {
+      setInput(pendingEditorMessage)
+      setPendingEditorMessage(null)
+      inputRef.current?.focus()
+    }
+  }, [pendingEditorMessage])
   const [attachedImages, setAttachedImages] = useState<{ base64: string; mimeType: string; name: string }[]>([])
   const [pipeline, setPipeline] = useState<PipelineData | null>(null)
   const [showScrollBtn, setShowScrollBtn] = useState(false)
@@ -587,7 +596,6 @@ export default function ChatPage() {
           </p>
         </div>
       </div>
-      <SettingsModal />
     </div>
   )
 }
@@ -605,8 +613,8 @@ function WelcomeGuide({ onSend }: { onSend: (text: string) => void }) {
         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
           <AppIcon name="⚡" size={34} className="text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">C++算法学习助手</h1>
-        <p className="text-gray-400 max-w-md mx-auto">由6个专业AI智能体协作，为你提供从入门到竞赛的全方位算法学习支持</p>
+        <h1 className="text-2xl font-bold text-white mb-2">AlgoAscend</h1>
+        <p className="text-gray-400 max-w-md mx-auto">由六个专业AI智能体协作<br />为您提供C++从入门到竞赛的全方位算法学习支持</p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {examples.map((ex, i) => (

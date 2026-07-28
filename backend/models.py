@@ -32,6 +32,7 @@ class Student(Base):
     learning_paths = relationship("LearningPath", back_populates="student")
     exercises = relationship("Exercise", back_populates="student")
     assessments = relationship("Assessment", back_populates="student")
+    submissions = relationship("Submission", back_populates="student")
 
 
 class StudentProfile(Base):
@@ -248,4 +249,77 @@ class Assessment(Base):
             "recommendations": self.recommendations,
             "report_content": self.report_content,
             "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class Submission(Base):
+    """代码提交与执行记录"""
+    __tablename__ = "submissions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    problem_id = Column(String(100), default="")
+    problem_title = Column(String(300), default="")
+    problem_platform = Column(String(50), default="")
+    problem_difficulty = Column(String(20), default="")
+    problem_tags = Column(JSON, default=list)
+    code = Column(Text, default="")
+    language = Column(String(20), default="cpp")
+    status = Column(String(30), default="pending")
+    stdin = Column(Text, default="")
+    stdout = Column(Text, default="")
+    stderr = Column(Text, default="")
+    compile_output = Column(Text, default="")
+    runtime_ms = Column(Float, default=0.0)
+    memory_kb = Column(Float, default=0.0)
+    exit_code = Column(Integer, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    student = relationship("Student", back_populates="submissions")
+
+    def to_dict(self):
+        return {
+            "id": self.id, "student_id": self.student_id,
+            "problem_id": self.problem_id, "problem_title": self.problem_title,
+            "problem_platform": self.problem_platform, "code": self.code,
+            "language": self.language, "status": self.status,
+            "stdin": self.stdin, "stdout": self.stdout, "stderr": self.stderr,
+            "compile_output": self.compile_output, "runtime_ms": self.runtime_ms,
+            "memory_kb": self.memory_kb, "exit_code": self.exit_code,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+        }
+
+
+class ErrorNotebookEntry(Base):
+    """错题本条目"""
+    __tablename__ = "error_notebook_entries"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(Integer, ForeignKey("students.id"))
+    problem_id = Column(String(100), default="")
+    problem_title = Column(String(300), default="")
+    problem_platform = Column(String(50), default="")
+    problem_url = Column(String(500), default="")
+    difficulty = Column(String(20), default="")
+    tags = Column(JSON, default=list)
+    user_approach = Column(Text, default="")
+    error_reasons = Column(Text, default="")
+    better_solution = Column(Text, default="")
+    notes = Column(Text, default="")
+    submission_id = Column(Integer, nullable=True)
+    submission_code = Column(Text, default="")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            "id": self.id, "student_id": self.student_id,
+            "problem_id": self.problem_id, "problem_title": self.problem_title,
+            "problem_platform": self.problem_platform, "problem_url": self.problem_url,
+            "difficulty": self.difficulty, "tags": self.tags,
+            "user_approach": self.user_approach, "error_reasons": self.error_reasons,
+            "better_solution": self.better_solution, "notes": self.notes,
+            "submission_id": self.submission_id, "submission_code": self.submission_code,
+            "created_at": self.created_at.isoformat() if self.created_at else None,
+            "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

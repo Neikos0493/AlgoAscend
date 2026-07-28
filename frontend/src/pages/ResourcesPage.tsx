@@ -486,6 +486,22 @@ export default function ResourcesPage() {
                 >
                   打开原题 <ExternalLink size={14} />
                 </a>
+                <button
+                  onClick={() => {
+                    sessionStorage.setItem('__EDITOR_PROBLEM', JSON.stringify({
+                      p: {
+                        id: selected.id, title: selected.title,
+                        platform: selected.platform, platform_name: selected.platform_name,
+                        difficulty: selected.difficulty, tags: selected.tags, url: selected.url,
+                      },
+                      ts: Date.now(),
+                    }))
+                    useStore.getState().setActiveTab('editor')
+                  }}
+                  className="mt-2 flex w-full items-center justify-center rounded-xl border border-primary-500/25 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-300 transition hover:border-primary-400/50 hover:bg-primary-500/20"
+                >
+                  <AppIcon name="💻" size={14} className="mr-1.5" /> 在线编辑
+                </button>
               </div>
             </div>
           </div>
