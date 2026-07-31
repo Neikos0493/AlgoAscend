@@ -9,6 +9,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import Optional
 
+from nowcoder_http import build_nowcoder_headers
+
 router = APIRouter(prefix="/api/platform", tags=["platform"])
 
 
@@ -172,11 +174,7 @@ async def _fetch_nowcoder(uid: str) -> dict:
     if not uid.isdigit():
         raise ValueError("牛客网请提供数字 UID（从个人主页 URL 中获取，如 https://ac.nowcoder.com/acm/contest/profile/123456）")
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-    }
+    headers = build_nowcoder_headers()
 
     async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
         # Step 1: 获取个人主页，提取 __INITIAL_STATE__

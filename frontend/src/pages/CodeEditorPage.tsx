@@ -6,6 +6,9 @@ import { runCode, runTests, checkCompiler, fetchProblemDetail, type TestCase, ty
 import { saveError } from '../services/errorNotebookService'
 import { Loader2, Play, BookmarkPlus, X, Send, Bot, User, RotateCcw, Plus, Minus, CheckCircle2, XCircle, FlaskConical, BookOpen, Zap, Trophy } from 'lucide-react'
 import type { editor } from 'monaco-editor'
+import type { ProblemSummary } from '../types/problem'
+import { clearEditorHandoff, loadEditorHandoff } from '../services/editorHandoff'
+import ProblemStatementRenderer from '../components/ProblemStatementRenderer'
 
 const DEFAULT_CPP = `#include <iostream>
 using namespace std;
@@ -15,18 +18,27 @@ int main() {
 }
 `
 
-interface ProblemInfo {
-  id: string; title: string; platform: string
-  platform_name?: string; difficulty?: string; tags?: string[]; url?: string
-}
-
 interface AIMessage { role: 'user' | 'assistant'; content: string }
 
 const CODE_STORAGE_KEY = 'editor:savedCode'
-const CODE_DIRTY_KEY = 'editor:unsaved'
+
+function detailSourceLabel(source?: string): string {
+  if (source === 'live') return '牛客实时题面'
+  if (source === 'database') return '本地缓存'
+  if (source === 'catalog') return '本地题面'
+  if (source === 'catalog_summary') return '本地摘要'
+  return ''
+}
 
 export default function CodeEditorPage() {
-  const { toggleSidebar } = useStore()
+  const toggleSidebar = useStore(state => state.toggleSidebar)
+  const theme = useStore(state => state.theme)
+  const pendingProblem = useStore(state => state.pendingProblem)
+  const setPendingProblem = useStore(state => state.setPendingProblem)
+  const initialProblemRef = useRef<ProblemSummary | null>(pendingProblem ?? loadEditorHandoff())
+  useEffect(() => {
+    if (pendingProblem === initialProblemRef.current) setPendingProblem(null)
+  }, [])
   const [code, setCode] = useState<string>(() => {
     try { return sessionStorage.getItem(CODE_STORAGE_KEY) || DEFAULT_CPP }
     catch { return DEFAULT_CPP }
@@ -41,35 +53,18 @@ export default function CodeEditorPage() {
   const [possibleCause, setPossibleCause] = useState('')
   const [running, setRunning] = useState(false)
   const [compilerOk, setCompilerOk] = useState<boolean | null>(null)
-  const [currentProblem, setCurrentProblem] = useState<ProblemInfo | null>(() => {
-    try {
-      const raw = sessionStorage.getItem('__EDITOR_PROBLEM')
-      if (!raw) return null
-      const data = JSON.parse(raw)
-      // 仅读取 5 秒内的数据，过滤 StrictMode 重挂载后的过期数据
-      if (Date.now() - data.ts < 5000) return data.p
-    } catch {}
-    return null
-  })
+  const [currentProblem, setCurrentProblem] = useState<ProblemSummary | null>(initialProblemRef.current)
   const [showProblem, setShowProblem] = useState(true)
   const [problemDetail, setProblemDetail] = useState<ProblemDetail | null>(null)
   const [detailLoading, setDetailLoading] = useState(false)
-  const [editorMode, setEditorMode] = useState<'free' | 'challenge'>(() => {
-    try {
-      const raw = sessionStorage.getItem('__EDITOR_PROBLEM')
-      if (!raw) return 'free'
-      const data = JSON.parse(raw)
-      if (Date.now() - data.ts < 5000) return 'challenge'
-    } catch {}
-    return 'free'
-  })
+  const [detailReloadKey, setDetailReloadKey] = useState(0)
+  const [editorMode, setEditorMode] = useState<'free' | 'challenge'>(initialProblemRef.current ? 'challenge' : 'free')
   const [showSaveForm, setShowSaveForm] = useState(false)
   const [successPopup, setSuccessPopup] = useState(false)
   const [saveForm, setSaveForm] = useState({ user_approach: '', error_reasons: '', better_solution: '', notes: '' })
   const [saveStatus, setSaveStatus] = useState('')
 
   // 测试用例模式
-  const [inputMode, setInputMode] = useState<'manual' | 'test'>('manual')
   const [testCases, setTestCases] = useState<TestCase[]>([
     { stdin: '', expected: '' },
   ])
@@ -85,24 +80,91 @@ export default function CodeEditorPage() {
   const aiPanelRef = useRef<HTMLDivElement>(null)
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
+  const executionGenerationRef = useRef(0)
   const [contextMenu, setContextMenu] = useState<{ visible: boolean; text: string }>({ visible: false, text: '' })
   useEffect(() => { checkCompiler().then(r => setCompilerOk(r.available)) }, [])
 
-  // 加载题目详情 + 自动填入测试用例
+  const clearAssignmentState = useCallback(() => {
+    executionGenerationRef.current += 1
+    setStdin('')
+    setStatus('idle')
+    setStdout(''); setStderr(''); setCompileOutput(''); setPossibleCause('')
+    setRuntimeMs(0); setMemoryKb(0); setRunning(false)
+    setProblemDetail(null); setDetailLoading(false)
+    setTestCases([{ stdin: '', expected: '' }])
+    setTestResults([]); setTestCompileError(''); setTestRunning(false)
+    setShowSaveForm(false); setSaveStatus('')
+    setSaveForm({ user_approach: '', error_reasons: '', better_solution: '', notes: '' })
+    setSuccessPopup(false)
+  }, [])
+
   useEffect(() => {
-    if (currentProblem && currentProblem.platform) {
-      setDetailLoading(true)
+    if (!pendingProblem || pendingProblem === currentProblem) return
+    clearAssignmentState()
+    setCurrentProblem(pendingProblem)
+    setEditorMode('challenge')
+    setShowProblem(true)
+    setPendingProblem(null)
+  }, [clearAssignmentState, currentProblem, pendingProblem, setPendingProblem])
+
+  // 加载题目详情 + 自动填入测试用例。切题或卸载时中止旧请求，避免响应串题。
+  useEffect(() => {
+    if (!currentProblem) {
       setProblemDetail(null)
-      fetchProblemDetail(currentProblem.platform, currentProblem.id, currentProblem.url || '').then(d => {
-        setProblemDetail(d)
-        // 自动根据样例填入测试用例
-        if (d.samples && d.samples.length > 0) {
-          setTestCases(d.samples.map(s => ({ stdin: s.input, expected: s.output })))
-          setEditorMode('challenge')
-        }
-      }).catch(() => {}).finally(() => setDetailLoading(false))
+      setDetailLoading(false)
+      return
     }
-  }, [currentProblem])
+
+    const controller = new AbortController()
+    executionGenerationRef.current += 1
+    setRunning(false)
+    setTestRunning(false)
+    setSuccessPopup(false)
+    setDetailLoading(true)
+    setProblemDetail(null)
+    fetchProblemDetail(currentProblem.platform, currentProblem.pid, currentProblem.url, controller.signal)
+      .then(detail => {
+        executionGenerationRef.current += 1
+        setRunning(false)
+        setTestRunning(false)
+        setSuccessPopup(false)
+        setProblemDetail(detail)
+        setCurrentProblem(problem => problem ? {
+          ...problem,
+          title: detail.title || problem.title,
+          difficulty: detail.difficulty || problem.difficulty,
+          url: detail.url || problem.url,
+        } : problem)
+        const runnableSamples = detail.samples.filter(sample => sample.output.length > 0)
+        setTestCases(runnableSamples.length > 0
+          ? runnableSamples.map(sample => ({ stdin: sample.input, expected: sample.output }))
+          : [{ stdin: '', expected: '' }])
+        setTestResults([])
+        setTestCompileError('')
+        setEditorMode('challenge')
+      })
+      .catch(error => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setProblemDetail({
+          title: currentProblem.title,
+          description: error instanceof Error ? error.message : '题目详情加载失败',
+          input: '',
+          output: '',
+          sections: [],
+          limits: {},
+          samples: [],
+          hints: [],
+          error: 'detail_fetch_failed',
+        })
+        setTestCases([{ stdin: '', expected: '' }])
+        setEditorMode('challenge')
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setDetailLoading(false)
+      })
+
+    return () => controller.abort()
+  }, [currentProblem?.pid, currentProblem?.platform, currentProblem?.url, detailReloadKey])
 
   // 持久化代码到 sessionStorage（离开页面不丢失）
   useEffect(() => {
@@ -205,6 +267,7 @@ export default function CodeEditorPage() {
   // 点击"运行"
   const handleRun = async () => {
     if (!code.trim()) return
+    const generation = executionGenerationRef.current
     setRunning(true)
     setStatus('running')
     setStdout(''); setStderr(''); setCompileOutput(''); setPossibleCause('')
@@ -220,26 +283,29 @@ export default function CodeEditorPage() {
         problem_tags: currentProblem?.tags || [],
         timeout_ms: 5000,
       })
+      if (generation !== executionGenerationRef.current) return
       setStatus(result.status)
       setStdout(result.stdout || '')
       setStderr(result.stderr || '')
       setCompileOutput(result.compile_output || '')
-      setRuntimeMs((result as any).runtime_ms || 0)
-      setMemoryKb((result as any).memory_kb || 0)
-      setPossibleCause((result as any).possible_cause || '')
+      setRuntimeMs(result.runtime_ms || 0)
+      setMemoryKb(result.memory_kb || 0)
+      setPossibleCause(result.possible_cause || '')
     } catch (e: any) {
+      if (generation !== executionGenerationRef.current) return
       setStatus('error')
       setStderr(e.message || '运行失败')
       setPossibleCause('无法连接到后端服务。请确保后端已启动: cd backend && python main.py')
     } finally {
-      setRunning(false)
+      if (generation === executionGenerationRef.current) setRunning(false)
     }
   }
 
   const handleRunTests = async () => {
     if (!code.trim()) return
-    const validCases = testCases.filter(tc => tc.stdin.trim())
+    const validCases = testCases.filter(tc => tc.stdin.trim() || tc.expected.trim())
     if (validCases.length === 0) return
+    const generation = executionGenerationRef.current
     setTestRunning(true)
     setTestResults([])
     setTestCompileError('')
@@ -251,15 +317,17 @@ export default function CodeEditorPage() {
         problem_title: currentProblem?.title || '',
         timeout_ms: 5000,
       })
+      if (generation !== executionGenerationRef.current) return
       if (result.compile_output) setTestCompileError(result.compile_output)
       setTestResults(result.results)
-      if (result.all_pass && result.total > 0) {
+      if (result.all_pass && (result.total ?? 0) > 0) {
         setSuccessPopup(true)
       }
     } catch (e: any) {
+      if (generation !== executionGenerationRef.current) return
       setTestCompileError(e.message || '测试运行失败')
     } finally {
-      setTestRunning(false)
+      if (generation === executionGenerationRef.current) setTestRunning(false)
     }
   }
 
@@ -284,13 +352,14 @@ export default function CodeEditorPage() {
     if (code !== DEFAULT_CPP && code.trim()) {
       if (!confirm('确定要初始化编辑器吗？当前代码将被清空。')) return
     }
+    clearAssignmentState()
     setCode(DEFAULT_CPP)
-    setStatus('idle')
-    setStdout(''); setStderr(''); setCompileOutput(''); setPossibleCause('')
-    setRuntimeMs(0); setMemoryKb(0)
-    setCurrentProblem(null); setShowProblem(true)
-    setAiPanelOpen(false); setAiMessages([])
-    sessionStorage.removeItem(CODE_STORAGE_KEY)
+    setCurrentProblem(null); setPendingProblem(null); setShowProblem(true)
+    setEditorMode('free')
+    setAiPanelOpen(false); setAiMessages([]); setAiInput(''); setAiLoading(false)
+    setContextMenu({ visible: false, text: '' })
+    clearEditorHandoff()
+    try { sessionStorage.removeItem(CODE_STORAGE_KEY) } catch {}
   }
 
   const statusLabel: Record<string, string> = {
@@ -307,30 +376,30 @@ export default function CodeEditorPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* 头部 */}
-      <header className="flex items-center gap-3 px-4 py-2.5 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
-        <button className="lg:hidden text-gray-400 hover:text-gray-200" onClick={toggleSidebar}>
+      <header className="flex items-center gap-3 px-4 py-2.5 page-header shrink-0">
+        <button className="lg:hidden text-ink-muted hover:text-ink" onClick={toggleSidebar}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
         <div className="flex-1 flex items-center gap-2">
-          <h2 className="text-base font-semibold text-white flex items-center gap-2">
+          <h2 className="text-base font-semibold text-ink-strong flex items-center gap-2">
             <AppIcon name="💻" size={17} className="text-primary-400" /> 代码编辑器
-            {currentProblem && <span className="text-sm font-normal text-gray-400">— {currentProblem.title}</span>}
+            {currentProblem && <span className="text-sm font-normal text-ink-muted">— {currentProblem.title}</span>}
           </h2>
         </div>
         {compilerOk === false && (
           <span className="text-xs text-amber-400 bg-amber-500/10 px-2 py-1 rounded-full border border-amber-500/20">g++ 未安装</span>
         )}
-        <button onClick={handleReset} className="text-xs text-gray-500 hover:text-gray-300 flex items-center gap-1 px-2 py-1" title="初始化编辑器">
+        <button onClick={handleReset} className="text-xs text-ink-subtle hover:text-ink flex items-center gap-1 px-2 py-1" title="初始化编辑器">
           <RotateCcw size={13} /> 重置
         </button>
         {/* 模式切换 */}
         <div className="flex bg-surface-300/30 rounded-lg p-0.5">
           <button onClick={() => setEditorMode('free')}
-            className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors ${editorMode === 'free' ? 'bg-primary-500/20 text-primary-300' : 'text-gray-500 hover:text-gray-300'}`}>
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors ${editorMode === 'free' ? 'bg-primary-500/20 text-primary-300' : 'text-ink-subtle hover:text-ink'}`}>
             <Zap size={12} /> 自由模式
           </button>
           <button onClick={() => setEditorMode('challenge')}
-            className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors ${editorMode === 'challenge' ? 'bg-primary-500/20 text-primary-300' : 'text-gray-500 hover:text-gray-300'}`}>
+            className={`flex items-center gap-1 px-2.5 py-1 text-xs rounded-md transition-colors ${editorMode === 'challenge' ? 'bg-primary-500/20 text-primary-300' : 'text-ink-subtle hover:text-ink'}`}>
             <Trophy size={12} /> 答题模式
           </button>
         </div>
@@ -350,64 +419,75 @@ export default function CodeEditorPage() {
       {/* 主体区域 */}
       <div className="flex-1 flex overflow-hidden">
         {/* 左侧：题目面板 */}
-        <div className={`border-r border-gray-700/30 overflow-y-auto shrink-0 transition-all ${showProblem ? 'w-[35%]' : 'w-0'}`}>
+        <div className={`border-r border-line/30 overflow-y-auto shrink-0 transition-all ${showProblem ? 'w-[35%]' : 'w-0'}`}>
           {showProblem && (
             <div className="p-4">
               {currentProblem ? (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <button onClick={() => setShowProblem(false)} className="text-xs text-gray-500 hover:text-gray-300">收起 →</button>
+                    <button onClick={() => setShowProblem(false)} className="text-xs text-ink-subtle hover:text-ink">收起 →</button>
                     <button onClick={() => setEditorMode('challenge')} className="text-xs text-primary-400 hover:text-primary-300">
                       {editorMode === 'challenge' ? '' : '切换到答题模式'}
                     </button>
                   </div>
-                  <h3 className="text-base font-semibold text-white">{currentProblem.title}</h3>
+                  <h3 className="text-base font-semibold text-ink-strong">{currentProblem.title}</h3>
                   <div className="flex flex-wrap gap-1.5">
-                    {currentProblem.platform && <span className="text-xs bg-surface-300/50 text-gray-400 px-2 py-1 rounded-full border border-gray-700/30">{currentProblem.platform_name || currentProblem.platform}</span>}
+                    {currentProblem.platform && <span className="text-xs bg-surface-300/50 text-ink-muted px-2 py-1 rounded-full border border-line/30">{currentProblem.platformName || currentProblem.platform}</span>}
                     {currentProblem.difficulty && <span className={`text-xs px-2 py-1 rounded-full border ${currentProblem.difficulty.includes('困难') || currentProblem.difficulty.includes('HARD') ? 'bg-red-500/10 text-red-400 border-red-500/20' : currentProblem.difficulty.includes('中等') || currentProblem.difficulty.includes('MEDIUM') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-green-500/10 text-green-400 border-green-500/20'}`}>{currentProblem.difficulty}</span>}
                   </div>
                   {detailLoading ? (
-                    <div className="text-xs text-gray-500 flex items-center gap-2"><Loader2 size={12} className="animate-spin" /> 加载题目描述...</div>
+                    <div className="text-xs text-ink-subtle flex items-center gap-2"><Loader2 size={12} className="animate-spin" /> 加载题目描述...</div>
                   ) : problemDetail?.error ? (
                     <div className="text-xs text-amber-300 bg-amber-500/5 border border-amber-500/20 rounded-lg p-3">
-                      {problemDetail.description || '无法获取题目描述'}<br />
-                      <a href={currentProblem.url} target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:text-primary-300 underline mt-1 inline-block">
-                        点击查看原题 →
-                      </a>
+                      {problemDetail.description || '无法获取题目描述'}
+                      <div className="mt-2 flex flex-wrap gap-3">
+                        {currentProblem.platform === 'nowcoder' && (
+                          <button onClick={() => setDetailReloadKey(key => key + 1)} className="text-primary-400 hover:text-primary-300 underline">
+                            重新加载题面
+                          </button>
+                        )}
+                        <a href={currentProblem.url} target="_blank" rel="noopener noreferrer" className="text-primary-400 hover:text-primary-300 underline">
+                          点击查看原题 →
+                        </a>
+                      </div>
                     </div>
-                  ) : problemDetail?.description ? (
-                    <div className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap bg-surface-300/20 rounded-lg p-3 border border-gray-700/30 max-h-64 overflow-y-auto">
-                      {problemDetail.description}
-                    </div>
-                  ) : null}
-                  {problemDetail?.samples && problemDetail.samples.length > 0 && (
-                    <div className="space-y-2">
-                      <span className="text-xs text-gray-500 font-medium">样例</span>
-                      {problemDetail.samples.map((s, i) => (
-                        <div key={i} className="bg-surface-300/20 rounded-lg p-2 border border-gray-700/30">
-                          <div className="text-xs text-gray-400 mb-0.5">输入 #{i + 1}:</div>
-                          <pre className="text-xs text-gray-200 font-mono">{s.input}</pre>
-                          <div className="text-xs text-gray-400 mt-2 mb-0.5">输出 #{i + 1}:</div>
-                          <pre className="text-xs text-gray-200 font-mono">{s.output}</pre>
+                  ) : problemDetail ? (
+                    <>
+                      {(detailSourceLabel(problemDetail.source) || problemDetail.warning) && (
+                        <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                          {detailSourceLabel(problemDetail.source) && (
+                            <span className="rounded-full border border-line/40 bg-surface-300/40 px-2 py-1 text-ink-muted">
+                              {detailSourceLabel(problemDetail.source)}
+                            </span>
+                          )}
+                          {problemDetail.warning && <span className="text-amber-300">{problemDetail.warning}</span>}
+                          {currentProblem.platform === 'nowcoder' && (
+                            <button onClick={() => setDetailReloadKey(key => key + 1)} className="text-primary-400 hover:text-primary-300 underline">
+                              重新加载
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                  {currentProblem.tags && <div className="flex flex-wrap gap-1">{currentProblem.tags.map((t, i) => <span key={i} className="text-xs text-gray-400">#{t}</span>)}</div>}
+                      )}
+                      <div className="bg-code-bg rounded-lg p-3 border border-code-line">
+                        <ProblemStatementRenderer detail={problemDetail} />
+                      </div>
+                    </>
+                  ) : null}
+                  {currentProblem.tags && <div className="flex flex-wrap gap-1">{currentProblem.tags.map((t, i) => <span key={i} className="text-xs text-ink-muted">#{t}</span>)}</div>}
                   {currentProblem.url && <a href={currentProblem.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 underline">查看原题 <AppIcon name="🔗" size={11} /></a>}
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <AppIcon name="📄" size={36} className="mx-auto mb-3 text-gray-600" />
-                  <p className="text-gray-400 text-sm">从"随机一题"或"资源库"打开题目</p>
-                  <p className="text-xs text-gray-500 mt-1">或直接在右侧编辑器自由练习</p>
+                  <AppIcon name="📄" size={36} className="mx-auto mb-3 text-ink-subtle" />
+                  <p className="text-ink-muted text-sm">从"随机一题"或"资源库"打开题目</p>
+                  <p className="text-xs text-ink-subtle mt-1">或直接在右侧编辑器自由练习</p>
                 </div>
               )}
             </div>
           )}
         </div>
         {!showProblem && (
-          <button onClick={() => setShowProblem(true)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-surface-200/90 border border-gray-700/30 rounded-r-lg p-1 text-gray-400 hover:text-gray-200">
+          <button onClick={() => setShowProblem(true)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-surface-200/90 border border-line/30 rounded-r-lg p-1 text-ink-muted hover:text-ink">
             <span className="text-xs">展开</span>
           </button>
         )}
@@ -415,7 +495,7 @@ export default function CodeEditorPage() {
         {/* 中间：编辑器 + 结果 */}
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
           <div className="flex-1 min-h-0">
-            <Editor height="100%" defaultLanguage="cpp" theme="vs-dark" value={code}
+            <Editor height="100%" defaultLanguage="cpp" theme={theme === 'dark' ? 'vs-dark' : 'vs'} value={code}
               onChange={(v) => setCode(v || '')} onMount={handleEditorMount}
               options={{
                 fontSize: 13.5, fontFamily: "'Cascadia Code','Fira Code','Consolas','JetBrains Mono',monospace",
@@ -427,28 +507,33 @@ export default function CodeEditorPage() {
           </div>
 
           {/* 结果面板 */}
-          <div className="border-t border-gray-700/30 bg-surface-200/90 shrink-0 overflow-y-auto" style={{ maxHeight: '45%' }}>
+          <div className="border-t border-line/30 bg-surface-200/90 shrink-0 overflow-y-auto" style={{ maxHeight: '45%' }}>
             <div className="p-3 space-y-2">
               {editorMode === 'free' ? (
                 <div>
-                  <label className="text-[10px] text-gray-500 mb-1 block">输入 (stdin)</label>
+                  <label className="text-[10px] text-ink-subtle mb-1 block">输入 (stdin)</label>
                   <textarea value={stdin} onChange={e => setStdin(e.target.value)} placeholder="程序输入..." rows={2}
-                    className="w-full bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
+                    className="w-full bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink font-mono resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
                 </div>
               ) : (
                 <div className="space-y-2">
+                  {currentProblem && !detailLoading && (!problemDetail || problemDetail.samples.every(sample => !sample.output)) && (
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-300">
+                      当前题目没有可判定的公开样例，请手动填写测试输入和期望输出。
+                    </div>
+                  )}
                   {testCases.map((tc, i) => (
                     <div key={i} className="flex gap-2 items-start">
-                      <span className="text-[10px] text-gray-500 mt-1.5 shrink-0 w-5">#{i + 1}</span>
-                      <input value={tc.stdin} onChange={e => {
+                      <span className="text-[10px] text-ink-subtle mt-1.5 shrink-0 w-5">#{i + 1}</span>
+                      <textarea value={tc.stdin} onChange={e => {
                         const next = [...testCases]; next[i] = { ...next[i], stdin: e.target.value }; setTestCases(next)
-                      }} placeholder="输入 (stdin)" className="flex-1 bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 font-mono focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
-                      <input value={tc.expected} onChange={e => {
+                      }} placeholder="输入 (stdin)" rows={3} className="flex-1 min-w-0 resize-y bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink font-mono whitespace-pre focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
+                      <textarea value={tc.expected} onChange={e => {
                         const next = [...testCases]; next[i] = { ...next[i], expected: e.target.value }; setTestCases(next)
-                      }} placeholder="期望输出" className="flex-1 bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 font-mono focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
+                      }} placeholder="期望输出" rows={3} className="flex-1 min-w-0 resize-y bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink font-mono whitespace-pre focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
                       {testCases.length > 1 && (
                         <button onClick={() => setTestCases(prev => prev.filter((_, j) => j !== i))}
-                          className="text-gray-500 hover:text-red-400 mt-1"><Minus size={14} /></button>
+                          className="text-ink-subtle hover:text-red-400 mt-1"><Minus size={14} /></button>
                       )}
                     </div>
                   ))}
@@ -458,24 +543,33 @@ export default function CodeEditorPage() {
                   </button>
                   {testResults.length > 0 && (
                     <div className="space-y-1.5 mt-2">
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className={testResults.every(r => r.passed) ? 'text-green-400' : 'text-red-400'}>
-                          {testResults.filter(r => r.passed).length}/{testResults.length} 通过
-                        </span>
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className="text-green-400">{testResults.filter(r => r.passed === true).length} 通过</span>
+                        {testResults.some(r => r.passed === false) && <span className="text-red-400">{testResults.filter(r => r.passed === false).length} 未通过</span>}
+                        {testResults.some(r => r.passed === null) && <span className="text-ink-muted">{testResults.filter(r => r.passed === null).length} 未判定</span>}
                       </div>
-                      {testResults.map((r, i) => (
-                        <div key={i} className={`rounded-lg p-2 text-xs border ${r.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                          <div className="flex items-center gap-1.5 mb-1">
-                            {r.passed ? <CheckCircle2 size={12} className="text-green-400" /> : <XCircle size={12} className="text-red-400" />}
-                            <span className="text-gray-400">用例 #{r.index}</span>
-                            {r.runtime_ms > 0 && <span className="text-gray-500">{r.runtime_ms}ms</span>}
+                      {testResults.map((r, i) => {
+                        const isNeutral = r.passed === null
+                        return (
+                          <div key={i} className={`rounded-lg p-2 text-xs border ${isNeutral ? 'bg-surface-300/30 border-line/40' : r.passed ? 'bg-green-500/5 border-green-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                            <div className="flex items-center gap-1.5 mb-1">
+                              {isNeutral
+                                ? <FlaskConical size={12} className="text-ink-muted" />
+                                : r.passed
+                                  ? <CheckCircle2 size={12} className="text-green-400" />
+                                  : <XCircle size={12} className="text-red-400" />}
+                              <span className="text-ink-muted">用例 #{r.index}</span>
+                              {isNeutral && <span className="text-ink-subtle">未提供期望输出，仅运行</span>}
+                              {r.runtime_ms > 0 && <span className="text-ink-subtle">{r.runtime_ms}ms</span>}
+                            </div>
+                            {r.stdin && <div className="text-ink-subtle">输入:<pre className="mt-0.5 whitespace-pre-wrap font-mono text-ink">{r.stdin}</pre></div>}
+                            {r.expected !== '(无期望输出)' && <div className="text-ink-subtle">期望:<pre className="mt-0.5 whitespace-pre-wrap font-mono text-ink">{r.expected}</pre></div>}
+                            {r.passed === false && <div className="text-red-300">实际:<pre className="mt-0.5 whitespace-pre-wrap font-mono">{r.actual}</pre></div>}
+                            {isNeutral && r.actual && <div className="text-ink-muted">实际:<pre className="mt-0.5 whitespace-pre-wrap font-mono">{r.actual}</pre></div>}
+                            {r.stderr && <div className="text-red-400 mt-0.5">{r.stderr}</div>}
                           </div>
-                          {r.stdin && <div className="text-gray-500">输入: {r.stdin}</div>}
-                          {r.expected !== '(无期望输出)' && <div className="text-gray-500">期望: {r.expected}</div>}
-                          {!r.passed && <div className="text-red-300">实际: {r.actual}</div>}
-                          {r.stderr && <div className="text-red-400 mt-0.5">{r.stderr}</div>}
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   )}
                   {testCompileError && (
@@ -487,16 +581,16 @@ export default function CodeEditorPage() {
                   <button onClick={handleRunTests} disabled={testRunning || !code.trim()}
                     className="btn-primary flex items-center gap-1.5 text-xs px-3 py-1.5 w-full justify-center">
                     {testRunning ? <Loader2 size={13} className="animate-spin" /> : <Play size={13} />}
-                    运行测试 ({testCases.filter(tc => tc.stdin.trim()).length} 个用例)
+                    运行测试 ({testCases.filter(tc => tc.stdin.trim() || tc.expected.trim()).length} 个用例)
                   </button>
                 </div>
               )}
 
               {status && status !== 'idle' && status !== 'running' && (
                 <div className="flex items-center gap-3 text-xs flex-wrap">
-                  <span className={statusColor[status] || 'text-gray-400'}>{statusLabel[status] || status}</span>
-                  {runtimeMs > 0 && <span className="text-gray-500">运行 {runtimeMs}ms</span>}
-                  {memoryKb > 0 && <span className="text-gray-500">内存 {memoryKb < 1024 ? `${memoryKb}KB` : `${(memoryKb / 1024).toFixed(1)}MB`}</span>}
+                  <span className={statusColor[status] || 'text-ink-muted'}>{statusLabel[status] || status}</span>
+                  {runtimeMs > 0 && <span className="text-ink-subtle">运行 {runtimeMs}ms</span>}
+                  {memoryKb > 0 && <span className="text-ink-subtle">内存 {memoryKb < 1024 ? `${memoryKb}KB` : `${(memoryKb / 1024).toFixed(1)}MB`}</span>}
                 </div>
               )}
 
@@ -505,7 +599,7 @@ export default function CodeEditorPage() {
                   {stdout && (
                     <div>
                       <label className="text-[10px] text-green-500 mb-0.5 block">输出 (stdout)</label>
-                      <pre className="text-xs text-gray-200 bg-surface-400/60 rounded-lg p-2.5 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto border border-gray-700/30">{stdout}</pre>
+                      <pre className="text-xs text-ink bg-surface-400/60 rounded-lg p-2.5 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto border border-line/30">{stdout}</pre>
                     </div>
                   )}
                   {stderr && (
@@ -537,15 +631,15 @@ export default function CodeEditorPage() {
             </div>
 
             {showSaveForm && (
-              <div className="px-3 pb-3 space-y-2 border-t border-gray-700/30 pt-3">
-                <div><label className="text-[10px] text-gray-500 mb-1 block">做题思路</label><textarea value={saveForm.user_approach} onChange={e => setSaveForm(s => ({ ...s, user_approach: e.target.value }))} rows={2} placeholder="你的解题思路..." className="w-full bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
-                <div><label className="text-[10px] text-gray-500 mb-1 block">错误原因</label><textarea value={saveForm.error_reasons} onChange={e => setSaveForm(s => ({ ...s, error_reasons: e.target.value }))} rows={2} placeholder="出错的原因分析..." className="w-full bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
-                <div><label className="text-[10px] text-gray-500 mb-1 block">更优解法</label><textarea value={saveForm.better_solution} onChange={e => setSaveForm(s => ({ ...s, better_solution: e.target.value }))} rows={2} placeholder="更优的解题方案..." className="w-full bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
+              <div className="px-3 pb-3 space-y-2 border-t border-line/30 pt-3">
+                <div><label className="text-[10px] text-ink-subtle mb-1 block">做题思路</label><textarea value={saveForm.user_approach} onChange={e => setSaveForm(s => ({ ...s, user_approach: e.target.value }))} rows={2} placeholder="你的解题思路..." className="w-full bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
+                <div><label className="text-[10px] text-ink-subtle mb-1 block">错误原因</label><textarea value={saveForm.error_reasons} onChange={e => setSaveForm(s => ({ ...s, error_reasons: e.target.value }))} rows={2} placeholder="出错的原因分析..." className="w-full bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
+                <div><label className="text-[10px] text-ink-subtle mb-1 block">更优解法</label><textarea value={saveForm.better_solution} onChange={e => setSaveForm(s => ({ ...s, better_solution: e.target.value }))} rows={2} placeholder="更优的解题方案..." className="w-full bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink resize-none focus:outline-none focus:ring-1 focus:ring-primary-500/50" /></div>
                 <div className="flex items-center gap-2">
                   <button onClick={handleSaveToNotebook} disabled={saveStatus === 'saving' || saveStatus === 'saved'} className="btn-primary text-xs px-3 py-1.5 disabled:opacity-50">
                     {saveStatus === 'saving' ? '保存中...' : saveStatus === 'saved' ? '已保存 ✓' : '保存到错题本'}
                   </button>
-                  <button onClick={() => setShowSaveForm(false)} className="text-xs text-gray-500 hover:text-gray-300">取消</button>
+                  <button onClick={() => setShowSaveForm(false)} className="text-xs text-ink-subtle hover:text-ink">取消</button>
                 </div>
               </div>
             )}
@@ -554,31 +648,31 @@ export default function CodeEditorPage() {
 
         {/* 右侧：AI 内嵌面板 */}
         {aiPanelOpen && (
-          <div className="border-l border-gray-700/30 bg-surface-200/95 flex flex-col" style={{ width: '340px', minWidth: '280px' }}>
-            <div className="flex items-center justify-between px-3 py-2 border-b border-gray-700/30 shrink-0">
-              <span className="text-xs font-medium text-gray-300 flex items-center gap-1.5"><Bot size={14} className="text-primary-400" /> AI 代码助手</span>
-              <button onClick={() => setAiPanelOpen(false)} className="text-gray-500 hover:text-gray-300"><X size={14} /></button>
+          <div className="border-l border-line/30 bg-surface-200/95 flex flex-col" style={{ width: '340px', minWidth: '280px' }}>
+            <div className="flex items-center justify-between px-3 py-2 border-b border-line/30 shrink-0">
+              <span className="text-xs font-medium text-ink flex items-center gap-1.5"><Bot size={14} className="text-primary-400" /> AI 代码助手</span>
+              <button onClick={() => setAiPanelOpen(false)} className="text-ink-subtle hover:text-ink"><X size={14} /></button>
             </div>
             <div className="flex-1 overflow-y-auto px-3 py-2 space-y-3" ref={aiPanelRef}>
               {aiMessages.map((m, i) => (
                 <div key={i} className={`flex gap-2 text-xs ${m.role === 'user' ? 'justify-end' : ''}`}>
                   {m.role === 'assistant' && <Bot size={14} className="text-primary-400 mt-0.5 shrink-0" />}
-                  <div className={`rounded-xl px-3 py-2 max-w-[90%] whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary-600 text-white' : 'bg-surface-300/50 text-gray-200 border border-gray-700/30'}`}>
+                  <div className={`rounded-xl px-3 py-2 max-w-[90%] whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary-600 text-white' : 'bg-surface-300/50 text-ink border border-line/30'}`}>
                     {m.content || (aiLoading && m.role === 'assistant' ? <Loader2 size={12} className="animate-spin inline" /> : '')}
                   </div>
-                  {m.role === 'user' && <User size={14} className="text-gray-400 mt-0.5 shrink-0" />}
+                  {m.role === 'user' && <User size={14} className="text-ink-muted mt-0.5 shrink-0" />}
                 </div>
               ))}
               {aiMessages.length === 0 && !aiLoading && (
-                <div className="text-center py-8 text-xs text-gray-500">长按选中代码自动提问，或输入问题</div>
+                <div className="text-center py-8 text-xs text-ink-subtle">长按选中代码自动提问，或输入问题</div>
               )}
             </div>
-            <div className="border-t border-gray-700/30 p-2 shrink-0">
+            <div className="border-t border-line/30 p-2 shrink-0">
               <div className="flex gap-1.5">
                 <input value={aiInput} onChange={e => setAiInput(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendAIMessage(aiInput); setAiInput('') } }}
                   placeholder="追问..." disabled={aiLoading}
-                  className="flex-1 bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs text-gray-200 placeholder:text-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
+                  className="flex-1 bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs text-ink placeholder:text-ink-subtle focus:outline-none focus:ring-1 focus:ring-primary-500/50" />
                 <button onClick={() => { sendAIMessage(aiInput); setAiInput('') }} disabled={aiLoading || !aiInput.trim()}
                   className="text-primary-400 hover:text-primary-300 disabled:opacity-30 p-1.5"><Send size={15} /></button>
               </div>
@@ -592,11 +686,11 @@ export default function CodeEditorPage() {
         <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setSuccessPopup(false)}>
           <div className="bg-surface-200/95 backdrop-blur-xl rounded-2xl border border-green-500/30 shadow-2xl shadow-green-500/10 p-8 max-w-sm w-full mx-4 text-center" onClick={e => e.stopPropagation()}>
             <Trophy size={48} className="text-yellow-400 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-white mb-2">恭喜！全部通过 🎉</h2>
-            <p className="text-sm text-gray-400 mb-6">所有 {testResults.length} 个测试用例均已通过</p>
+            <h2 className="text-xl font-bold text-ink-strong mb-2">恭喜！全部通过 🎉</h2>
+            <p className="text-sm text-ink-muted mb-6">所有 {testResults.length} 个测试用例均已通过</p>
             <div className="flex gap-3">
               <button onClick={() => setSuccessPopup(false)}
-                className="flex-1 px-4 py-2.5 bg-surface-300/50 border border-gray-600/50 text-gray-300 rounded-xl text-sm hover:bg-surface-300/70 transition-colors">
+                className="flex-1 px-4 py-2.5 bg-surface-300/50 border border-line/50 text-ink rounded-xl text-sm hover:bg-surface-300/70 transition-colors">
                 关闭
               </button>
               <button onClick={() => {
@@ -615,7 +709,7 @@ export default function CodeEditorPage() {
       {/* 长按选中 → 浮动菜单 */}
       {contextMenu.visible && (
         <div className="fixed inset-0 z-[200]" onClick={() => setContextMenu({ visible: false, text: '' })}>
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 bg-surface-200/95 backdrop-blur-xl rounded-xl border border-gray-600/50 shadow-2xl shadow-black/40 p-1.5 flex gap-1"
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 bg-surface-200/95 backdrop-blur-xl rounded-xl border border-line/50 shadow-2xl shadow-black/40 p-1.5 flex gap-1"
             onClick={e => e.stopPropagation()}>
             {[
               { key: 'ask', label: '向AI提问', icon: '💬' },
@@ -623,11 +717,11 @@ export default function CodeEditorPage() {
               { key: 'optimize', label: '优化代码', icon: '⚡' },
             ].map(item => (
               <button key={item.key} onClick={() => handleContextMenuAction(contextMenu.text, item.key)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:bg-primary-500/10 hover:text-primary-300 transition-colors whitespace-nowrap">
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs text-ink hover:bg-primary-500/10 hover:text-primary-300 transition-colors whitespace-nowrap">
                 <AppIcon name={item.icon} size={13} /> {item.label}
               </button>
             ))}
-            <button onClick={() => setContextMenu({ visible: false, text: '' })} className="px-1.5 text-gray-500 hover:text-gray-300"><X size={14} /></button>
+            <button onClick={() => setContextMenu({ visible: false, text: '' })} className="px-1.5 text-ink-subtle hover:text-ink"><X size={14} /></button>
           </div>
         </div>
       )}

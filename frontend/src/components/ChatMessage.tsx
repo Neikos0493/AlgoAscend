@@ -3,10 +3,11 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import MindmapRenderer from './MindmapRenderer'
 import { AppIcon } from './Icon'
 import { Copy } from 'lucide-react'
+import { useStore } from '../stores/useStore'
 
 interface MessageAttachment {
   type: 'mindmap' | 'image' | 'ppt' | 'video' | 'doc' | 'knowledge' | 'knowledge_entry' | 'problems'
@@ -90,6 +91,7 @@ export default function ChatMessage({ message }: { message: Message }) {
 }
 
 function MarkdownContent({ content }: { content: string }) {
+  const theme = useStore(state => state.theme)
   return (
     <ReactMarkdown
       remarkPlugins={[remarkGfm, remarkMath]}
@@ -110,7 +112,7 @@ function MarkdownContent({ content }: { content: string }) {
                 </button>
               </div>
               <SyntaxHighlighter
-                style={oneDark}
+                style={theme === 'dark' ? oneDark : oneLight}
                 language={match?.[1] || 'text'}
                 PreTag="div"
                 customStyle={{
@@ -120,6 +122,7 @@ function MarkdownContent({ content }: { content: string }) {
                   borderRadius: '0 0 0.75rem 0.75rem',
                   fontSize: '0.875rem',
                   padding: '1rem 1.25rem',
+                  background: 'rgb(var(--color-code-bg))',
                 }}
               >
                 {String(children).replace(/\n$/, '')}
@@ -165,7 +168,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
           <div className="flex items-center gap-2 mb-2">
             <span className="inline-flex items-center gap-1 text-xs font-medium text-accent-400"><AppIcon name="🧠" size={13} /> 思维导图</span>
           </div>
-          <div className="bg-[#0f1117] rounded-lg p-2 border border-gray-700/30">
+          <div className="bg-code-bg rounded-lg p-2 border border-line/30">
             <MindmapRenderer tree={data.tree} />
           </div>
         </div>
@@ -357,7 +360,7 @@ function AttachmentRenderer({ attachment }: { attachment: MessageAttachment }) {
               </div>
               <details className="mt-2">
                 <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-300">查看脚本代码</summary>
-                <pre className="mt-2 text-[11px] text-gray-300 bg-[#0f1117] p-3 rounded-lg overflow-x-auto max-h-64 overflow-y-auto font-mono border border-gray-700/30">
+                <pre className="mt-2 text-[11px] text-ink bg-code-bg p-3 rounded-lg overflow-x-auto max-h-64 overflow-y-auto font-mono border border-line/30">
                   {data.script?.slice(0, 2000)}
                   {data.script?.length > 2000 && '\n\n... (代码已截断)'}
                 </pre>

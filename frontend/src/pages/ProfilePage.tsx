@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useStore } from '../stores/useStore'
+import { DEFAULT_NICKNAME, useStore } from '../stores/useStore'
 import { clearAccounts } from '../services/platformService'
 import AccountBinding from '../components/AccountBinding'
 import { AppIcon } from '../components/Icon'
@@ -64,42 +64,29 @@ const FIELD_LABELS: Record<string, string> = {
 }
 
 export default function ProfilePage() {
-  const { profile, dimensionsFilled, setProfile, setDimensionsFilled, resetAll, toggleSidebar } = useStore()
+  const {
+    profile, dimensionsFilled, setProfile, setDimensionsFilled, resetAll, toggleSidebar,
+    accounts, activeAccountId, updateAccountDetails,
+  } = useStore()
+  const currentAccount = accounts.find(account => account.id === activeAccountId)
   const [editing, setEditing] = useState(false)
-  const [name, setName] = useState('')
+  const [nickname, setNickname] = useState('')
   const [major, setMajor] = useState('')
   const [grade, setGrade] = useState('')
-  const [studentInfo, setStudentInfo] = useState<any>({})
   const [showResetConfirm, setShowResetConfirm] = useState(false)
   const [resetting, setResetting] = useState(false)
 
-  // 从 localStorage 加载学生信息（按账号隔离）
   useEffect(() => {
-    const id = useStore.getState().activeAccountId
-    if (id) {
-      try {
-        const raw = localStorage.getItem(`algoascend_student_${id}`)
-        if (raw) {
-          const info = JSON.parse(raw)
-          setStudentInfo(info)
-          setName(info.name || '')
-          setMajor(info.major || '')
-          setGrade(info.grade || '')
-        }
-      } catch { /* ignore */ }
-    }
-  }, [])
+    setNickname(currentAccount?.nickname || DEFAULT_NICKNAME)
+    setMajor(currentAccount?.major || '')
+    setGrade(currentAccount?.grade || '')
+    setEditing(false)
+  }, [activeAccountId, currentAccount?.nickname, currentAccount?.major, currentAccount?.grade])
 
   const handleSaveInfo = async () => {
-    const info = { name, major, grade }
-    setStudentInfo(info)
+    if (!activeAccountId) return
+    updateAccountDetails(activeAccountId, { nickname, major, grade })
     setEditing(false)
-
-    // 保存到 localStorage
-    const id = useStore.getState().activeAccountId
-    if (id) {
-      try { localStorage.setItem(`algoascend_student_${id}`, JSON.stringify(info)) } catch { /* ignore */ }
-    }
   }
 
   const handleReset = async () => {
@@ -108,16 +95,14 @@ export default function ProfilePage() {
       clearAccounts()
       localStorage.removeItem('algoascend_settings')
 
-      // 清除当前账号数据
       const id = useStore.getState().activeAccountId
       if (id) {
-        localStorage.removeItem(`algoascend_student_${id}`)
+        updateAccountDetails(id, { nickname: DEFAULT_NICKNAME, major: '', grade: '' })
       }
 
       resetAll()
       setShowResetConfirm(false)
-      setStudentInfo({})
-      setName('')
+      setNickname(DEFAULT_NICKNAME)
       setMajor('')
       setGrade('')
     } catch (err) {
@@ -129,17 +114,17 @@ export default function ProfilePage() {
 
   const renderDimensionValue = (key: string, data: any) => {
     if (!data || typeof data !== 'object') {
-      return <span className="text-gray-400 text-sm">尚未收集</span>
+      return <span className="text-ink-muted text-sm">尚未收集</span>
     }
 
     if (Array.isArray(data)) {
       if (data.length === 0) {
-        return <span className="text-gray-400 text-sm">尚未收集</span>
+        return <span className="text-ink-muted text-sm">尚未收集</span>
       }
       return (
         <div className="flex flex-wrap gap-1.5">
           {data.map((item, i) => (
-            <span key={i} className="text-xs bg-surface-300/50 text-gray-300 px-2.5 py-1 rounded-full border border-gray-700/30">
+            <span key={i} className="text-xs bg-surface-300/50 text-ink px-2.5 py-1 rounded-full border border-line/30">
               {item}
             </span>
           ))}
@@ -149,17 +134,17 @@ export default function ProfilePage() {
 
     const entries = Object.entries(data).filter(([_, v]) => v)
     if (entries.length === 0) {
-      return <span className="text-gray-400 text-sm">尚未收集</span>
+      return <span className="text-ink-muted text-sm">尚未收集</span>
     }
 
     return (
       <div className="space-y-2">
         {entries.map(([field, value]) => (
           <div key={field} className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-ink-subtle">
               {FIELD_LABELS[field] || field}
             </span>
-            <span className="text-sm font-medium text-gray-200">
+            <span className="text-sm font-medium text-ink">
               {Array.isArray(value) ? value.join(', ') : String(value)}
             </span>
           </div>
@@ -170,9 +155,9 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <header className="flex items-center gap-3 px-6 py-4 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
+      <header className="flex items-center gap-3 px-6 py-4 page-header shrink-0">
         <button
-          className="lg:hidden text-gray-400 hover:text-gray-200"
+          className="lg:hidden text-ink-muted hover:text-ink"
           onClick={toggleSidebar}
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,12 +165,12 @@ export default function ProfilePage() {
           </svg>
         </button>
         <div>
-          <h2 className="text-lg font-semibold text-white">学习画像</h2>
-          <p className="text-xs text-gray-400">AI对话式构建的六维动态学习画像（对话自动更新）</p>
+          <h2 className="text-lg font-semibold text-ink-strong">学习画像</h2>
+          <p className="text-xs text-ink-muted">AI对话式构建的六维动态学习画像（对话自动更新）</p>
         </div>
         <button
           onClick={() => setShowResetConfirm(true)}
-          className="inline-flex items-center gap-1 text-sm text-red-500 hover:text-red-600 ml-2"
+          className="ml-auto inline-flex items-center gap-1 text-sm text-red-500 hover:text-red-600"
           title="清除所有信息，重新构建画像"
         >
           <AppIcon name="🔥" size={15} /> 重置画像
@@ -196,7 +181,7 @@ export default function ProfilePage() {
         {/* 基本信息 */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="👤" size={19} className="text-primary-400" /> 基本信息</h3>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-ink-strong"><AppIcon name="👤" size={19} className="text-primary-400" /> 基本信息</h3>
             <button
               onClick={() => setEditing(!editing)}
               className="inline-flex items-center gap-1 text-sm text-primary-400 hover:text-primary-300"
@@ -208,16 +193,17 @@ export default function ProfilePage() {
           {editing ? (
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-gray-400 mb-1">姓名</label>
+                <label className="block text-sm text-ink-muted mb-1">昵称</label>
                 <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   className="input-field"
-                  placeholder="你的姓名"
+                  maxLength={40}
+                  placeholder="想要如何称呼您"
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">专业</label>
+                <label className="block text-sm text-ink-muted mb-1">专业</label>
                 <input
                   value={major}
                   onChange={(e) => setMajor(e.target.value)}
@@ -226,7 +212,7 @@ export default function ProfilePage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-gray-400 mb-1">年级</label>
+                <label className="block text-sm text-ink-muted mb-1">年级</label>
                 <input
                   value={grade}
                   onChange={(e) => setGrade(e.target.value)}
@@ -241,16 +227,16 @@ export default function ProfilePage() {
           ) : (
             <div className="flex items-center gap-8">
               <div>
-                <span className="text-sm text-gray-500">姓名</span>
-                <p className="font-semibold text-gray-200">{studentInfo.name || '学习者'}</p>
+                <span className="text-sm text-ink-subtle">昵称</span>
+                <p className="font-semibold text-ink">{currentAccount?.nickname || DEFAULT_NICKNAME}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">专业</span>
-                <p className="font-semibold text-gray-200">{studentInfo.major || '未设置'}</p>
+                <span className="text-sm text-ink-subtle">专业</span>
+                <p className="font-semibold text-ink">{currentAccount?.major || '未设置'}</p>
               </div>
               <div>
-                <span className="text-sm text-gray-500">年级</span>
-                <p className="font-semibold text-gray-200">{studentInfo.grade || '未设置'}</p>
+                <span className="text-sm text-ink-subtle">年级</span>
+                <p className="font-semibold text-ink">{currentAccount?.grade || '未设置'}</p>
               </div>
             </div>
           )}
@@ -258,7 +244,7 @@ export default function ProfilePage() {
 
         {/* 画像完善度 */}
         <div className="card">
-          <h3 className="flex items-center gap-2 text-lg font-semibold text-white mb-4">
+          <h3 className="flex items-center gap-2 text-lg font-semibold text-ink-strong mb-4">
             <AppIcon name="📊" size={19} className="text-primary-400" /> 画像完善度
           </h3>
           <div className="flex items-center gap-4 mb-3">
@@ -272,7 +258,7 @@ export default function ProfilePage() {
               {dimensionsFilled}/6 维度
             </span>
           </div>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-ink-subtle">
             {dimensionsFilled === 0 && '画像尚未构建。去「智能对话」页面，通过自然对话让AI了解你，自动构建学习画像。'}
             {dimensionsFilled > 0 && dimensionsFilled < 3 && '画像正在构建中。继续与AI对话，了解更多关于你的学习特征。'}
             {dimensionsFilled >= 3 && dimensionsFilled < 6 && '画像比较完善了。继续深入对话可以补充更多细节。'}
@@ -294,17 +280,17 @@ export default function ProfilePage() {
                 className={`card border-l-4 ${info.color} ${hasData ? '' : 'opacity-70'}`}
               >
                 <div className="flex items-start gap-3">
-                  <AppIcon name={info.icon} size={24} className="text-gray-300 mt-0.5" />
+                  <AppIcon name={info.icon} size={24} className="text-ink mt-0.5" />
                   <div className="flex-1">
-                    <h4 className="font-semibold text-gray-200">{info.name}</h4>
-                    <p className="text-xs text-gray-400 mb-3">{info.description}</p>
+                    <h4 className="font-semibold text-ink">{info.name}</h4>
+                    <p className="text-xs text-ink-muted mb-3">{info.description}</p>
                     {renderDimensionValue(key, data)}
                   </div>
                   <span
                     className={`shrink-0 px-2 py-0.5 rounded-full text-xs ${
                       hasData
                         ? 'bg-green-50 text-green-600'
-                        : 'bg-surface-300/30 text-gray-500 border border-gray-700/30'
+                        : 'bg-surface-300/30 text-ink-subtle border border-line/30'
                     }`}
                   >
                     {hasData ? <AppIcon name="✓" size={12} /> : '—'}
@@ -318,10 +304,10 @@ export default function ProfilePage() {
         {/* 竞赛平台账号绑定 */}
         <div className="card">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="flex items-center gap-2 text-lg font-semibold text-white"><AppIcon name="🏆" size={19} className="text-primary-400" /> 竞赛平台绑定</h3>
-            <span className="text-xs text-gray-400">绑定后自动拉取竞赛数据</span>
+            <h3 className="flex items-center gap-2 text-lg font-semibold text-ink-strong"><AppIcon name="🏆" size={19} className="text-primary-400" /> 竞赛平台绑定</h3>
+            <span className="text-xs text-ink-muted">绑定后自动拉取竞赛数据</span>
           </div>
-          <p className="text-xs text-gray-500 mb-4">
+          <p className="text-xs text-ink-subtle mb-4">
             绑定你在各算法竞赛平台的账号，AI 将根据你的真实竞赛数据（Rating、做题量、参赛记录等）提供更精准的学习分析和个性化建议。
           </p>
           <AccountBinding />
@@ -331,16 +317,16 @@ export default function ProfilePage() {
         <div className="card">
           <div className="flex items-center justify-between">
             <div>
-              <h4 className="text-sm font-semibold text-gray-200">画像元信息</h4>
-              <p className="text-xs text-gray-400 mt-1">
+              <h4 className="text-sm font-semibold text-ink">画像元信息</h4>
+              <p className="text-xs text-ink-muted mt-1">
                 通过AI对话自动提取特征，随学随新
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-ink-muted">
                 版本: v{profile?.version || 1}
               </p>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-ink-muted">
                 置信度: {((profile?.confidence_score || 0) * 100).toFixed(0)}%
               </p>
             </div>
@@ -351,10 +337,10 @@ export default function ProfilePage() {
       {/* 重置确认弹窗 */}
       {showResetConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-surface-100/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700/30 p-6 max-w-md w-full mx-4">
+          <div className="bg-surface-100/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-line/30 p-6 max-w-md w-full mx-4">
             <div className="text-center mb-4">
               <AppIcon name="⚠️" size={44} className="text-red-400" />
-              <h3 className="text-xl font-bold text-white mt-2">确认重置画像？</h3>
+              <h3 className="text-xl font-bold text-ink-strong mt-2">确认重置画像？</h3>
             </div>
             <div className="bg-red-50 rounded-xl p-4 mb-4 border border-red-100">
               <p className="text-sm text-red-700 leading-relaxed">
@@ -364,7 +350,7 @@ export default function ProfilePage() {
                 <li>• 六维学习画像数据</li>
                 <li>• 全部对话历史记录</li>
                 <li>• 竞赛平台绑定信息</li>
-                <li>• 个人信息（姓名/专业/年级）</li>
+                <li>• 个人信息（昵称/专业/年级）</li>
               </ul>
               <p className="mt-2 text-xs text-red-500">
                 重置后可重新与 AI 对话，从零构建画像。
@@ -374,7 +360,7 @@ export default function ProfilePage() {
               <button
                 onClick={() => setShowResetConfirm(false)}
                 disabled={resetting}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-600/50 text-gray-400 hover:bg-surface-300/30 transition-colors font-medium"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-line/50 text-ink-muted hover:bg-surface-300/30 transition-colors font-medium"
               >
                 取消
               </button>

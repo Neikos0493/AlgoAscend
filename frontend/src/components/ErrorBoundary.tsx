@@ -23,7 +23,7 @@ export default class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center h-full p-8">
           <AppIcon name="⚠️" size={40} className="mb-4 text-amber-400" />
-          <h2 className="text-lg font-semibold text-white mb-2">
+          <h2 className="text-lg font-semibold text-ink-strong mb-2">
             {this.props.fallbackName || '页面'} 加载失败
           </h2>
           <p className="text-sm text-red-400 mb-4 max-w-md text-center font-mono">

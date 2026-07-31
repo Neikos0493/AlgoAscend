@@ -74,7 +74,7 @@ export default function QuickActions({ onFill }: { onFill: (text: string) => voi
           <button
             key={action.key}
             onClick={() => handleClick(action)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-300/50 border border-gray-600/50 rounded-full text-xs text-gray-400 hover:border-primary-300 hover:text-primary-300 hover:bg-primary-50 transition-all duration-200 shadow-sm whitespace-nowrap shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-300/50 border border-line/50 rounded-full text-xs text-ink-muted hover:border-primary-300 hover:text-primary-500 hover:bg-primary-50 transition-all duration-200 shadow-sm whitespace-nowrap shrink-0"
           >
             <AppIcon name={action.icon} size={13} />
             <span>{action.label}</span>

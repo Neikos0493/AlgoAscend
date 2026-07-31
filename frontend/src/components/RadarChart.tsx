@@ -91,7 +91,7 @@ export default function RadarChart({ dimensions, size = 280, className = '' }: R
             key={`grid-${i}`}
             points={points}
             fill="none"
-            stroke="#e5e7eb"
+            stroke="rgb(var(--color-chart-grid))"
             strokeWidth={i === levels - 1 ? 1.5 : 0.5}
             opacity={i === levels - 1 ? 0.8 : 0.4}
           />
@@ -103,7 +103,7 @@ export default function RadarChart({ dimensions, size = 280, className = '' }: R
             key={`axis-${i}`}
             x1={cx} y1={cy}
             x2={axis.x} y2={axis.y}
-            stroke="#e5e7eb"
+            stroke="rgb(var(--color-chart-grid))"
             strokeWidth={0.5}
           />
         ))}
@@ -127,7 +127,7 @@ export default function RadarChart({ dimensions, size = 280, className = '' }: R
               key={`dot-${i}`}
               cx={x} cy={y}
               r={4}
-              fill="#0d0d1a"
+              fill="rgb(var(--color-surface-50))"
               stroke={d.color}
               strokeWidth={2.5}
             />

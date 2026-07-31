@@ -111,16 +111,16 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
   if (!pipeline || agents.length === 0) return null
 
   return (
-    <div className="bg-surface-300/50 rounded-xl border border-gray-600/50 shadow-sm overflow-hidden mb-4">
+    <div className="bg-surface-300/50 rounded-xl border border-line/50 shadow-sm overflow-hidden mb-4">
       {/* 标题栏 */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-gray-50 to-white hover:from-gray-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-surface-100 to-surface-50 hover:from-surface-300 transition-colors"
       >
         <div className="flex items-center gap-2">
           <Search size={17} className="text-primary-400" />
-          <span className="text-sm font-semibold text-gray-200">多智能体协作过程</span>
-          <span className="text-xs text-gray-400 bg-surface-400/60 px-2 py-0.5 rounded-full">
+          <span className="text-sm font-semibold text-ink-strong">多智能体协作过程</span>
+          <span className="text-xs text-ink-muted bg-surface-400/60 px-2 py-0.5 rounded-full">
             {agents.length} Agent{agents.length > 1 ? 's' : ''}
           </span>
           {agents.some((a) => a.status === 'thinking') && (
@@ -131,7 +131,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
           )}
         </div>
         <svg
-          className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
+          className={`w-5 h-5 text-ink-muted transition-transform duration-300 ${expanded ? 'rotate-180' : ''}`}
           fill="none" stroke="currentColor" viewBox="0 0 24 24"
         >
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -153,7 +153,7 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                       ? 'bg-primary-50 border-2 border-primary-400 shadow-md scale-105'
                       : agent.status === 'done'
                       ? 'bg-green-50 border-2 border-green-300'
-                      : 'bg-surface-300/30 border-2 border-gray-600/50 opacity-60'
+                      : 'bg-surface-300/30 border-2 border-line/50 opacity-60'
                     }
                   `}
                 >
@@ -182,10 +182,10 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
                   </div>
 
                   <AppIcon name={agent.icon} size={24} className="mb-1" />
-                  <span className="text-xs font-medium text-gray-200 text-center leading-tight">
+                  <span className="text-xs font-medium text-ink-strong text-center leading-tight">
                     {agent.name}
                   </span>
-                  <span className="text-[10px] text-gray-400 mt-1">
+                  <span className="text-[10px] text-ink-muted mt-1">
                     {agent.status === 'waiting' && '等待中'}
                     {agent.status === 'active' && '准备中'}
                     {agent.status === 'thinking' && '思考中...'}
@@ -219,26 +219,26 @@ export default function AgentPipeline({ pipeline }: AgentPipelineProps) {
 
           {/* 任务分配表 */}
           <div className="mt-1 mb-3">
-            <div className="flex items-center gap-1 text-xs text-gray-400 mb-2"><ClipboardList size={12} /> 任务分配</div>
+            <div className="flex items-center gap-1 text-xs text-ink-muted mb-2"><ClipboardList size={12} /> 任务分配</div>
             <div className="space-y-1">
               {agents.map((agent, idx) => (
                 <div
                   key={agent.key}
                   className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg transition-colors ${
                     agent.status === 'thinking'
-                      ? 'bg-primary-50 text-primary-300'
+                      ? 'bg-primary-50 text-primary-500'
                       : agent.status === 'done'
                       ? 'bg-green-50 text-green-700'
-                      : 'bg-surface-300/30 text-gray-500'
+                      : 'bg-surface-300/30 text-ink-subtle'
                   }`}
                 >
-                  <span className="font-mono text-gray-400 w-4">{idx + 1}.</span>
+                  <span className="font-mono text-ink-muted w-4">{idx + 1}.</span>
                   <AppIcon name={agent.icon} size={13} />
                   <span className="font-medium">{agent.name}</span>
-                  <ArrowRight size={11} className="text-gray-500" />
+                  <ArrowRight size={11} className="text-ink-subtle" />
                   <span>{agent.taskName}</span>
                   <span className="ml-auto inline-flex items-center">
-                    {agent.status === 'waiting' && <Hourglass size={12} className="text-gray-500" />}
+                    {agent.status === 'waiting' && <Hourglass size={12} className="text-ink-subtle" />}
                     {agent.status === 'active' && <AppIcon name="🟡" size={14} />}
                     {agent.status === 'thinking' && <MessageCircle size={12} className="text-primary-400" />}
                     {agent.status === 'done' && <AppIcon name="✅" size={13} className="text-green-500" />}

@@ -28,14 +28,15 @@ export interface ModelEntry {
 
 export const MODEL_REGISTRY: ModelEntry[] = [
   // ===== LLM 文字模型 =====
-  { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', provider: 'deepseek', category: 'llm', description: '旗舰 · 49B活跃 · 1M上下文', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
-  { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', provider: 'deepseek', category: 'llm', description: '快速 · 13B活跃 · 1M上下文', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
+  // 讯飞星火系列置顶，X2 为默认文字模型
   { id: 'spark-x2', name: '讯飞星火 X2', provider: 'xfyun', category: 'llm', description: '深度推理 · 最新 · 192K', multimodal: false, api_base: 'https://spark-api-open.xf-yun.com/x2/chat/completions', api_model: 'spark-x', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！获取: console.xfyun.cn → X2 → HTTP服务接口认证信息' },
   { id: 'spark-x2-flash', name: '讯飞星火 X2 Flash', provider: 'xfyun', category: 'llm', description: '高速 · 256K · 2元/M', multimodal: false, api_base: 'https://spark-api-open.xf-yun.com/agent/v1/chat/completions', api_model: 'spark-x', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！' },
   { id: 'spark-pro', name: '讯飞星火 Pro', provider: 'xfyun', category: 'llm', description: '强性能 · 128K', multimodal: false, api_base: 'https://spark-api-open.xf-yun.com/v1/chat/completions', api_model: 'generalv3', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！' },
   { id: 'spark-ultra', name: '讯飞星火 Ultra', provider: 'xfyun', category: 'llm', description: '高性价比 · 指令跟随', multimodal: false, api_base: 'https://spark-api-open.xf-yun.com/v1/chat/completions', api_model: '4.0Ultra', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！' },
   { id: 'spark-max', name: '讯飞星火 Max', provider: 'xfyun', category: 'llm', description: '旗舰 · 最强综合', multimodal: true, api_base: 'https://spark-api-open.xf-yun.com/v1/chat/completions', api_model: 'generalv3.5', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！' },
   { id: 'spark-lite', name: '讯飞星火 Lite', provider: 'xfyun', category: 'llm', description: '永久免费 · 轻量', multimodal: false, api_base: 'https://spark-api-open.xf-yun.com/v1/chat/completions', api_model: 'lite', creds: [{ key: 'api_key', label: 'APIPassword', type: 'password', placeholder: '控制台HTTP服务接口的APIPassword...' }], requiresExtra: '⚠️ 填「APIPassword」(HTTP协议)，不是APIKey！' },
+  { id: 'deepseek-v4-pro', name: 'DeepSeek V4 Pro', provider: 'deepseek', category: 'llm', description: '旗舰 · 49B活跃 · 1M上下文', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
+  { id: 'deepseek-v4-flash', name: 'DeepSeek V4 Flash', provider: 'deepseek', category: 'llm', description: '快速 · 13B活跃 · 1M上下文', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
   { id: 'kimi-k3', name: 'Kimi K3', provider: 'kimi', category: 'llm', description: '旗舰 · 2.8T · 1M上下文', multimodal: true, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
   { id: 'kimi-k2.7-code', name: 'Kimi K2.7 Code', provider: 'kimi', category: 'llm', description: '最强编码 · 256K', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
   { id: 'kimi-k2.7-code-highspeed', name: 'Kimi K2.7 高速', provider: 'kimi', category: 'llm', description: '编码极速 · 180T/s', multimodal: false, creds: [{ key: 'api_key', label: 'API Key', type: 'password', placeholder: 'sk-xxx...' }] },
@@ -354,8 +355,8 @@ function getModelCreds(modelId: string): Record<string, string> {
 export function getSelectedModelId(category: string = 'llm'): string {
   const s = getSettings()
   const ids = s.selectedModelIds || {}
-  const defaults: Record<string, string> = { llm: 'deepseek-v4-flash', image_gen: 'xfyun-tti', digital_human: 'xfyun-digital-human' }
-  return ids[category] || defaults[category] || 'deepseek-v4-flash'
+  const defaults: Record<string, string> = { llm: 'spark-x2', image_gen: 'xfyun-tti', digital_human: 'xfyun-digital-human' }
+  return ids[category] || defaults[category] || 'spark-x2'
 }
 
 /** 检查当前LLM模型是否支持多模态 */
@@ -388,7 +389,7 @@ export async function sendMessage(
   onChunk: (data: any) => void,
   onDone: () => void,
   onError: (error: string) => void,
-  model: string = 'deepseek-v4-flash',
+  model: string = 'spark-x2',
   history: ChatMessage[] = [],
   overrideSystemPrompt?: string,
   images?: { base64: string; mimeType: string }[],

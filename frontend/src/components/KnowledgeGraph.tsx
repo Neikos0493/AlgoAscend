@@ -67,7 +67,7 @@ export default function KnowledgeGraph({ width = 760, height = 520, className = 
       <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
         <defs>
           <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-            <polygon points="0 0, 8 3, 0 6" fill="#4b5563" />
+            <polygon points="0 0, 8 3, 0 6" fill="rgb(var(--color-ink-subtle))" />
           </marker>
           <filter id="nodeShadow">
             <feDropShadow dx="0" dy="1" stdDeviation="2" floodOpacity="0.1" />
@@ -85,7 +85,7 @@ export default function KnowledgeGraph({ width = 760, height = 520, className = 
               key={`${fromId}-${toId}`}
               x1={fromPos.x} y1={fromPos.y}
               x2={toPos.x} y2={toPos.y}
-              stroke={isActive ? '#6366f1' : '#e2e8f0'}
+              stroke={isActive ? '#6366f1' : 'rgb(var(--color-chart-grid))'}
               strokeWidth={isActive ? 1.5 : 0.8}
               markerEnd="url(#arrowhead)"
               className="transition-all duration-300"
@@ -110,8 +110,8 @@ export default function KnowledgeGraph({ width = 760, height = 520, className = 
               <circle
                 cx={pos.x} cy={pos.y}
                 r={isActive ? nodeRadius + 4 : nodeRadius}
-                fill={isActive ? '#1e1b4b' : '#16162a'}
-                stroke={isActive ? '#6366f1' : '#cbd5e1'}
+                fill={isActive ? 'rgb(var(--color-primary-500) / 0.14)' : 'rgb(var(--color-surface-50))'}
+                stroke={isActive ? '#6366f1' : 'rgb(var(--color-chart-grid))' }
                 strokeWidth={isActive ? 2 : 1}
                 filter="url(#nodeShadow)"
                 className="transition-all duration-200"
@@ -147,23 +147,23 @@ export default function KnowledgeGraph({ width = 760, height = 520, className = 
         })}
 
         {/* 标题 */}
-        <text x={width / 2} y={18} textAnchor="middle" className="text-xs font-medium" fill="#6b7280">
+        <text x={width / 2} y={18} textAnchor="middle" className="text-xs font-medium" fill="rgb(var(--color-ink-subtle))">
           C++ 算法课程体系 — 模块前置依赖关系
         </text>
       </svg>
 
       {/* 悬浮提示 */}
       {hovered && (
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-surface-100/90 backdrop-blur border border-gray-700/30 rounded-lg px-3 py-2 shadow-md text-xs text-gray-300">
+        <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 bg-surface-100/90 backdrop-blur border border-line/30 rounded-lg px-3 py-2 shadow-md text-xs text-ink-muted">
           {(() => {
             const mod = CURRICULUM_MODULES.find((m) => m.id === hovered)
             if (!mod) return null
             return (
               <>
-                <span className="font-semibold text-gray-800">
+                <span className="font-semibold text-ink-strong">
                   第{mod.chapter}章 {mod.icon} {mod.name}
                 </span>
-                <span className="text-gray-400 ml-2">{mod.desc}</span>
+                <span className="text-ink-muted ml-2">{mod.desc}</span>
               </>
             )
           })()}

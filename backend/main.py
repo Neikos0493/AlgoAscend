@@ -13,7 +13,7 @@ if sys.platform == "win32":
 # 添加当前目录到路径
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -67,7 +67,8 @@ def _ensure_default_student():
 async def lifespan(app: FastAPI):
     """应用生命周期管理"""
     init_db()
-    # 不再自动创建默认学生 — 由前端本地存档驱动，用户首次对话时才创建
+    # 笔记等独立功能仍使用 student_id=1，启动时确保关联学生存在。
+    _ensure_default_student()
     print("=" * 60)
     print("[AlgoAscend] 服务已启动")
     print(f"后端API: http://{config.host}:{config.port}")
@@ -195,7 +196,9 @@ if os.path.exists(FRONTEND_DIR):
 
     @app.get("/{full_path:path}")
     async def serve_frontend(full_path: str):
-        """服务前端页面"""
+        """服务前端页面，并让未知 API 保持真实的 404。"""
+        if full_path == "api" or full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="API endpoint not found")
         file_path = os.path.join(FRONTEND_DIR, full_path)
         if os.path.exists(file_path) and os.path.isfile(file_path):
             return FileResponse(file_path)

@@ -8,6 +8,9 @@ __pycache__/
 *.py[cod]
 *.pyo
 *.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
 dist/
 build/
 *.egg
@@ -16,10 +19,25 @@ venv/
 
 # ===== SQLite 数据库 =====
 *.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
-# ===== 前端构建产物 =====
+# ===== 前端依赖与构建产物 =====
 frontend/dist/
 frontend/node_modules/
+*.tsbuildinfo
+
+# ===== 日志与运行时文件 =====
+*.log
+*.pid
+
+# ===== 本地截图与调试产物 =====
+frontend/*.png
+frontend/*.jpg
+frontend/*.jpeg
+frontend/*.webp
 
 # ===== IDE =====
 .idea/

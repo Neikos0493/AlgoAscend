@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useStore, AppSettings, Account } from '../stores/useStore'
+import { useStore, AppSettings } from '../stores/useStore'
 import { DEFAULT_SYSTEM_PROMPT, PROVIDERS, MODEL_REGISTRY, CATEGORY_LABELS, getModelEntry, type ModelCategory, type ModelEntry } from '../services/api'
 import { AppIcon } from './Icon'
-import { Copy, Eye, EyeOff, PenLine, Trash2, X } from 'lucide-react'
+import { ChevronDown, Copy, Eye, EyeOff, PenLine, Trash2, X } from 'lucide-react'
 
 const TABS = [
   { key: 'accounts' as const, label: '账号管理', icon: '👤' },
@@ -21,18 +21,18 @@ export default function SettingsModal() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* 遮罩 — 强模糊 + 深暗 */}
       <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-md transition-all duration-300"
+        className="absolute inset-0 bg-[rgb(var(--color-overlay)/0.62)] backdrop-blur-md transition-all duration-300"
         onClick={() => setSettingsOpen(false)}
       />
 
       {/* 弹窗 */}
-      <div className="relative bg-surface-200/95 backdrop-blur-2xl rounded-2xl shadow-2xl shadow-black/50 border border-gray-700/40 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col">
+      <div className="relative bg-surface-50/95 backdrop-blur-2xl rounded-2xl shadow-[var(--theme-shadow)] border border-line/40 w-full max-w-xl max-h-[85vh] overflow-hidden flex flex-col">
         {/* 标题栏 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-700/30">
-          <h2 className="flex items-center gap-2 text-lg font-bold text-white"><AppIcon name="⚙️" size={19} className="text-primary-400" /> 设置</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line/30">
+          <h2 className="flex items-center gap-2 text-lg font-bold text-ink-strong"><AppIcon name="⚙️" size={19} className="text-primary-400" /> 设置</h2>
           <button
             onClick={() => setSettingsOpen(false)}
-            className="text-gray-400 hover:text-gray-200 leading-none"
+            className="text-ink-muted hover:text-ink-strong leading-none"
           >
             <X size={20} />
           </button>
@@ -69,15 +69,15 @@ function SettingsContent({
   return (
     <>
       {/* Tab 切换 */}
-      <div className="flex border-b border-gray-700/30 px-6">
+      <div className="flex border-b border-line/30 px-6">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === tab.key
-                ? 'border-primary-500 text-primary-300'
-                : 'border-transparent text-gray-500 hover:text-gray-200'
+                ? 'border-primary-500 text-primary-500'
+                : 'border-transparent text-ink-subtle hover:text-ink-strong'
             }`}
           >
             <AppIcon name={tab.icon} size={15} /> {tab.label}
@@ -92,17 +92,17 @@ function SettingsContent({
           <>
             {/* 当前账号 */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-200 mb-2">当前账号</label>
+              <label className="block text-sm font-medium text-ink-strong mb-2">当前账号</label>
               {accounts.map((acc) => (
                 <div
                   key={acc.id}
                   className={`flex items-center gap-3 p-3 rounded-xl border mb-2 transition-colors ${
                     acc.id === activeAccountId
                       ? 'bg-primary-500/10 border-primary-500/30'
-                      : 'bg-surface-300/20 border-gray-700/30 hover:border-gray-600/50'
+                      : 'bg-surface-300/20 border-line/30 hover:border-line/50'
                   }`}
                 >
-                  <div className="w-10 h-10 rounded-xl bg-primary-500/15 border border-primary-500/30 flex items-center justify-center text-primary-300">
+                  <div className="w-10 h-10 rounded-xl bg-primary-500/15 border border-primary-500/30 flex items-center justify-center text-primary-500">
                     <AppIcon name={acc.avatar} size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -120,13 +120,13 @@ function SettingsContent({
                       />
                     ) : (
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-gray-200 truncate">{acc.name}</span>
+                        <span className="text-sm font-medium text-ink-strong truncate">{acc.nickname}</span>
                         {acc.id === activeAccountId && (
-                          <span className="text-xs bg-primary-500/20 text-primary-300 px-1.5 py-0.5 rounded-full">当前</span>
+                          <span className="text-xs bg-primary-500/20 text-primary-500 px-1.5 py-0.5 rounded-full">当前</span>
                         )}
                       </div>
                     )}
-                    <p className="text-xs text-gray-500 mt-0.5">
+                    <p className="text-xs text-ink-subtle mt-0.5">
                       创建于 {new Date(acc.createdAt).toLocaleDateString('zh-CN')}
                     </p>
                   </div>
@@ -134,14 +134,14 @@ function SettingsContent({
                     {acc.id !== activeAccountId && (
                       <button
                         onClick={() => switchAccount(acc.id)}
-                        className="text-xs px-2 py-1 bg-primary-500/20 text-primary-300 rounded-lg hover:bg-primary-500/30 transition-colors"
+                        className="text-xs px-2 py-1 bg-primary-500/20 text-primary-500 rounded-lg hover:bg-primary-500/30 transition-colors"
                       >
                         切换
                       </button>
                     )}
                     <button
-                      onClick={() => { setEditingAccountId(acc.id); setEditingName(acc.name) }}
-                      className="text-xs px-2 py-1 text-gray-400 hover:text-gray-200 hover:bg-surface-300/30 rounded-lg transition-colors"
+                      onClick={() => { setEditingAccountId(acc.id); setEditingName(acc.nickname) }}
+                      className="text-xs px-2 py-1 text-ink-muted hover:text-ink-strong hover:bg-surface-300/30 rounded-lg transition-colors"
                       title="重命名"
                     >
                       <PenLine size={14} />
@@ -149,7 +149,7 @@ function SettingsContent({
                     {accounts.length > 1 && (
                       <button
                         onClick={() => {
-                          if (confirm(`确定删除账号"${acc.name}"？\n该账号的所有数据（画像、对话、进度）将被永久删除。`)) {
+                          if (confirm(`确定删除账号"${acc.nickname}"？\n该账号的所有数据（画像、对话、进度）将被永久删除。`)) {
                             deleteAccount(acc.id)
                           }
                         }}
@@ -165,25 +165,24 @@ function SettingsContent({
             </div>
 
             {/* 新建账号 */}
-            <div className="p-3 bg-surface-300/20 rounded-xl border border-gray-700/30">
-              <label className="block text-sm font-medium text-gray-200 mb-2">新建账号</label>
+            <div className="p-3 bg-surface-300/20 rounded-xl border border-line/30">
+              <label className="block text-sm font-medium text-ink-strong mb-2">新建账号</label>
               <div className="flex gap-2">
                 <input
                   value={newAccountName}
                   onChange={(e) => setNewAccountName(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter' && newAccountName.trim()) { createAccount(newAccountName.trim(), ''); setNewAccountName('') } }}
-                  placeholder="输入账号名称..."
+                  onKeyDown={(e) => { if (e.key === 'Enter') { createAccount(newAccountName, ''); setNewAccountName('') } }}
+                  placeholder="留空将使用“默认用户”"
                   className="input-field flex-1 text-sm"
                 />
                 <button
-                  onClick={() => { if (newAccountName.trim()) { createAccount(newAccountName.trim(), ''); setNewAccountName('') } }}
-                  disabled={!newAccountName.trim()}
-                  className="btn-primary text-sm px-4 disabled:opacity-50"
+                  onClick={() => { createAccount(newAccountName, ''); setNewAccountName('') }}
+                  className="btn-primary text-sm px-4"
                 >
                   创建
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-1.5">
+              <p className="text-xs text-ink-muted mt-1.5">
                 每个账号拥有独立的学习画像、仪表盘数据、对话记录和学习路径。
               </p>
             </div>
@@ -193,7 +192,7 @@ function SettingsContent({
         {/* ===== 模型配置 ===== */}
         {activeTab === 'apikey' && (
           <div className="space-y-5">
-            <p className="text-xs text-gray-400">
+            <p className="text-xs text-ink-muted">
               为三大类场景分别选择模型并配置鉴权。配置后即可在对话、生图、数字人等功能中使用。
             </p>
 
@@ -210,12 +209,12 @@ function SettingsContent({
             ))}
 
             {/* 系统提示词 */}
-            <div className="pt-2 border-t border-gray-700/30">
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
+            <div className="pt-2 border-t border-line/30">
+              <label className="block text-sm font-medium text-ink-strong mb-1.5">
                 自定义系统提示词
                 <button
                   onClick={() => setSettings({ systemPrompt: DEFAULT_SYSTEM_PROMPT })}
-                  className="ml-2 text-xs text-primary-500 hover:text-primary-300 underline"
+                  className="ml-2 text-xs text-primary-500 hover:text-primary-500 underline"
                 >
                   恢复默认
                 </button>
@@ -230,7 +229,7 @@ function SettingsContent({
                 rows={6}
                 className="w-full input-field resize-none text-xs font-mono"
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-ink-muted mt-1">
                 自定义 AI 的角色和行为规则。留空使用内置的专业提示词。
               </p>
             </div>
@@ -241,9 +240,9 @@ function SettingsContent({
         {activeTab === 'model' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
+              <label className="block text-sm font-medium text-ink-strong mb-1.5">
                 最大输出 Token 数
-                <span className="ml-2 text-xs text-gray-400">{settings.maxTokens}</span>
+                <span className="ml-2 text-xs text-ink-muted">{settings.maxTokens}</span>
               </label>
               <input
                 type="range"
@@ -257,20 +256,20 @@ function SettingsContent({
                 }}
                 className="w-full accent-primary-500"
               />
-              <div className="flex justify-between text-xs text-gray-400">
+              <div className="flex justify-between text-xs text-ink-muted">
                 <span>256</span>
                 <span>4096 (默认)</span>
                 <span>8192</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-ink-muted mt-1">
                 控制 AI 回复的最大长度。越大越详细，但消耗更多 Token 配额。
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
+              <label className="block text-sm font-medium text-ink-strong mb-1.5">
                 创意度 (Temperature)
-                <span className="ml-2 text-xs text-gray-400">{settings.temperature.toFixed(1)}</span>
+                <span className="ml-2 text-xs text-ink-muted">{settings.temperature.toFixed(1)}</span>
               </label>
               <input
                 type="range"
@@ -284,12 +283,12 @@ function SettingsContent({
                 }}
                 className="w-full accent-primary-500"
               />
-              <div className="flex justify-between text-xs text-gray-400">
+              <div className="flex justify-between text-xs text-ink-muted">
                 <span>0 (精确严谨)</span>
                 <span>1 (平衡)</span>
                 <span>2 (天马行空)</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-ink-muted mt-1">
                 低值 = 回答更一致精确（适合教学），高值 = 更有创造性。
               </p>
             </div>
@@ -306,9 +305,9 @@ function SettingsContent({
         {activeTab === 'context' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
+              <label className="block text-sm font-medium text-ink-strong mb-1.5">
                 上下文轮数限制
-                <span className="ml-2 text-xs text-gray-400">
+                <span className="ml-2 text-xs text-ink-muted">
                   {settings.maxContextMessages === 0 ? '不记忆' : `最近 ${settings.maxContextMessages} 轮`}
                 </span>
               </label>
@@ -324,12 +323,12 @@ function SettingsContent({
                 }}
                 className="w-full accent-primary-500"
               />
-              <div className="flex justify-between text-xs text-gray-400">
+              <div className="flex justify-between text-xs text-ink-muted">
                 <span>0 (无记忆)</span>
                 <span>10 (默认)</span>
                 <span>30</span>
               </div>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-ink-muted mt-1">
                 AI 能"记住"最近多少轮对话。更多 = 上下文更长但消耗更多 Token。
               </p>
             </div>
@@ -340,8 +339,8 @@ function SettingsContent({
               </p>
             </div>
 
-            <div className="p-3 bg-surface-300/30 rounded-lg border border-gray-600/50">
-              <p className="text-xs text-gray-400">
+            <div className="p-3 bg-surface-300/30 rounded-lg border border-line/50">
+              <p className="text-xs text-ink-muted">
                 <strong>预估 Token 消耗</strong>（每轮约 500 tokens）：
               </p>
               <div className="mt-1 space-y-0.5">
@@ -359,14 +358,14 @@ function SettingsContent({
         {activeTab === 'prompt' && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-200 mb-1.5">
+              <label className="block text-sm font-medium text-ink-strong mb-1.5">
                 当前生效的系统提示词
-                <span className="ml-2 text-xs text-gray-400">
+                <span className="ml-2 text-xs text-ink-muted">
                   {settings.systemPrompt ? '自定义' : '默认'}
                 </span>
               </label>
               <div className="relative">
-                <pre className="w-full bg-gray-900 text-green-400 rounded-lg p-4 text-xs font-mono overflow-auto max-h-[50vh] whitespace-pre-wrap leading-relaxed border border-gray-700">
+                <pre className="w-full bg-code-bg text-green-400 rounded-lg p-4 text-xs font-mono overflow-auto max-h-[50vh] whitespace-pre-wrap leading-relaxed border border-code-line">
                   {settings.systemPrompt || DEFAULT_SYSTEM_PROMPT}
                 </pre>
                 <button
@@ -374,12 +373,12 @@ function SettingsContent({
                     const text = settings.systemPrompt || DEFAULT_SYSTEM_PROMPT
                     navigator.clipboard.writeText(text)
                   }}
-                  className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 rounded text-xs transition-colors"
+                  className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 bg-code-header hover:bg-surface-400 text-ink rounded text-xs border border-code-line transition-colors"
                 >
                   <Copy size={12} /> 复制
                 </button>
               </div>
-              <p className="text-xs text-gray-400 mt-2">
+              <p className="text-xs text-ink-muted mt-2">
                 {settings.systemPrompt
                   ? '当前使用自定义提示词（在"账号"页设置）。'
                   : '当前使用内置默认提示词，可在"账号"页自定义。'}
@@ -396,7 +395,7 @@ function SettingsContent({
       </div>
 
       {/* 底部操作栏 */}
-      <div className="px-6 py-3 border-t border-gray-700/30 flex items-center justify-between bg-surface-300/30">
+      <div className="px-6 py-3 border-t border-line/30 flex items-center justify-between bg-surface-300/30">
         <button
           onClick={() => {
             if (confirm('确定恢复所有默认设置？这将清除自定义 API Key 和提示词。')) {
@@ -426,7 +425,7 @@ function SettingsContent({
 function TokenEstimate({ rounds }: { rounds: number }) {
   const tokens = rounds === 0 ? '≈ 0' : `≈ ${rounds * 500} ~ ${rounds * 700}`
   return (
-    <p className="text-xs text-gray-500">
+    <p className="text-xs text-ink-subtle">
       {rounds === 0 ? '不记忆' : `${rounds} 轮`}：{tokens} tokens/次
     </p>
   )
@@ -449,6 +448,7 @@ function ModelCategorySection({
   const selectedModelId = settings.selectedModelIds?.[category] || models[0]?.id || ''
   const selectedModel = getModelEntry(selectedModelId)
   const creds = settings.modelCreds?.[selectedModelId] || {}
+  const [modelMenuOpen, setModelMenuOpen] = useState(false)
 
   // 检查是否已配置
   const allFieldsFilled = selectedModel
@@ -459,14 +459,14 @@ function ModelCategorySection({
     <div className={`p-4 rounded-xl border transition-colors ${
       allFieldsFilled
         ? 'bg-green-500/5 border-green-500/20'
-        : 'bg-surface-300/20 border-gray-700/30'
+        : 'bg-surface-300/20 border-line/30'
     }`}>
       {/* 标题行 */}
       <div className="flex items-center gap-2 mb-3">
-        <AppIcon name={info.icon} size={20} className="text-primary-300" />
+        <AppIcon name={info.icon} size={20} className="text-primary-500" />
         <div>
-          <label className="text-sm font-medium text-gray-200">{info.name}</label>
-          <p className="text-[10px] text-gray-500">{info.desc}</p>
+          <label className="text-sm font-medium text-ink-strong">{info.name}</label>
+          <p className="text-[10px] text-ink-subtle">{info.desc}</p>
         </div>
         {allFieldsFilled && (
           <span className="text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full ml-auto">
@@ -476,24 +476,54 @@ function ModelCategorySection({
       </div>
 
       {/* 模型下拉选择 */}
-      <div className="mb-3">
-        <label className="text-[11px] text-gray-400 mb-1 block">选择模型</label>
-        <select
-          value={selectedModelId}
-          onChange={(e) => {
-            setSettings({
-              selectedModelIds: { ...settings.selectedModelIds, [category]: e.target.value }
-            })
-            flashSaved()
-          }}
-          className="w-full input-field text-sm py-2"
+      <div className="mb-3 relative">
+        <label className="text-[11px] text-ink-muted mb-1 block">选择模型</label>
+        <button
+          type="button"
+          onClick={() => setModelMenuOpen(open => !open)}
+          aria-haspopup="listbox"
+          aria-expanded={modelMenuOpen}
+          className="w-full input-field text-sm py-2 flex items-center gap-2 text-left"
         >
-          {models.map(m => (
-            <option key={m.id} value={m.id}>
-              {m.multimodal ? '🖼️ ' : ''}{m.name} — {m.description}
-            </option>
-          ))}
-        </select>
+          <span className="flex-1 truncate">
+            {selectedModel?.multimodal ? '🖼️ ' : ''}{selectedModel?.name} — {selectedModel?.description}
+          </span>
+          <ChevronDown
+            size={15}
+            className={`shrink-0 text-ink-muted transition-transform ${modelMenuOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {modelMenuOpen && (
+          <div
+            role="listbox"
+            className="absolute top-full left-0 right-0 mt-1 z-30 max-h-56 overflow-y-auto rounded-lg border border-line/50 bg-surface-100 shadow-xl"
+          >
+            {models.map(m => (
+              <button
+                key={m.id}
+                type="button"
+                role="option"
+                aria-selected={m.id === selectedModelId}
+                onClick={() => {
+                  setSettings({
+                    selectedModelIds: { ...settings.selectedModelIds, [category]: m.id }
+                  })
+                  setModelMenuOpen(false)
+                  flashSaved()
+                }}
+                className={`w-full px-3 py-2 text-left text-sm transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                  m.id === selectedModelId
+                    ? 'bg-primary-500/15 text-primary-500'
+                    : 'text-ink-strong hover:bg-surface-300/50'
+                }`}
+              >
+                <span className="block truncate">
+                  {m.multimodal ? '🖼️ ' : ''}{m.name} — {m.description}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* 鉴权字段 */}
@@ -501,7 +531,7 @@ function ModelCategorySection({
         <div className="space-y-2">
           {selectedModel.creds.map(cred => (
             <div key={cred.key}>
-              <label className="text-[11px] text-gray-400 mb-0.5 block">{cred.label}</label>
+              <label className="text-[11px] text-ink-muted mb-0.5 block">{cred.label}</label>
               <div className="relative">
                 <input
                   type={cred.type === 'password' ? (showKey ? 'text' : 'password') : 'text'}
@@ -522,7 +552,7 @@ function ModelCategorySection({
                 {cred.type === 'password' && (
                   <button
                     onClick={() => setShowKey(!showKey)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-muted hover:text-ink"
                   >
                     {showKey ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -535,7 +565,7 @@ function ModelCategorySection({
 
       {/* 额外说明 */}
       {selectedModel?.requiresExtra && (
-        <p className="text-[10px] text-gray-500 mt-2">
+        <p className="text-[10px] text-ink-subtle mt-2">
           <a
             href="https://console.xfyun.cn/"
             target="_blank"

@@ -3,7 +3,8 @@
 """
 from datetime import datetime
 from sqlalchemy import (
-    Column, Integer, String, Text, Float, DateTime, JSON, ForeignKey, create_engine, Boolean
+    Column, Integer, String, Text, Float, DateTime, JSON, ForeignKey, create_engine,
+    Boolean, LargeBinary,
 )
 from sqlalchemy.orm import DeclarativeBase, Session, relationship
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
@@ -250,6 +251,38 @@ class Assessment(Base):
             "report_content": self.report_content,
             "created_at": self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class ProblemDetailCache(Base):
+    """Durable normalized problem-detail cache keyed by canonical identity."""
+    __tablename__ = "problem_detail_cache"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    canonical_id = Column(String(200), nullable=False, unique=True, index=True)
+    platform = Column(String(50), nullable=False, index=True)
+    native_id = Column(String(200), nullable=False)
+    canonical_url = Column(String(1000), nullable=False, default="")
+    detail = Column(JSON, nullable=False, default=dict)
+    schema_version = Column(Integer, nullable=False, default=1)
+    source = Column(String(50), nullable=False, default="live")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class ProblemMediaCache(Base):
+    """Problem media manifest and optional downloaded content storage."""
+    __tablename__ = "problem_media_cache"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    media_key = Column(String(64), nullable=False, unique=True, index=True)
+    canonical_id = Column(String(200), nullable=False, index=True)
+    source_url = Column(String(2000), nullable=False)
+    media_type = Column(String(100), nullable=False, default="")
+    manifest = Column(JSON, nullable=False, default=dict)
+    content = Column(LargeBinary, nullable=True)
+    content_hash = Column(String(128), nullable=False, default="")
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 
 class Submission(Base):

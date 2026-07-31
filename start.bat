@@ -25,7 +25,7 @@ if %errorlevel% neq 0 (
 
 echo [1/2] 启动后端服务...
 cd /d "%~dp0backend"
-start "C++算法学习平台-后端" cmd /k "pip install -r requirements.txt && python main.py"
+start "C++算法学习平台-后端" cmd /k "python -m pip install -r requirements.txt && python main.py"
 
 echo [2/2] 启动前端服务...
 cd /d "%~dp0frontend"

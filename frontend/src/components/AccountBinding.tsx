@@ -133,14 +133,14 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
 
   // 评分颜色
   const ratingColor = (rating: number | null | undefined): string => {
-    if (!rating) return 'text-gray-400'
+    if (!rating) return 'text-ink-muted'
     if (rating >= 2400) return 'text-red-500'
     if (rating >= 2100) return 'text-orange-500'
     if (rating >= 1900) return 'text-purple-500'
     if (rating >= 1600) return 'text-blue-500'
     if (rating >= 1400) return 'text-cyan-500'
     if (rating >= 1200) return 'text-green-500'
-    return 'text-gray-500'
+    return 'text-ink-subtle'
   }
 
   return (
@@ -161,7 +161,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                   ? 'border-green-200 bg-green-50/50'
                   : isBinding
                   ? 'border-primary-300 bg-primary-50/30'
-                  : 'border-gray-600/50 bg-surface-300/50 hover:border-gray-300'
+                  : 'border-line/50 bg-surface-300/50 hover:border-line'
               }`}
             >
               {/* 已绑定状态 */}
@@ -169,8 +169,8 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <AppIcon name={info.icon} size={20} className="text-gray-300" />
-                      <span className="font-semibold text-sm text-gray-200">{info.name}</span>
+                      <AppIcon name={info.icon} size={20} className="text-ink" />
+                      <span className="font-semibold text-sm text-ink-strong">{info.name}</span>
                       {account.verified && (
                         <Check size={13} className="text-green-500" aria-label="已验证" />
                       )}
@@ -179,14 +179,14 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       <button
                         onClick={() => handleRefresh(info.id)}
                         disabled={isLoading}
-                        className="text-gray-400 hover:text-primary-500 p-1"
+                        className="text-ink-muted hover:text-primary-500 p-1"
                         title="刷新数据"
                       >
                         <RefreshCw size={13} className={isLoading ? 'animate-spin' : ''} />
                       </button>
                       <button
                         onClick={() => handleUnbind(info.id)}
-                        className="text-gray-400 hover:text-red-500 p-1"
+                        className="text-ink-muted hover:text-red-500 p-1"
                         title="解绑"
                       >
                         <X size={14} />
@@ -199,18 +199,18 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                     <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
                       {account.stats.rating !== null && (
                         <div>
-                          <span className="text-gray-400">Rating</span>
+                          <span className="text-ink-muted">Rating</span>
                           <span className={`ml-1 font-bold ${ratingColor(account.stats.rating)}`}>
                             {account.stats.rating}
                           </span>
                           {account.stats.rank && (
-                            <span className="text-gray-400 ml-1">({account.stats.rank})</span>
+                            <span className="text-ink-muted ml-1">({account.stats.rank})</span>
                           )}
                         </div>
                       )}
                       {account.stats.maxRating !== null && (
                         <div>
-                          <span className="text-gray-400">最高</span>
+                          <span className="text-ink-muted">最高</span>
                           <span className={`ml-1 font-semibold ${ratingColor(account.stats.maxRating)}`}>
                             {account.stats.maxRating}
                           </span>
@@ -218,7 +218,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       )}
                       {account.stats.problemsSolved !== null && (
                         <div>
-                          <span className="text-gray-400">已通过</span>
+                          <span className="text-ink-muted">已通过</span>
                           <span className="ml-1 font-semibold text-green-600">
                             {account.stats.problemsSolved}
                           </span>
@@ -226,7 +226,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       )}
                       {account.stats.contestsParticipated !== null && (
                         <div>
-                          <span className="text-gray-400">参赛</span>
+                          <span className="text-ink-muted">参赛</span>
                           <span className="ml-1 font-semibold text-blue-600">
                             {account.stats.contestsParticipated}
                           </span>
@@ -234,7 +234,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       )}
                       {account.stats.acceptanceRate !== null && (
                         <div>
-                          <span className="text-gray-400">通过率</span>
+                          <span className="text-ink-muted">通过率</span>
                           <span className="ml-1 font-semibold text-purple-600">
                             {account.stats.acceptanceRate}%
                           </span>
@@ -243,7 +243,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                     </div>
                   )}
 
-                  <div className="mt-2 flex items-center gap-2 text-[10px] text-gray-400">
+                  <div className="mt-2 flex items-center gap-2 text-[10px] text-ink-muted">
                     <span>@{account.handle}</span>
                     {account.lastUpdated && (
                       <span>· {new Date(account.lastUpdated).toLocaleDateString('zh-CN')}</span>
@@ -263,8 +263,8 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                 /* 绑定中 */
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <AppIcon name={info.icon} size={20} className="text-gray-300" />
-                    <span className="font-semibold text-sm text-gray-200">{info.name}</span>
+                    <AppIcon name={info.icon} size={20} className="text-ink" />
+                    <span className="font-semibold text-sm text-ink-strong">{info.name}</span>
                     <span className="text-xs text-primary-500">绑定中</span>
                   </div>
 
@@ -280,11 +280,11 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                         ? '输入用户名/ID'
                         : '输入用户名或主页链接'
                     }
-                    className="w-full text-xs border border-gray-600/50 rounded-lg px-3 py-2 mb-2 focus:outline-none focus:ring-2 focus:ring-primary-200"
+                    className="w-full input-field text-xs px-3 py-2 mb-2"
                     autoFocus
                   />
                   {info.id === 'nowcoder' && (
-                    <p className="flex items-start gap-1 text-[10px] text-gray-400 mb-2">
+                    <p className="flex items-start gap-1 text-[10px] text-ink-muted mb-2">
                       <AppIcon name="💡" size={11} className="mt-px shrink-0" /> <span>在浏览器打开 <code className="bg-surface-400/60 px-1 rounded">ac.nowcoder.com/acm/contest/profile/你的UID</code>，复制末尾的数字</span>
                     </p>
                   )}
@@ -295,25 +295,25 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                       <input
                         type="number"
                         placeholder="Rating"
-                        className="text-xs border rounded px-2 py-1.5"
+                        className="input-field text-xs rounded px-2 py-1.5"
                         onChange={(e) => setStatsInput(s => ({ ...s, rating: parseInt(e.target.value) || null }))}
                       />
                       <input
                         type="number"
                         placeholder="已通过题数"
-                        className="text-xs border rounded px-2 py-1.5"
+                        className="input-field text-xs rounded px-2 py-1.5"
                         onChange={(e) => setStatsInput(s => ({ ...s, problemsSolved: parseInt(e.target.value) || null }))}
                       />
                       <input
                         type="number"
                         placeholder="参赛次数"
-                        className="text-xs border rounded px-2 py-1.5"
+                        className="input-field text-xs rounded px-2 py-1.5"
                         onChange={(e) => setStatsInput(s => ({ ...s, contestsParticipated: parseInt(e.target.value) || null }))}
                       />
                       <input
                         type="number"
                         placeholder="通过率(%)"
-                        className="text-xs border rounded px-2 py-1.5"
+                        className="input-field text-xs rounded px-2 py-1.5"
                         onChange={(e) => setStatsInput(s => ({ ...s, acceptanceRate: parseInt(e.target.value) || null }))}
                       />
                     </div>
@@ -333,7 +333,7 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                     </button>
                     <button
                       onClick={() => { setBinding(null); setError(null) }}
-                      className="text-xs text-gray-400 hover:text-gray-400"
+                      className="text-xs text-ink-muted hover:text-ink-muted"
                     >
                       取消
                     </button>
@@ -346,8 +346,8 @@ export default function AccountBinding({ onAccountsChange }: AccountBindingProps
                   className="w-full flex items-center justify-between"
                 >
                   <div className="flex items-center gap-2">
-                    <AppIcon name={info.icon} size={20} className="text-gray-300 opacity-50" />
-                    <span className="text-sm text-gray-500">{info.name}</span>
+                    <AppIcon name={info.icon} size={20} className="text-ink opacity-50" />
+                    <span className="text-sm text-ink-subtle">{info.name}</span>
                   </div>
                   <span className="text-xs text-primary-500">+ 绑定</span>
                 </button>
@@ -383,28 +383,28 @@ function SummaryCard({ accounts }: { accounts: PlatformAccount[] }) {
 
   return (
     <div className="card bg-gradient-to-r from-primary-50 to-blue-50 border-primary-100">
-      <h4 className="flex items-center gap-1.5 text-sm font-semibold text-gray-200 mb-3">
+      <h4 className="flex items-center gap-1.5 text-sm font-semibold text-ink-strong mb-3">
         <AppIcon name="📊" size={15} className="text-primary-400" /> 多平台汇总 ({verifiedAccounts.length} 个平台已验证)
       </h4>
       <div className="grid grid-cols-3 gap-4 text-center">
         <div>
           <div className="text-2xl font-bold text-green-600">{totalProblems}</div>
-          <div className="text-xs text-gray-500">总做题数</div>
+          <div className="text-xs text-ink-subtle">总做题数</div>
         </div>
         <div>
           <div className="text-2xl font-bold text-purple-600">{totalContests}</div>
-          <div className="text-xs text-gray-500">总参赛数</div>
+          <div className="text-xs text-ink-subtle">总参赛数</div>
         </div>
         <div>
           <div className={`text-2xl font-bold ${
             maxRating >= 2000 ? 'text-red-500' :
             maxRating >= 1600 ? 'text-blue-500' :
             maxRating >= 1200 ? 'text-green-500' :
-            'text-gray-400'
+            'text-ink-muted'
           }`}>
             {maxRating || '—'}
           </div>
-          <div className="text-xs text-gray-500">最高 Rating</div>
+          <div className="text-xs text-ink-subtle">最高 Rating</div>
         </div>
       </div>
     </div>

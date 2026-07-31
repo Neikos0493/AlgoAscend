@@ -7,6 +7,7 @@ import { getRandomProblem, type RandomProblem } from '../services/randomProblem'
 import { useStore } from '../stores/useStore'
 import { AppIcon } from './Icon'
 import { ExternalLink } from 'lucide-react'
+import { openProblemInEditor } from '../services/editorHandoff'
 
 // ===== 参数 =====
 const PARTICLE_COUNT = 3500
@@ -82,6 +83,7 @@ function project(
 }
 
 export default function OrbitParticleRing({ enabled = true, onFocusChange }: OrbitParticleRingProps) {
+  const theme = useStore(state => state.theme)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<Particle[]>([])
   const mouseRef = useRef({ x: -9999, y: -9999 })
@@ -369,7 +371,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
           ctx.beginPath()
           ctx.moveTo(prevRenderSx, prevRenderSy)
           ctx.lineTo(renderSx, renderSy)
-          ctx.strokeStyle = `hsla(${p.h}, ${p.s}%, ${p.l}%, ${alpha * 0.3})`
+          ctx.strokeStyle = `hsla(${p.h}, ${theme === 'light' && !focusActive ? Math.min(p.s, 78) : p.s}%, ${theme === 'light' && !focusActive ? Math.min(p.l, 32) : p.l}%, ${alpha * (theme === 'light' && !focusActive ? 0.38 : 0.3)})`
           ctx.lineWidth = Math.min(3, size * renderScale * 0.7)
           ctx.stroke()
         }
@@ -418,7 +420,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
           ctx.arc(renderSx, renderSy, 2.5 * scale, 0, Math.PI * 2)
           ctx.fill()
         } else {
-          ctx.fillStyle = `hsla(${p.h}, ${p.s}%, ${p.l}%, ${alpha})`
+          ctx.fillStyle = `hsla(${p.h}, ${theme === 'light' && !focusActive ? Math.min(p.s, 82) : p.s}%, ${theme === 'light' && !focusActive ? Math.min(p.l, 30) : p.l}%, ${alpha * (theme === 'light' && !focusActive ? 0.9 : 1)})`
           ctx.beginPath()
           ctx.arc(renderSx, renderSy, Math.min(4, size * renderScale), 0, Math.PI * 2)
           ctx.fill()
@@ -435,7 +437,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('click', onClick)
     }
-  }, [enabled, enterFocus])
+  }, [enabled, enterFocus, theme])
 
   return (
     <>
@@ -496,11 +498,11 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
               ) : problem ? (
                 <div>
                   <div className="flex items-start gap-3">
-                    <AppIcon name={problem.platform_icon || '💻'} size={20} className="mt-0.5 text-cyan-200" />
+                    <AppIcon name={problem.platformIcon || '💻'} size={20} className="mt-0.5 text-cyan-200" />
                     <div className="min-w-0 flex-1">
                       <h3 className="text-sm font-semibold leading-6 text-gray-100">{problem.title}</h3>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-cyan-300/10 px-2 py-0.5 text-[11px] text-cyan-200">{problem.platform_name}</span>
+                        <span className="rounded-full bg-cyan-300/10 px-2 py-0.5 text-[11px] text-cyan-200">{problem.platformName}</span>
                         <span className="rounded-full bg-violet-300/10 px-2 py-0.5 text-[11px] text-violet-200">{problem.difficulty}</span>
                         {problem.tags.slice(0, 3).map((tag) => (
                           <span key={tag} className="rounded-full bg-white/5 px-2 py-0.5 text-[11px] text-gray-400">{tag}</span>
@@ -517,17 +519,7 @@ export default function OrbitParticleRing({ enabled = true, onFocusChange }: Orb
                     打开原题 <ExternalLink size={14} className="ml-1" aria-hidden="true" />
                   </a>
                   <button
-                    onClick={() => {
-                      sessionStorage.setItem('__EDITOR_PROBLEM', JSON.stringify({
-                        p: {
-                          id: problem.id, title: problem.title,
-                          platform: problem.platform, platform_name: problem.platform_name,
-                          difficulty: problem.difficulty, tags: problem.tags, url: problem.url,
-                        },
-                        ts: Date.now(),
-                      }))
-                      useStore.getState().setActiveTab('editor')
-                    }}
+                    onClick={() => openProblemInEditor(problem)}
                     className="mt-2 flex w-full items-center justify-center rounded-xl border border-primary-500/25 bg-primary-500/10 px-4 py-2 text-sm font-medium text-primary-300 transition hover:border-primary-400/50 hover:bg-primary-500/20"
                   >
                     <AppIcon name="💻" size={14} className="mr-1.5" /> 在编辑器中打开

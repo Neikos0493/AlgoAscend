@@ -1,7 +1,8 @@
 """错题本 CRUD 路由"""
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from sqlalchemy.exc import SQLAlchemyError
 from database import get_db_sync
 from models import ErrorNotebookEntry
 
@@ -10,27 +11,27 @@ router = APIRouter(prefix="/api/error-notebook", tags=["error-notebook"])
 
 class ErrorNotebookCreate(BaseModel):
     problem_id: str = ""
-    problem_title: str = ""
+    problem_title: str = Field(min_length=1, max_length=300)
     problem_platform: str = ""
     problem_url: str = ""
     difficulty: str = ""
-    tags: list = []
+    tags: list[str] = Field(default_factory=list)
     user_approach: str = ""
     error_reasons: str = ""
     better_solution: str = ""
     notes: str = ""
-    submission_id: int = None
+    submission_id: int | None = None
     submission_code: str = ""
 
 
 class ErrorNotebookUpdate(BaseModel):
-    problem_title: str = None
-    user_approach: str = None
-    error_reasons: str = None
-    better_solution: str = None
-    notes: str = None
-    difficulty: str = None
-    tags: list = None
+    problem_title: str | None = Field(default=None, min_length=1, max_length=300)
+    user_approach: str | None = None
+    error_reasons: str | None = None
+    better_solution: str | None = None
+    notes: str | None = None
+    difficulty: str | None = None
+    tags: list[str] | None = None
 
 
 @router.get("/{student_id}")
@@ -97,6 +98,9 @@ async def create_entry(student_id: int, data: ErrorNotebookCreate):
         db.commit()
         db.refresh(entry)
         return entry.to_dict()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(500, "保存笔记失败") from exc
     finally:
         db.close()
 
@@ -116,7 +120,11 @@ async def update_entry(student_id: int, entry_id: int, data: ErrorNotebookUpdate
             setattr(entry, k, v)
         entry.updated_at = datetime.utcnow()
         db.commit()
+        db.refresh(entry)
         return entry.to_dict()
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(500, "更新笔记失败") from exc
     finally:
         db.close()
 
@@ -134,5 +142,8 @@ async def delete_entry(student_id: int, entry_id: int):
         db.delete(entry)
         db.commit()
         return {"ok": True}
+    except SQLAlchemyError as exc:
+        db.rollback()
+        raise HTTPException(500, "删除笔记失败") from exc
     finally:
         db.close()

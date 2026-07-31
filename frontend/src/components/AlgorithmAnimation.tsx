@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { AppIcon } from './Icon'
 import { CheckCircle2, Download, Flag, Pause, Play, RotateCcw, Shuffle, SkipForward, Square, Video } from 'lucide-react'
+import { useStore } from '../stores/useStore'
 
 // ==================== 类型定义 ====================
 
@@ -573,6 +574,7 @@ function createGenerator(algo: Algorithm, arr: number[]): AlgoGenerator {
 // ==================== 组件 ====================
 
 export default function AlgorithmAnimation() {
+  const theme = useStore(state => state.theme)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const animRef = useRef<AlgoGenerator | null>(null)
   const rafRef = useRef<number>(0)
@@ -641,11 +643,11 @@ export default function AlgorithmAnimation() {
     ctx.scale(dpr, dpr)
 
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H)
-    ctx.fillStyle = '#0f1117'
+    ctx.fillStyle = theme === 'dark' ? '#0f1117' : '#f8fafc'
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H)
 
     // 网格线
-    ctx.strokeStyle = '#1a1d2e'
+    ctx.strokeStyle = theme === 'dark' ? '#1a1d2e' : '#cbd5e1'
     ctx.lineWidth = 0.5
     for (let y = 0; y < CANVAS_H; y += 40) {
       ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CANVAS_W, y); ctx.stroke()
@@ -656,7 +658,7 @@ export default function AlgorithmAnimation() {
     } else if (frameData.array) {
       drawBarMode(ctx, frameData)
     }
-  }, [frameData, isGraph])
+  }, [frameData, isGraph, theme])
 
   function drawBarMode(ctx: CanvasRenderingContext2D, f: AnimFrame) {
     const array = f.array!
@@ -734,9 +736,9 @@ export default function AlgorithmAnimation() {
 
         // 基础颜色
         if (grid[r][c] === 1) {
-          ctx.fillStyle = '#1e293b' // 障碍物
+          ctx.fillStyle = theme === 'dark' ? '#1e293b' : '#64748b' // 障碍物
         } else {
-          ctx.fillStyle = '#0f172a' // 空地
+          ctx.fillStyle = theme === 'dark' ? '#0f172a' : '#e2e8f0' // 空地
         }
 
         // 起点/终点
@@ -917,7 +919,7 @@ export default function AlgorithmAnimation() {
       </div>
 
       {/* Canvas */}
-      <div className="relative rounded-lg overflow-hidden border border-gray-700/30 bg-[#0f1117]">
+      <div className="relative rounded-lg overflow-hidden border border-line/30 bg-code-bg">
         <canvas ref={canvasRef} className="w-full h-auto" style={{ width: '100%', aspectRatio: '680/400' }} />
         {done && (
           <div className="absolute inset-0 bg-green-500/10 flex items-center justify-center pointer-events-none">

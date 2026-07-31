@@ -2,10 +2,12 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useStore } from '../stores/useStore'
 import { sendMessage, clearHistory, PROVIDERS, getProviderForModel, getAllModels, analyzeConversation, AnalysisResult, sendMessageWithTools, DEFAULT_SYSTEM_PROMPT, MODEL_REGISTRY, getModelsByCategory, getModelEntry } from '../services/api'
 import { searchKnowledge, searchProblems, buildEnhancedSystemPrompt } from '../services/knowledgeService'
+import { buildPersonalizedSystemPrompt } from '../services/userPersonalization'
 import ChatMessage from '../components/ChatMessage'
 import QuickActions from '../components/QuickActions'
 import AgentPipeline from '../components/AgentPipeline'
 import { AppIcon } from '../components/Icon'
+import BrandMark from '../components/brand/BrandMark'
 import { ImagePlus, X } from 'lucide-react'
 
 interface PipelineData {
@@ -14,6 +16,7 @@ interface PipelineData {
 }
 
 export default function ChatPage() {
+  const theme = useStore(state => state.theme)
   const {
     messages, isStreaming, currentStreaming, currentAgent,
     addMessage, setStreaming, appendToStream, clearStream, setCurrentAgent,
@@ -21,10 +24,20 @@ export default function ChatPage() {
     settings, setSettings,
     profile, stats, pathProgress,
     isAnalyzing, setAnalyzing, lastAnalyzedMessageCount, setLastAnalyzedMessageCount,
+    pendingChatMessage, setPendingChatMessage,
     pendingEditorMessage, setPendingEditorMessage,
   } = useStore()
 
   const [input, setInput] = useState('')
+
+  // 接收来自仪表盘推荐的消息
+  useEffect(() => {
+    if (pendingChatMessage) {
+      setInput(pendingChatMessage)
+      setPendingChatMessage(null)
+      inputRef.current?.focus()
+    }
+  }, [pendingChatMessage])
 
   // 接收来自代码编辑器的消息
   useEffect(() => {
@@ -49,7 +62,7 @@ export default function ChatPage() {
   const isUserScrollingRef = useRef(false)
 
   // 模型选择 - 从新版设置读取
-  const selectedModel = settings.selectedModelIds?.llm || 'deepseek-v4-flash'
+  const selectedModel = settings.selectedModelIds?.llm || 'spark-x2'
   const selectedModelEntry = getModelEntry(selectedModel)
   const llmModels = getModelsByCategory('llm')
   const multimodalEnabled = selectedModelEntry?.multimodal || false
@@ -275,7 +288,12 @@ export default function ChatPage() {
     // === 搜索知识库 + 牛客题库 ===
     setAnalyzing(true)
     let enhancedPrompt: string
-    const basePrompt = useStore.getState().settings.systemPrompt || DEFAULT_SYSTEM_PROMPT
+    const currentState = useStore.getState()
+    const activeAccount = currentState.accounts.find(account => account.id === currentState.activeAccountId)
+    const basePrompt = buildPersonalizedSystemPrompt(
+      currentState.settings.systemPrompt || DEFAULT_SYSTEM_PROMPT,
+      activeAccount?.nickname,
+    )
     try {
       const [kbResults, probResults] = await Promise.all([
         searchKnowledge(msg, 3),
@@ -383,14 +401,14 @@ export default function ChatPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <header className="flex items-center justify-between px-6 py-3 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0 relative z-10">
+      <header className="flex items-center justify-between px-6 py-3 page-header shrink-0 relative z-10">
         <div className="flex items-center gap-3">
-          <button className="lg:hidden text-gray-400 hover:text-gray-200" onClick={() => useStore.getState().toggleSidebar()}>
+          <button className="lg:hidden text-ink-muted hover:text-ink" onClick={() => useStore.getState().toggleSidebar()}>
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
           </button>
           <div>
-            <h2 className="text-lg font-semibold text-white">智能对话</h2>
-            <p className="text-xs text-gray-400">{currentAgent ? `当前智能体: ${currentAgent}` : '多智能体协同工作中'}</p>
+            <h2 className="text-lg font-semibold text-ink-strong">智能对话</h2>
+            <p className="text-xs text-ink-muted">{currentAgent ? `当前智能体: ${currentAgent}` : '多智能体协同工作中'}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -406,21 +424,21 @@ export default function ChatPage() {
                 setModelDropdownOpen(!modelDropdownOpen)
               }}
               disabled={isStreaming}
-              className="flex items-center gap-1.5 bg-surface-300/50 border border-gray-600/50 rounded-lg px-3 py-1.5 text-xs font-medium text-gray-200 hover:border-primary-500/50 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 bg-surface-300/50 border border-line/50 rounded-lg px-3 py-1.5 text-xs font-medium text-ink hover:border-primary-500/50 transition-colors disabled:opacity-50"
             >
               <AppIcon name={selectedModelEntry?.multimodal ? '🖼️' : '💬'} size={14} />
               <span>{selectedModelEntry?.name || selectedModel}</span>
-              <svg className="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3 text-ink-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
             {modelDropdownOpen && (
               <div
-                className="fixed bg-surface-200 border border-gray-600/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden max-h-[60vh] overflow-y-auto"
+                className="fixed bg-surface-200 border border-line/50 rounded-xl shadow-2xl shadow-black/40 overflow-hidden max-h-[60vh] overflow-y-auto"
                 style={{ top: dropdownPos.top, right: dropdownPos.right, width: 280, zIndex: 9999 }}
               >
                 {/* 仅展示 LLM 文字模型 */}
-                <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] text-gray-500 border-b border-gray-700/30">
+                <div className="flex items-center gap-1.5 px-3 py-2 text-[10px] text-ink-subtle border-b border-line/30">
                   <AppIcon name="💬" size={11} /> LLM 文字模型（其它模型在设置中配置）
                 </div>
                 {llmModels.map(m => {
@@ -436,7 +454,7 @@ export default function ChatPage() {
                       className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-center gap-2 ${
                         selectedModel === m.id
                           ? 'bg-primary-500/15 text-primary-300'
-                          : hasCreds ? 'text-gray-300 hover:bg-white/[0.03]' : 'text-gray-600'
+                          : hasCreds ? 'text-ink hover:bg-surface-50/50' : 'text-ink-subtle'
                       }`}
                     >
                       <AppIcon name={m.multimodal ? '🖼️' : '💬'} size={14} className="shrink-0" />
@@ -466,7 +484,7 @@ export default function ChatPage() {
               <span className="w-2 h-2 bg-amber-400 rounded-full" />分析对话...
             </span>
           )}
-          <button onClick={handleClear} className="text-xs text-gray-500 hover:text-gray-300 transition-colors">清空对话</button>
+          <button onClick={handleClear} className="text-xs text-ink-subtle hover:text-ink transition-colors">清空对话</button>
         </div>
       </header>
 
@@ -495,11 +513,11 @@ export default function ChatPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-200">{currentAgent || 'AI助手'}</span>
+                  <span className="text-sm font-medium text-ink">{currentAgent || 'AI助手'}</span>
                   <span className="text-xs text-primary-400 animate-pulse-soft">正在生成...</span>
                 </div>
-                <div className="bg-surface-50/60 backdrop-blur rounded-xl px-5 py-4 border border-gray-700/30">
-                  <div className="markdown-body streaming-cursor"><MarkdownContent content={currentStreaming} /></div>
+                <div className="bg-surface-50/60 backdrop-blur rounded-xl px-5 py-4 border border-line/30">
+                  <div className="markdown-body streaming-cursor"><MarkdownContent content={currentStreaming} theme={theme} /></div>
                 </div>
               </div>
             </div>
@@ -512,13 +530,13 @@ export default function ChatPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium text-gray-200">工具执行中</span>
+                  <span className="text-sm font-medium text-ink">工具执行中</span>
                   <span className="text-xs text-accent-400 animate-pulse-soft">{toolStatus.label}</span>
                 </div>
-                <div className="bg-surface-50/60 backdrop-blur rounded-xl px-5 py-4 border border-gray-700/30">
+                <div className="bg-surface-50/60 backdrop-blur rounded-xl px-5 py-4 border border-line/30">
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-accent-400 border-t-transparent rounded-full animate-spin" />
-                    <span className="text-sm text-gray-300">正在执行...</span>
+                    <span className="text-sm text-ink">正在执行...</span>
                   </div>
                 </div>
               </div>
@@ -543,7 +561,7 @@ export default function ChatPage() {
         </div>
       )}
 
-      <div className="p-4 bg-surface-100/80 backdrop-blur-xl border-t border-gray-700/30 shrink-0">
+      <div className="p-4 bg-surface-100/80 backdrop-blur-xl border-t border-line/30 shrink-0">
         <div className="max-w-4xl mx-auto">
           {/* 图片预览区 */}
           {attachedImages.length > 0 && (
@@ -553,13 +571,13 @@ export default function ChatPage() {
                   <img
                     src={`data:${img.mimeType};base64,${img.base64}`}
                     alt={img.name}
-                    className="h-16 w-16 object-cover rounded-lg border border-gray-600/50"
+                    className="h-16 w-16 object-cover rounded-lg border border-line/50"
                   />
                   <button
                     onClick={() => setAttachedImages(prev => prev.filter((_, j) => j !== i))}
                     className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                   ><X size={10} /></button>
-                  <span className="text-[9px] text-gray-400 block text-center truncate w-16">{img.name}</span>
+                  <span className="text-[9px] text-ink-muted block text-center truncate w-16">{img.name}</span>
                 </div>
               ))}
             </div>
@@ -573,11 +591,11 @@ export default function ChatPage() {
                 rows={2} disabled={isStreaming}
                 onPaste={handlePaste}
                 className="input-field resize-none pr-12 disabled:opacity-50" />
-              <span className="absolute right-3 bottom-3 text-xs text-gray-500">{input.length}/2000</span>
+              <span className="absolute right-3 bottom-3 text-xs text-ink-subtle">{input.length}/2000</span>
             </div>
             {/* 图片上传按钮（仅多模态模型显示） */}
             {multimodalEnabled && (
-              <label className="flex items-center justify-center w-11 h-11 rounded-lg bg-surface-300/50 border border-gray-600/50 hover:border-primary-500/50 cursor-pointer transition-colors shrink-0 text-gray-300 hover:text-primary-300" title="上传图片">
+              <label className="flex items-center justify-center w-11 h-11 rounded-lg bg-surface-300/50 border border-line/50 hover:border-primary-500/50 cursor-pointer transition-colors shrink-0 text-ink hover:text-primary-300" title="上传图片">
                 <ImagePlus size={19} />
                 <input
                   type="file"
@@ -595,7 +613,7 @@ export default function ChatPage() {
               发送
             </button>
           </div>
-          <p className="mt-2 text-xs text-gray-500 text-center">
+          <p className="mt-2 text-xs text-ink-subtle text-center">
             AI生成内容仅供参考 | 支持Markdown渲染与代码高亮
             {multimodalEnabled && ' | 当前模型支持图片输入'}
           </p>
@@ -608,11 +626,9 @@ export default function ChatPage() {
 function WelcomeGuide() {
   return (
     <div className="max-w-md mx-auto text-center my-auto py-20">
-      <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary-400 to-accent-500 flex items-center justify-center shadow-glow-sm animate-float">
-        <AppIcon name="⚡" size={34} className="text-white" />
-      </div>
-      <h1 className="text-2xl font-bold text-white mb-2">AlgoAscend</h1>
-      <p className="text-gray-400">由六个专业AI智能体协作<br />为您提供C++从入门到竞赛的全方位算法学习支持</p>
+      <BrandMark size={64} className="mx-auto mb-4" />
+      <h1 className="text-2xl font-bold text-ink-strong mb-2">AlgoAscend</h1>
+      <p className="text-ink-muted">由六个专业AI智能体协作<br />为您提供C++从入门到竞赛的全方位算法学习支持</p>
     </div>
   )
 }
@@ -622,19 +638,19 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
-function MarkdownContent({ content }: { content: string }) {
+function MarkdownContent({ content, theme }: { content: string; theme: 'light' | 'dark' }) {
   return (
     <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}
       components={{
         code({ className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '')
           return !match ? (
-            <code className="bg-surface-400/60 text-primary-300 px-1.5 py-0.5 rounded text-sm font-mono border border-gray-700/30" {...props}>{children}</code>
+            <code className="bg-code-header text-primary-300 px-1.5 py-0.5 rounded text-sm font-mono border border-code-line" {...props}>{children}</code>
           ) : (
-            <SyntaxHighlighter style={oneDark} language={match[1]} PreTag="div"
-              customStyle={{ borderRadius: '0.75rem', fontSize: '0.875rem', padding: '1rem 1.25rem', background: '#16162a', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <SyntaxHighlighter style={theme === 'dark' ? oneDark : oneLight} language={match[1]} PreTag="div"
+              customStyle={{ borderRadius: '0.75rem', fontSize: '0.875rem', padding: '1rem 1.25rem', background: 'rgb(var(--color-code-bg))', border: '1px solid rgb(var(--color-code-line))' }}>
               {String(children).replace(/\n$/, '')}
             </SyntaxHighlighter>
           )

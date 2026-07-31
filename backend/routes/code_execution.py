@@ -3,34 +3,117 @@ import subprocess, os, uuid, time, json
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from database import get_db_sync
+from database import SessionLocal, get_db_sync
 from models import Submission, Exercise, StudentProfile
+from problem_detail_service import get_problem_detail as resolve_problem_detail
+from problem_identity import resolve_problem_identity
+from routes.scrape import (
+    LEETCODE_GRAPHQL_URL, LEETCODE_HEADERS, LUOGU_DIFFICULTY_MAP,
+    _build_nowcoder_headers, _parse_nowcoder_detail,
+)
+from problem_media_service import serve_problem_media
 
 router = APIRouter(prefix="/api/code", tags=["code"])
 WORK_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "generated")
+_SENSITIVE_CHILD_ENV_KEYS = {
+    "NOWCODER_COOKIE",
+    "LLM_API_KEY",
+    "VITE_DEEPSEEK_API_KEY",
+}
+_NOWCODER_DETAIL_FIELD_BYTES = 128 * 1024
+_NOWCODER_DETAIL_TOTAL_BYTES = 512 * 1024
 
-# 题目详情缓存（进程内）
-_problem_cache: dict = {}
+
+def _bounded_utf8(value, byte_limit: int) -> tuple[str, bool]:
+    """Bound untrusted statement text without breaking a UTF-8 code point."""
+    text = str(value or "").replace("\r\n", "\n").replace("\r", "\n")
+    encoded = text.encode("utf-8")
+    if len(encoded) <= byte_limit:
+        return text, False
+    return encoded[:byte_limit].decode("utf-8", errors="ignore"), True
+
+
+def _bound_nowcoder_detail(parsed: dict) -> dict:
+    """Apply explicit field and total limits while reporting partial statements."""
+    detail = {}
+    total_bytes = 0
+    truncated = False
+    for key in (
+        "title", "description", "input_description", "output_description",
+        "notes", "constraints",
+    ):
+        remaining = max(0, _NOWCODER_DETAIL_TOTAL_BYTES - total_bytes)
+        text, field_truncated = _bounded_utf8(
+            parsed.get(key, ""), min(_NOWCODER_DETAIL_FIELD_BYTES, remaining),
+        )
+        detail[key] = text
+        total_bytes += len(text.encode("utf-8"))
+        truncated = truncated or field_truncated
+
+    hints = []
+    for value in parsed.get("hints", []) if isinstance(parsed.get("hints"), list) else []:
+        remaining = max(0, _NOWCODER_DETAIL_TOTAL_BYTES - total_bytes)
+        hint, field_truncated = _bounded_utf8(value, min(_NOWCODER_DETAIL_FIELD_BYTES, remaining))
+        if hint:
+            hints.append(hint)
+            total_bytes += len(hint.encode("utf-8"))
+        truncated = truncated or field_truncated
+        if not remaining:
+            break
+    detail["hints"] = hints
+    detail["samples"] = parsed.get("samples", [])
+    has_statement = bool(detail.get("description"))
+    has_io = bool(
+        detail["samples"]
+        or (detail.get("input_description") and detail.get("output_description"))
+    )
+    detail["detail_status"] = "complete" if has_statement and has_io and not truncated else "partial"
+    if truncated:
+        detail["warning"] = "牛客题面内容超过安全响应上限，已显示部分内容"
+    elif not (has_statement and has_io):
+        detail["warning"] = "牛客题面信息不完整，可重新加载以尝试补全"
+    return detail
+
+
+def _user_code_environment() -> dict[str, str]:
+    """Keep compiler/runtime basics while excluding backend credentials."""
+    return {
+        key: value for key, value in os.environ.items()
+        if key not in _SENSITIVE_CHILD_ENV_KEYS
+    }
+
+
+@router.get("/problem-media/{media_key}")
+async def get_problem_media(media_key: str):
+    """Serve only registered, validated, same-origin problem media."""
+    return await serve_problem_media(media_key, session_factory=SessionLocal)
 
 
 @router.get("/problem-detail")
 async def get_problem_detail(platform: str = "", pid: str = "", url: str = ""):
-    """爬取单个题目的完整描述（带缓存）"""
-    cache_key = f"{platform}:{pid}"
-    if cache_key in _problem_cache:
-        return _problem_cache[cache_key]
-
+    """Return a stable local-first problem detail response."""
     try:
-        if platform == "luogu":
-            return await _fetch_luogu_detail(pid)
-        elif platform == "leetcode":
-            return await _fetch_leetcode_detail(url or pid)
-        elif platform == "nowcoder":
-            return await _fetch_nowcoder_detail(url or pid)
-        else:
-            return {"description": "", "error": "不支持的平台"}
-    except Exception as e:
-        return {"description": "", "error": f"获取失败: {str(e)[:200]}"}
+        identity = resolve_problem_identity(platform, pid, url)
+    except ValueError as exc:
+        return {
+            "id": "", "pid": "", "native_id": "", "platform": platform,
+            "title": "", "description": "", "difficulty": "", "tags": [],
+            "samples": [], "hints": [], "url": url, "source": "invalid",
+            "error": str(exc),
+        }
+
+    detail, _ = await resolve_problem_detail(
+        identity.platform,
+        identity.native_id,
+        identity.canonical_url,
+        fetchers={
+            "luogu": _fetch_luogu_detail,
+            "leetcode": _fetch_leetcode_detail,
+            "nowcoder": _fetch_nowcoder_detail,
+        },
+        session_factory=SessionLocal,
+    )
+    return detail
 
 
 async def _fetch_luogu_detail(pid: str):
@@ -43,72 +126,152 @@ async def _fetch_luogu_detail(pid: str):
                 "Accept": "application/json",
             })
             if resp.status_code != 200:
-                return {"description": f"洛谷 API 返回 {resp.status_code}", "samples": []}
+                return {
+                    "title": "", "description": "", "samples": [],
+                    "error": f"洛谷 API 返回 HTTP {resp.status_code}",
+                }
             data = resp.json()
-            problem = data.get("currentData", {}).get("problem", {})
-            if not problem:
-                return {"description": "题目数据为空，请确认题目ID正确", "samples": []}
+            problem = data.get("currentData", {}).get("problem", {}) if isinstance(data, dict) else {}
+            meaningful_keys = (
+                "title", "description", "background", "inputFormat",
+                "outputFormat", "samples", "hints",
+            )
+            if not isinstance(problem, dict) or not any(problem.get(key) not in (None, "", []) for key in meaningful_keys):
+                return {
+                    "title": "", "description": "", "samples": [],
+                    "error": "洛谷题目数据为空，请确认题目 ID 正确",
+                }
             desc = problem.get("description", "") or problem.get("background", "")
-            samples = problem.get("samples", [])
-            hints = problem.get("hints", [])
+            samples = problem.get("samples", []) if isinstance(problem.get("samples"), list) else []
+            hints = problem.get("hints", []) if isinstance(problem.get("hints"), list) else []
             detail = {
                 "title": problem.get("title", ""),
-                "description": _strip_html(desc)[:3000] or "（洛谷暂未提供文字描述，请查看原题链接）",
+                "description": _strip_html(desc)[:3000] if isinstance(desc, str) else "",
+                "input_description": _strip_html(problem.get("inputFormat", ""))[:3000] if isinstance(problem.get("inputFormat", ""), str) else "",
+                "output_description": _strip_html(problem.get("outputFormat", ""))[:3000] if isinstance(problem.get("outputFormat", ""), str) else "",
                 "difficulty": _luogu_diff(problem.get("difficulty", 0)),
-                "samples": [{"input": str(s[0]), "output": str(s[1])} for s in samples[:3]],
-                "hints": [_strip_html(h) for h in hints[:3]],
+                "samples": [
+                    {"input": str(sample[0]), "output": str(sample[1])}
+                    for sample in samples[:3]
+                    if isinstance(sample, (list, tuple)) and len(sample) >= 2
+                ],
+                "hints": [_strip_html(hint) for hint in hints[:3] if isinstance(hint, str)],
                 "url": f"https://www.luogu.com.cn/problem/{pid}",
             }
-            _problem_cache[f"luogu:{pid}"] = detail
             return detail
     except Exception as e:
-        return {"description": f"网络错误，无法连接洛谷。请确保网络正常。可直接点击原题链接查看。", "samples": [], "error": str(e)[:100]}
+        return {
+            "title": "", "description": "", "samples": [],
+            "error": f"洛谷请求失败: {str(e)[:100]}",
+        }
 
 
-async def _fetch_leetcode_detail(url_or_slug: str):
-    detail = {
-        "title": "",
-        "description": "请前往 LeetCode 查看完整题目描述（LeetCode GraphQL API 需登录）",
-        "samples": [],
-        "url": url_or_slug if url_or_slug.startswith("http") else f"https://leetcode.cn/problems/{url_or_slug}/",
-    }
-    _problem_cache[f"leetcode:{url_or_slug}"] = detail
-    return detail
+LEETCODE_DETAIL_QUERY = """
+query questionData($titleSlug: String!) {
+  question(titleSlug: $titleSlug) {
+    title
+    translatedTitle
+    content
+    translatedContent
+    difficulty
+    topicTags { name translatedName }
+  }
+}
+"""
 
 
-async def _fetch_nowcoder_detail(url: str):
-    import httpx, re
+async def _fetch_leetcode_detail(slug: str):
+    import httpx
+
+    identity = resolve_problem_identity("leetcode", slug)
     try:
         async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), follow_redirects=True) as client:
-            resp = await client.get(url, headers={
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Cookie": os.getenv("NOWCODER_COOKIE", ""),
-            })
-            text = resp.text
-            m = re.search(r'<div[^>]*class="[^"]*subject[^"]*"[^>]*>(.*?)</div>', text, re.DOTALL)
-            desc = _strip_html(m.group(1)) if m else ""
-            detail = {
-                "title": "",
-                "description": desc[:3000] or "题目描述获取失败，请前往牛客查看",
-                "samples": [],
-                "url": url,
-            }
-    except Exception:
-        detail = {"title": "", "description": "获取失败，网络不可达", "samples": [], "url": url}
-    _problem_cache[f"nowcoder:{url}"] = detail
+            response = await client.post(
+                LEETCODE_GRAPHQL_URL,
+                json={"query": LEETCODE_DETAIL_QUERY, "variables": {"titleSlug": identity.native_id}},
+                headers={**LEETCODE_HEADERS, "Referer": identity.canonical_url},
+            )
+            response.raise_for_status()
+            payload = response.json()
+    except Exception as exc:
+        return {"title": "", "description": "", "samples": [], "error": f"力扣请求失败: {str(exc)[:100]}"}
+
+    if not isinstance(payload, dict):
+        return {"title": "", "description": "", "samples": [], "error": "力扣 GraphQL 返回无效数据"}
+    errors = payload.get("errors")
+    if errors:
+        messages = [str(item.get("message", "")) for item in errors if isinstance(item, dict)] if isinstance(errors, list) else []
+        message = "; ".join(filter(None, messages)) or "未知 GraphQL 错误"
+        return {"title": "", "description": "", "samples": [], "error": f"力扣 GraphQL 错误: {message[:160]}"}
+    data = payload.get("data")
+    question = data.get("question") if isinstance(data, dict) else None
+    if not isinstance(question, dict):
+        return {"title": "", "description": "", "samples": [], "error": "力扣 GraphQL 未返回题目数据"}
+
+    tags = question.get("topicTags") if isinstance(question.get("topicTags"), list) else []
+    return {
+        "title": question.get("translatedTitle") or question.get("title") or "",
+        "description": _strip_html(question.get("translatedContent") or question.get("content") or ""),
+        "difficulty": question.get("difficulty") or "",
+        "tags": [tag.get("translatedName") or tag.get("name") for tag in tags if isinstance(tag, dict) and (tag.get("translatedName") or tag.get("name"))],
+        "samples": [],
+        "url": identity.canonical_url,
+    }
+
+
+async def _fetch_nowcoder_detail(pid: str):
+    import httpx
+
+    identity = resolve_problem_identity("nowcoder", pid)
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), follow_redirects=True) as client:
+            resp = await client.get(identity.canonical_url, headers=_build_nowcoder_headers())
+            resp.raise_for_status()
+        parsed = _parse_nowcoder_detail(resp.text)
+        detail = _bound_nowcoder_detail(parsed)
+        detail["url"] = identity.canonical_url
+        meaningful = any(
+            detail.get(key) not in (None, "", [])
+            for key in (
+                "description", "input_description", "output_description",
+                "notes", "constraints", "hints", "samples",
+            )
+        )
+        if not meaningful:
+            detail["error"] = "牛客题面解析失败，请重新登录或稍后重试"
+        for key in ("time_limit", "space_limit", "accepted", "submitted", "ac_rate"):
+            if parsed.get(key) is not None:
+                detail[key] = parsed[key]
+        if parsed.get("media"):
+            detail["media"] = parsed["media"]
+        if parsed.get("waf_blocked"):
+            detail["error"] = "被牛客 WAF 拦截"
+    except Exception as exc:
+        detail = {
+            "title": "",
+            "description": "",
+            "samples": [],
+            "url": identity.canonical_url,
+            "error": str(exc)[:100],
+        }
     return detail
 
 
 def _strip_html(html: str) -> str:
-    import re
-    text = re.sub(r'<[^>]+>', '', html)
+    """Strip markup while retaining image positions as Markdown references."""
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(str(html or ""), "html.parser")
+    for image in soup.find_all("img"):
+        source = str(image.get("src") or image.get("data-src") or "").strip()
+        alt = str(image.get("alt") or "").replace("]", "").strip()
+        image.replace_with(f"\n![{alt}]({source})\n" if source else "")
+    text = soup.get_text("\n", strip=True)
     text = text.replace("\\n", "\n").replace("\\t", " ")
     return text.strip()
 
 
 def _luogu_diff(d: int) -> str:
-    diffs = {0: "暂未评定", 1: "入门", 2: "普及-", 3: "普及/提高-", 4: "普及+/提高", 5: "提高+/省选-", 6: "省选/NOI-", 7: "NOI/NOI+"}
-    return diffs.get(d, f"难度{d}")
+    return "暂未评定" if d == 0 else LUOGU_DIFFICULTY_MAP.get(d, f"难度{d}")
 
 
 class CodeRunRequest(BaseModel):
@@ -155,7 +318,8 @@ class AISummaryRequest(BaseModel):
 async def check_compiler():
     try:
         result = subprocess.run(
-            ["g++", "--version"], capture_output=True, text=True, timeout=5
+            ["g++", "--version"], capture_output=True, text=True, timeout=5,
+            env=_user_code_environment(),
         )
         return {
             "available": True,
@@ -246,6 +410,7 @@ async def run_code(req: CodeRunRequest):
             compile_proc = subprocess.run(
                 ["g++", "-std=c++17", "-O2", "-Wall", "-o", exe, src],
                 capture_output=True, text=True, timeout=15,
+                env=_user_code_environment(),
             )
         except FileNotFoundError:
             _cleanup(src, exe)
@@ -281,6 +446,7 @@ async def run_code(req: CodeRunRequest):
             exec_proc = subprocess.Popen(
                 [exe], stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE, text=True,
+                env=_user_code_environment(),
             )
             try:
                 outs, errs = exec_proc.communicate(
@@ -384,6 +550,7 @@ async def run_tests(req: RunTestsRequest):
         compile_proc = subprocess.run(
             ["g++", "-std=c++17", "-O2", "-Wall", "-o", exe, src],
             capture_output=True, text=True, timeout=15,
+            env=_user_code_environment(),
         )
     except FileNotFoundError:
         _cleanup(src, exe)
@@ -401,6 +568,7 @@ async def run_tests(req: RunTestsRequest):
             run_start = time.perf_counter()
             exec_proc = subprocess.Popen(
                 [exe], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                env=_user_code_environment(),
             )
             try:
                 outs, errs = exec_proc.communicate(

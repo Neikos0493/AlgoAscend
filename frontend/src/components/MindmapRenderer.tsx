@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
+import { useStore } from '../stores/useStore'
 
 interface TreeNode {
   text: string
@@ -21,6 +22,7 @@ const ZOOM_STEP = 1.25  // 每次滚轮缩放倍率
  * 通过操作 viewBox 实现缩放和平移（不依赖 CSS transform）
  */
 export default function MindmapRenderer({ tree, mermaid }: Props) {
+  const theme = useStore(state => state.theme)
   const containerRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const root = tree || (mermaid ? parseMermaidToTree(mermaid) : null)
@@ -39,9 +41,9 @@ export default function MindmapRenderer({ tree, mermaid }: Props) {
   // ===== 渲染树 =====
   useEffect(() => {
     if (!root || !svgRef.current) return
-    const { width, height } = renderTree(svgRef.current, root)
+    const { width, height } = renderTree(svgRef.current, root, theme)
     setCanvasSize({ w: width, h: height })
-  }, [root])
+  }, [root, theme])
 
   // ===== 画布尺寸确定后，初始适配容器 =====
   useEffect(() => {
@@ -169,7 +171,7 @@ export default function MindmapRenderer({ tree, mermaid }: Props) {
   const zoomPct = viewBox.w > 0 ? Math.round((canvasSize.w / viewBox.w) * 100) : 100
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-gray-600/30 bg-[#0f172a]">
+    <div className="relative rounded-xl overflow-hidden border border-line/30 bg-code-bg">
       {/* 画布区域 */}
       <div
         ref={containerRef}
@@ -191,7 +193,7 @@ export default function MindmapRenderer({ tree, mermaid }: Props) {
       </div>
 
       {/* 底部工具栏 */}
-      <div className="flex items-center justify-between px-3 py-2 bg-[#1e293b]/80 border-t border-gray-700/50">
+      <div className="flex items-center justify-between px-3 py-2 bg-code-header/80 border-t border-code-line">
         <span className="text-xs text-gray-400 select-none">
           滚轮缩放 · 拖拽平移
         </span>
@@ -319,7 +321,7 @@ function assignCoords(node: LayoutNode, x: number, yTop: number, rowUnit: number
 
 // ==================== SVG 渲染 ====================
 
-function renderTree(svg: SVGSVGElement, root: { root: string; children: TreeNode[] }): { width: number; height: number } {
+function renderTree(svg: SVGSVGElement, root: { root: string; children: TreeNode[] }, theme: 'light' | 'dark'): { width: number; height: number } {
   while (svg.firstChild) svg.removeChild(svg.firstChild)
 
   const layoutRoot = buildLayout(root.root, root.children, 0, 0)
@@ -355,7 +357,7 @@ function renderTree(svg: SVGSVGElement, root: { root: string; children: TreeNode
   svg.appendChild(bg)
 
   drawConnections(svg, layoutRoot)
-  drawNodes(svg, layoutRoot)
+  drawNodes(svg, layoutRoot, theme)
 
   return { width: canvasW, height: canvasH }
 }
@@ -373,12 +375,12 @@ function drawConnections(svg: SVGSVGElement, node: LayoutNode) {
   }
 }
 
-function drawNodes(svg: SVGSVGElement, node: LayoutNode) {
-  drawNode(svg, node)
-  for (const child of node.children) drawNodes(svg, child)
+function drawNodes(svg: SVGSVGElement, node: LayoutNode, theme: 'light' | 'dark') {
+  drawNode(svg, node, theme)
+  for (const child of node.children) drawNodes(svg, child, theme)
 }
 
-function drawNode(svg: SVGSVGElement, node: LayoutNode) {
+function drawNode(svg: SVGSVGElement, node: LayoutNode, theme: 'light' | 'dark') {
   const { x, y, text, width: w, height: h, level, colorIndex } = node
   const isRoot = level === 0
   const fontSize = [20, 16, 14, 12][Math.min(level, 3)]
@@ -394,7 +396,7 @@ function drawNode(svg: SVGSVGElement, node: LayoutNode) {
   shadow.setAttribute('width', String(w))
   shadow.setAttribute('height', String(h))
   shadow.setAttribute('rx', rx)
-  shadow.setAttribute('fill', '#00000022')
+  shadow.setAttribute('fill', theme === 'dark' ? '#00000022' : '#0f172a1f')
   svg.appendChild(shadow)
 
   const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')

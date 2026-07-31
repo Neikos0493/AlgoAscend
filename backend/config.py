@@ -2,13 +2,16 @@
 配置模块 - 支持多种LLM后端(DeepSeek, OpenAI兼容接口)
 """
 import os
+from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
 
 # 加载 .env 文件
 def _load_env():
+    backend_dir = os.path.dirname(os.path.abspath(__file__))
     env_paths = [
-        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"),
+        os.path.join(backend_dir, ".env"),
+        os.path.join(os.path.dirname(backend_dir), ".env"),
         os.path.join(os.getcwd(), ".env"),
     ]
     for env_path in env_paths:
@@ -26,6 +29,9 @@ def _load_env():
 
 _load_env()
 
+_BACKEND_DIR = Path(__file__).resolve().parent
+_DEFAULT_DATABASE_URL = f"sqlite:///{(_BACKEND_DIR / 'learning_platform.db').as_posix()}"
+
 
 @dataclass
 class LLMConfig:
@@ -42,7 +48,7 @@ class LLMConfig:
 class AppConfig:
     """应用配置"""
     llm: LLMConfig = field(default_factory=LLMConfig)
-    database_url: str = os.getenv("DATABASE_URL", "sqlite:///./learning_platform.db")
+    database_url: str = os.getenv("DATABASE_URL", _DEFAULT_DATABASE_URL)
     secret_key: str = os.getenv("SECRET_KEY", "dev-secret-key-change-in-production")
     cors_origins: list = field(default_factory=lambda: ["*"])
     host: str = os.getenv("HOST", "0.0.0.0")

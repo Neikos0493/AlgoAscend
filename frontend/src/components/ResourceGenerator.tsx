@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useStore } from '../stores/useStore'
 import { generateImage, generatePPT, generateMindmap, generateVideo, generateCodeCase, generateProject, getLLMApiKey, getSelectedModelId } from '../services/api'
 import MindmapRenderer from './MindmapRenderer'
@@ -38,8 +38,8 @@ const QUICK_ALGOS = [
 ]
 
 export default function ResourceGenerator() {
-  const { settings } = useStore()
-  const llmModel = settings.selectedModelIds?.llm || 'deepseek-v4-flash'
+  const { settings, pendingResourceIntent, setPendingResourceIntent } = useStore()
+  const llmModel = settings.selectedModelIds?.llm || 'spark-x2'
   const [tab, setTab] = useState<GenTab>('image')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -73,6 +73,44 @@ export default function ResourceGenerator() {
   // 实践项目相关
   const [projectTopic, setProjectTopic] = useState('')
   const [projectContent, setProjectContent] = useState('')
+
+  // 接收来自仪表盘的资源推荐
+  useEffect(() => {
+    if (!pendingResourceIntent) return
+
+    const { tab: targetTab, topic } = pendingResourceIntent
+    setTab(targetTab)
+    setError('')
+    setResult(null)
+
+    switch (targetTab) {
+      case 'image':
+        setImgPrompt(topic)
+        break
+      case 'ppt':
+        setPptTopic(topic)
+        setPptStage('idle')
+        break
+      case 'mindmap':
+        setMmPrompt(topic)
+        break
+      case 'video':
+        setVideoTopic(topic)
+        setVideoScript('')
+        setVideoGuide('')
+        break
+      case 'code_case':
+        setCodeCaseTopic(topic)
+        setCodeCaseContent('')
+        break
+      case 'project':
+        setProjectTopic(topic)
+        setProjectContent('')
+        break
+    }
+
+    setPendingResourceIntent(null)
+  }, [pendingResourceIntent, setPendingResourceIntent])
 
   const xfyunCreds = settings.modelCreds?.['xfyun-tti'] || {}
   const xfyunReady = !!(xfyunCreds.app_id && xfyunCreds.api_key && xfyunCreds.api_secret)
@@ -209,8 +247,8 @@ export default function ResourceGenerator() {
   }
 
   return (
-    <div className="bg-surface-200/80 rounded-xl border border-gray-700/30 p-4 space-y-4">
-      <h3 className="text-sm font-semibold text-gray-200 flex items-center gap-2">
+    <div className="bg-surface-200/80 rounded-xl border border-line/30 p-4 space-y-4">
+      <h3 className="text-sm font-semibold text-ink-strong flex items-center gap-2">
         <AppIcon name="🪄" size={16} className="text-primary-400" /> AI 资源生成器
       </h3>
 
@@ -222,8 +260,8 @@ export default function ResourceGenerator() {
             onClick={() => { setTab(t.key); setResult(null); setError('') }}
             className={`flex-1 inline-flex items-center justify-center gap-1 py-1.5 text-xs font-medium rounded-md transition-colors ${
               tab === t.key
-                ? 'bg-primary-500/20 text-primary-300'
-                : 'text-gray-400 hover:text-gray-200'
+                ? 'bg-primary-500/20 text-primary-500'
+                : 'text-ink-muted hover:text-ink-strong'
             }`}
           >
             <AppIcon name={t.icon} size={13} /> {t.label}
@@ -240,7 +278,7 @@ export default function ResourceGenerator() {
             </div>
           )}
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">图片描述</label>
+            <label className="text-xs text-ink-muted mb-1 block">图片描述</label>
             <textarea
               value={imgPrompt}
               onChange={(e) => setImgPrompt(e.target.value)}
@@ -251,7 +289,7 @@ export default function ResourceGenerator() {
           </div>
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-xs text-gray-400 mb-1 block">宽度</label>
+              <label className="text-xs text-ink-muted mb-1 block">宽度</label>
               <select value={imgWidth} onChange={(e) => setImgWidth(Number(e.target.value))}
                 className="w-full input-field text-sm">
                 <option value={512}>512</option>
@@ -261,7 +299,7 @@ export default function ResourceGenerator() {
               </select>
             </div>
             <div className="flex-1">
-              <label className="text-xs text-gray-400 mb-1 block">高度</label>
+              <label className="text-xs text-ink-muted mb-1 block">高度</label>
               <select value={imgHeight} onChange={(e) => setImgHeight(Number(e.target.value))}
                 className="w-full input-field text-sm">
                 <option value={512}>512</option>
@@ -274,7 +312,7 @@ export default function ResourceGenerator() {
           <button
             onClick={handleGenImage}
             disabled={loading || !imgPrompt.trim() || !xfyunReady}
-            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-500 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {loading
               ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> 生成中...</span>
@@ -288,7 +326,7 @@ export default function ResourceGenerator() {
       {tab === 'ppt' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">
+            <label className="text-xs text-ink-muted mb-1 block">
               输入需求，AI 自动设计标题大纲并细化内容
             </label>
             <textarea
@@ -308,9 +346,9 @@ export default function ResourceGenerator() {
           </div>
           <div className="flex items-center gap-3">
             <div>
-              <label className="text-[10px] text-gray-500 mb-1 block">页数</label>
+              <label className="text-[10px] text-ink-subtle mb-1 block">页数</label>
               <select value={pptSlides} onChange={e => setPptSlides(+e.target.value)}
-                className="bg-surface-300/50 border border-gray-600/30 rounded px-2 py-1 text-[11px] text-gray-200">
+                className="bg-surface-300/50 border border-line/30 rounded px-2 py-1 text-[11px] text-ink-strong">
                 <option value={4}>4 页</option>
                 <option value={6}>6 页</option>
                 <option value={8}>8 页</option>
@@ -333,7 +371,7 @@ export default function ResourceGenerator() {
           <button
             onClick={handleGenPPT}
             disabled={loading || !pptTopic.trim()}
-            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-500 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {loading
               ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在生成...</span>
@@ -353,7 +391,7 @@ export default function ResourceGenerator() {
       {tab === 'mindmap' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">
+            <label className="text-xs text-ink-muted mb-1 block">
               输入主题，AI 自动生成完整导图
             </label>
             <textarea
@@ -367,7 +405,7 @@ export default function ResourceGenerator() {
           <button
             onClick={handleGenMindmap}
             disabled={loading || !mmPrompt.trim()}
-            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-500 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {loading
               ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在梳理知识结构...</span>
@@ -382,14 +420,14 @@ export default function ResourceGenerator() {
         <div className="space-y-3">
           {/* 模式选择器 */}
           <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">生成模式</label>
+            <label className="text-xs text-ink-muted mb-1.5 block">生成模式</label>
             <div className="flex gap-2">
               <button
                 onClick={() => setVideoMode('manim')}
                 className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
                   videoMode === 'manim'
                     ? 'bg-blue-500/20 text-blue-300 ring-1 ring-blue-500/30'
-                    : 'bg-surface-300/30 text-gray-400 hover:text-gray-200'
+                    : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong'
                 }`}
               >
                 <span className="inline-flex items-center justify-center gap-1.5"><AppIcon name="🎬" size={14} /> Manim 算法动画</span>
@@ -399,7 +437,7 @@ export default function ResourceGenerator() {
                 className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all ${
                   videoMode === 'xfyun'
                     ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/30'
-                    : 'bg-surface-300/30 text-gray-400 hover:text-gray-200'
+                    : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong'
                 }`}
               >
                 <span className="inline-flex items-center justify-center gap-1.5"><AppIcon name="🤖" size={14} /> 讯飞数字人讲解</span>
@@ -410,7 +448,7 @@ export default function ResourceGenerator() {
           {/* 数字人形象选择（仅讯飞模式） */}
           {videoMode === 'xfyun' && (
             <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">数字人形象</label>
+              <label className="text-xs text-ink-muted mb-1.5 block">数字人形象</label>
               <div className="flex flex-wrap gap-1.5">
                 {AVATARS.map(a => (
                   <button
@@ -429,7 +467,7 @@ export default function ResourceGenerator() {
                     className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs transition-all ${
                       xfyunAvatar === a.id
                         ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/30'
-                        : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
+                        : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong hover:bg-surface-300/50'
                     }`}
                   >
                     <AppIcon name={a.icon} size={13} /> {a.name}
@@ -441,7 +479,7 @@ export default function ResourceGenerator() {
 
           {/* 主题输入 */}
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">
+            <label className="text-xs text-ink-muted mb-1 block">
               {videoMode === 'xfyun' ? '输入讲解主题' : '输入任意算法主题'}
             </label>
             <textarea
@@ -461,7 +499,7 @@ export default function ResourceGenerator() {
           {videoMode === 'manim' && (
             <>
               <div>
-                <label className="text-xs text-gray-400 mb-1.5 block">快捷选择</label>
+                <label className="text-xs text-ink-muted mb-1.5 block">快捷选择</label>
                 <div className="flex flex-wrap gap-1.5">
                   {QUICK_ALGOS.map(name => (
                     <button
@@ -469,15 +507,15 @@ export default function ResourceGenerator() {
                       onClick={() => setVideoTopic(name)}
                       className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                         videoTopic === name
-                          ? 'bg-primary-500/20 text-primary-300 ring-1 ring-primary-500/30'
-                          : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
+                          ? 'bg-primary-500/20 text-primary-500 ring-1 ring-primary-500/30'
+                          : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong hover:bg-surface-300/50'
                       }`}
                     >{name}</button>
                   ))}
                 </div>
               </div>
               <div>
-                <label className="text-xs text-gray-400 mb-1 block">数据量: {videoCount}</label>
+                <label className="text-xs text-ink-muted mb-1 block">数据量: {videoCount}</label>
                 <input type="range" min={8} max={32} value={videoCount} onChange={e => setVideoCount(+e.target.value)}
                   className="w-full accent-primary-500" />
               </div>
@@ -485,7 +523,7 @@ export default function ResourceGenerator() {
           )}
           {videoMode === 'xfyun' && (
             <div>
-              <label className="text-xs text-gray-400 mb-1.5 block">快捷选择</label>
+              <label className="text-xs text-ink-muted mb-1.5 block">快捷选择</label>
               <div className="flex flex-wrap gap-1.5">
                 {['快速排序详解', '动态规划入门', '二叉树遍历', '链表操作', 'Dijkstra算法', 'BFS与DFS', '贪心算法', '二分查找'].map(name => (
                   <button
@@ -494,7 +532,7 @@ export default function ResourceGenerator() {
                     className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                       videoTopic === name
                         ? 'bg-purple-500/20 text-purple-300 ring-1 ring-purple-500/30'
-                        : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
+                        : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong hover:bg-surface-300/50'
                     }`}
                   >{name}</button>
                 ))}
@@ -509,7 +547,7 @@ export default function ResourceGenerator() {
             className={`w-full py-2 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
               videoMode === 'xfyun'
                 ? 'bg-purple-500/20 hover:bg-purple-500/30 text-purple-300'
-                : 'bg-primary-500/20 hover:bg-primary-500/30 text-primary-300'
+                : 'bg-primary-500/20 hover:bg-primary-500/30 text-primary-500'
             }`}
           >
             {loading
@@ -520,7 +558,7 @@ export default function ResourceGenerator() {
 
           {/* 渲染中提示 */}
           {loading && (
-            <div className="flex items-center gap-2 text-xs text-gray-400 animate-pulse">
+            <div className="flex items-center gap-2 text-xs text-ink-muted animate-pulse">
               <span className="w-2 h-2 bg-primary-400 rounded-full animate-bounce" />
               <span>{videoMode === 'xfyun' ? '正在调用讯飞数字人服务...' : '正在生成 Manim 脚本并渲染...'}</span>
             </div>
@@ -539,7 +577,7 @@ export default function ResourceGenerator() {
       {tab === 'code_case' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">
+            <label className="text-xs text-ink-muted mb-1 block">
               输入算法/数据结构主题，AI 生成带详细注释的完整实操代码
             </label>
             <textarea
@@ -551,7 +589,7 @@ export default function ResourceGenerator() {
             />
           </div>
           <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">快捷选择</label>
+            <label className="text-xs text-ink-muted mb-1.5 block">快捷选择</label>
             <div className="flex flex-wrap gap-1.5">
               {['链表反转', 'LRU缓存', '快速排序', 'Dijkstra', '二叉树遍历', '并查集', '拓扑排序', 'KMP算法'].map(name => (
                 <button
@@ -559,8 +597,8 @@ export default function ResourceGenerator() {
                   onClick={() => setCodeCaseTopic(name)}
                   className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                     codeCaseTopic === name
-                      ? 'bg-primary-500/20 text-primary-300 ring-1 ring-primary-500/30'
-                      : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
+                      ? 'bg-primary-500/20 text-primary-500 ring-1 ring-primary-500/30'
+                      : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong hover:bg-surface-300/50'
                   }`}
                 >{name}</button>
               ))}
@@ -569,7 +607,7 @@ export default function ResourceGenerator() {
           <button
             onClick={handleGenCodeCase}
             disabled={loading || !codeCaseTopic.trim()}
-            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-500 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {loading
               ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在生成代码案例...</span>
@@ -577,7 +615,7 @@ export default function ResourceGenerator() {
             }
           </button>
           {codeCaseContent && (
-            <div className="max-h-96 overflow-y-auto bg-[#0f1117] rounded-lg p-4 border border-gray-700/30">
+            <div className="max-h-96 overflow-y-auto bg-code-bg rounded-lg p-4 border border-line/30">
               <MarkdownRenderer content={codeCaseContent} />
             </div>
           )}
@@ -588,7 +626,7 @@ export default function ResourceGenerator() {
       {tab === 'project' && (
         <div className="space-y-3">
           <div>
-            <label className="text-xs text-gray-400 mb-1 block">
+            <label className="text-xs text-ink-muted mb-1 block">
               输入项目主题，AI 设计完整的算法实践项目
             </label>
             <textarea
@@ -600,7 +638,7 @@ export default function ResourceGenerator() {
             />
           </div>
           <div>
-            <label className="text-xs text-gray-400 mb-1.5 block">快捷选择综合项目</label>
+            <label className="text-xs text-ink-muted mb-1.5 block">快捷选择综合项目</label>
             <div className="flex flex-wrap gap-1.5">
               {['红黑树', '线程池', 'LRU缓存', '任务调度器', 'B+树索引', '跳表', '布隆过滤器', '一致性哈希'].map(name => (
                 <button
@@ -608,8 +646,8 @@ export default function ResourceGenerator() {
                   onClick={() => setProjectTopic(name)}
                   className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
                     projectTopic === name
-                      ? 'bg-primary-500/20 text-primary-300 ring-1 ring-primary-500/30'
-                      : 'bg-surface-300/30 text-gray-400 hover:text-gray-200 hover:bg-surface-300/50'
+                      ? 'bg-primary-500/20 text-primary-500 ring-1 ring-primary-500/30'
+                      : 'bg-surface-300/30 text-ink-muted hover:text-ink-strong hover:bg-surface-300/50'
                   }`}
                 >{name}</button>
               ))}
@@ -618,7 +656,7 @@ export default function ResourceGenerator() {
           <button
             onClick={handleGenProject}
             disabled={loading || !projectTopic.trim()}
-            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-300 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-full py-2 bg-primary-500/20 hover:bg-primary-500/30 text-primary-500 rounded-lg text-sm font-medium disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             {loading
               ? <span className="inline-flex items-center gap-1.5"><Loader2 size={14} className="animate-spin" /> AI 正在设计项目方案...</span>
@@ -626,7 +664,7 @@ export default function ResourceGenerator() {
             }
           </button>
           {projectContent && (
-            <div className="max-h-96 overflow-y-auto bg-[#0f1117] rounded-lg p-4 border border-gray-700/30">
+            <div className="max-h-96 overflow-y-auto bg-code-bg rounded-lg p-4 border border-line/30">
               <MarkdownRenderer content={projectContent} />
             </div>
           )}
@@ -642,16 +680,16 @@ export default function ResourceGenerator() {
 
       {/* 结果展示 */}
       {result && (
-        <div className="p-4 bg-surface-300/30 rounded-xl border border-gray-700/30 space-y-3">
+        <div className="p-4 bg-surface-300/30 rounded-xl border border-line/30 space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-gray-300">
+            <span className="text-xs font-medium text-ink">
               生成成功 {result.type === 'ppt' ? `(${result.data.slides} 页)` : ''}
             </span>
             {result.data.url && (
               <a
                 href={result.data.url}
                 download
-                className="text-xs text-primary-400 hover:text-primary-300 underline"
+                className="text-xs text-primary-400 hover:text-primary-500 underline"
               >
                 下载
               </a>
@@ -659,7 +697,7 @@ export default function ResourceGenerator() {
           </div>
 
           {result.type === 'image' && result.data.base64 && (
-            <div className="rounded-lg overflow-hidden border border-gray-600/30">
+            <div className="rounded-lg overflow-hidden border border-line/30">
               <img
                 src={`data:image/png;base64,${result.data.base64}`}
                 alt="AI 生成图片"
@@ -669,14 +707,14 @@ export default function ResourceGenerator() {
           )}
 
           {result.type === 'ppt' && (
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-ink-muted">
               AI 已生成「{result.data.title}」，共 {result.data.slides} 张幻灯片。<br />
               点击上方"下载"链接保存 PPTX 到本地。
             </div>
           )}
 
           {result.type === 'mindmap' && (
-            <div className="bg-[#0f1117] rounded-lg p-2 border border-gray-700/30">
+            <div className="bg-code-bg rounded-lg p-2 border border-line/30">
               <MindmapRenderer tree={result.data.tree} />
             </div>
           )}
@@ -684,11 +722,11 @@ export default function ResourceGenerator() {
           {result.type === 'video' && (
             <div className="space-y-2">
               {result.data.video_url ? (
-                <div className="rounded-lg overflow-hidden border border-gray-600/30 bg-black">
+                <div className="rounded-lg overflow-hidden border border-line/30 bg-black">
                   <video src={result.data.video_url} controls className="w-full max-h-80" autoPlay={false} />
                   <div className="px-3 py-1.5 bg-surface-300/50 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1 text-xs text-green-400"><CheckCircle2 size={13} /> Manim 渲染成功</span>
-                    <a href={result.data.video_url} download className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 underline">
+                    <a href={result.data.video_url} download className="inline-flex items-center gap-1 text-xs text-primary-400 hover:text-primary-500 underline">
                       <Download size={12} /> 下载视频
                     </a>
                   </div>
@@ -696,7 +734,7 @@ export default function ResourceGenerator() {
               ) : (
                 <>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1 text-xs text-gray-400">
+                    <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
                       {result.data.render_status === 'rendered'
                         ? <><CheckCircle2 size={13} className="text-green-400" /> 已渲染</>
                         : <><AppIcon name="📝" size={13} /> Manim 脚本已生成</>}
@@ -707,8 +745,8 @@ export default function ResourceGenerator() {
                       </span>
                     )}
                   </div>
-                  <div className="bg-[#0d1117] rounded-lg p-3 overflow-x-auto max-h-48 overflow-y-auto">
-                    <pre className="text-[11px] text-gray-300 font-mono whitespace-pre">{result.data.script.slice(0, 2000)}{result.data.script.length > 2000 ? '\n... (截断)' : ''}</pre>
+                  <div className="bg-code-bg rounded-lg p-3 overflow-x-auto max-h-48 overflow-y-auto">
+                    <pre className="text-[11px] text-ink font-mono whitespace-pre">{result.data.script.slice(0, 2000)}{result.data.script.length > 2000 ? '\n... (截断)' : ''}</pre>
                   </div>
                   <div className="flex gap-2">
                     <button
@@ -718,12 +756,12 @@ export default function ResourceGenerator() {
                         const a = document.createElement('a'); a.href = url; a.download = result.data.script_filename; a.click()
                         URL.revokeObjectURL(url)
                       }}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500/20 text-primary-300 rounded-lg text-xs"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-primary-500/20 text-primary-500 rounded-lg text-xs"
                     ><Download size={13} /> 下载脚本</button>
                     {result.data.render_output && (
                       <details className="text-xs">
-                        <summary className="text-gray-500 cursor-pointer hover:text-gray-300">查看渲染日志</summary>
-                        <pre className="mt-1 p-2 bg-[#0d1117] rounded text-[10px] text-gray-400 font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{result.data.render_output}</pre>
+                        <summary className="text-ink-subtle cursor-pointer hover:text-ink">查看渲染日志</summary>
+                        <pre className="mt-1 p-2 bg-code-bg rounded text-[10px] text-ink-muted font-mono whitespace-pre-wrap max-h-32 overflow-y-auto">{result.data.render_output}</pre>
                       </details>
                     )}
                   </div>
@@ -735,7 +773,7 @@ export default function ResourceGenerator() {
           {result.type === 'xfyun_video' && (
             <div className="space-y-2">
               {result.data.video_url ? (
-                <div className="rounded-lg overflow-hidden border border-gray-600/30 bg-black">
+                <div className="rounded-lg overflow-hidden border border-line/30 bg-black">
                   <video src={result.data.video_url} controls className="w-full max-h-80" autoPlay={false} />
                   <div className="px-3 py-1.5 bg-surface-300/50 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1 text-xs text-green-400"><CheckCircle2 size={13} /> 数字人视频已录制</span>
@@ -757,7 +795,7 @@ export default function ResourceGenerator() {
                     </span>
                   </div>
                   {result.data.stream_url && (
-                    <div className="text-[10px] text-gray-500 bg-surface-300/30 rounded px-2 py-1 truncate">
+                    <div className="text-[10px] text-ink-subtle bg-surface-300/30 rounded px-2 py-1 truncate">
                       RTMP 流地址: {result.data.stream_url}
                     </div>
                   )}
@@ -766,8 +804,8 @@ export default function ResourceGenerator() {
                       {result.data.message}
                     </div>
                   )}
-                  <div className="bg-[#0d1117] rounded-lg p-3 overflow-y-auto max-h-48">
-                    <pre className="text-[11px] text-gray-300 font-sans whitespace-pre-wrap">{result.data.script.slice(0, 2000)}{result.data.script.length > 2000 ? '\n...' : ''}</pre>
+                  <div className="bg-code-bg rounded-lg p-3 overflow-y-auto max-h-48">
+                    <pre className="text-[11px] text-ink font-sans whitespace-pre-wrap">{result.data.script.slice(0, 2000)}{result.data.script.length > 2000 ? '\n...' : ''}</pre>
                   </div>
                 </>
               )}

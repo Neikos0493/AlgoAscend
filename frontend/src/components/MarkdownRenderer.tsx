@@ -3,14 +3,16 @@ import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { useEffect, useRef } from 'react'
 import { AppIcon } from './Icon'
 import { Copy } from 'lucide-react'
+import { useStore } from '../stores/useStore'
 
 /** Mermaid 图表渲染组件 */
 function MermaidBlock({ code }: { code: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
+  const theme = useStore(state => state.theme)
 
   useEffect(() => {
     const container = containerRef.current
@@ -32,7 +34,7 @@ function MermaidBlock({ code }: { code: string }) {
         }
         const m = (window as any).mermaid
         if (m) {
-          m.initialize({ startOnLoad: false, theme: 'dark', securityLevel: 'loose' })
+          m.initialize({ startOnLoad: false, theme: theme === 'dark' ? 'dark' : 'default', securityLevel: 'loose' })
           const id = 'mermaid-' + Math.random().toString(36).slice(2, 11)
           const { svg } = await m.render(id, code)
           container.innerHTML = svg
@@ -42,11 +44,11 @@ function MermaidBlock({ code }: { code: string }) {
       }
     }
     loadMermaid()
-  }, [code])
+  }, [code, theme])
 
   return (
-    <div className="my-4 rounded-xl overflow-hidden border border-gray-700/50 bg-[#0f1117]">
-      <div className="flex items-center px-4 py-2 bg-gray-800/90 border-b border-gray-700/30">
+    <div className="my-4 code-shell">
+      <div className="flex items-center px-4 py-2 bg-code-header border-b border-code-line">
         <span className="inline-flex items-center gap-1 text-xs text-teal-400 font-mono"><AppIcon name="📊" size={12} /> Mermaid 图表</span>
       </div>
       <div ref={containerRef} className="p-4 flex justify-center overflow-x-auto">
@@ -61,6 +63,7 @@ function MermaidBlock({ code }: { code: string }) {
  * 支持：代码语法高亮（Prism.js）+ LaTeX 公式（KaTeX）+ GFM 表格/列表
  */
 export default function MarkdownRenderer({ content }: { content: string }) {
+  const theme = useStore(state => state.theme)
   if (!content) return null
 
   return (
@@ -91,12 +94,12 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                   </button>
                 </div>
                 <SyntaxHighlighter
-                  style={oneDark}
+                  style={theme === 'dark' ? oneDark : oneLight}
                   language={match[1] || 'text'}
                   PreTag="div"
                   showLineNumbers
                   lineNumberStyle={{
-                    color: '#4a5568',
+                    color: 'rgb(var(--color-ink-subtle))',
                     fontSize: '0.75rem',
                     marginRight: '1rem',
                     minWidth: '1.5em',
@@ -110,7 +113,7 @@ export default function MarkdownRenderer({ content }: { content: string }) {
                     fontSize: '0.8125rem',
                     lineHeight: '1.7',
                     padding: '1rem 0',
-                    background: '#1a1b26',
+                    background: 'rgb(var(--color-code-bg))',
                   }}
                 >
                   {String(children).replace(/\n$/, '')}

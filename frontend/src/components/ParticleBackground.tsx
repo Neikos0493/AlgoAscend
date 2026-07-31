@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from 'react'
 import Particles from '@tsparticles/react'
 import { type Container, tsParticles } from '@tsparticles/engine'
 import { loadSlim } from '@tsparticles/slim'
+import { useStore } from '../stores/useStore'
 
 export default function ParticleBackground() {
+  const theme = useStore(state => state.theme)
   const [ready, setReady] = useState(false)
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 })
 
@@ -34,9 +36,9 @@ export default function ParticleBackground() {
         className="fixed inset-0 -z-20 pointer-events-none"
         style={{
           background: `
-            radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(0,240,255,0.06) 0%, transparent 50%),
-            radial-gradient(800px circle at ${100 - mousePos.x}% ${100 - mousePos.y}%, rgba(168,85,247,0.05) 0%, transparent 50%),
-            radial-gradient(400px circle at 50% 50%, rgba(99,102,241,0.04) 0%, transparent 60%)
+            radial-gradient(600px circle at ${mousePos.x}% ${mousePos.y}%, rgba(0,145,178,${theme === 'dark' ? '0.06' : '0.09'}) 0%, transparent 50%),
+            radial-gradient(800px circle at ${100 - mousePos.x}% ${100 - mousePos.y}%, rgba(147,51,234,${theme === 'dark' ? '0.05' : '0.06'}) 0%, transparent 50%),
+            radial-gradient(400px circle at 50% 50%, rgba(99,102,241,${theme === 'dark' ? '0.04' : '0.05'}) 0%, transparent 60%)
           `,
         }}
       />
@@ -69,7 +71,7 @@ export default function ParticleBackground() {
               },
             },
             opacity: {
-              value: { min: 0.1, max: 0.7 },
+              value: { min: theme === 'dark' ? 0.1 : 0.08, max: theme === 'dark' ? 0.7 : 0.42 },
               animation: {
                 enable: true,
                 speed: { min: 0.3, max: 1.2 },

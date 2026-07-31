@@ -68,29 +68,29 @@ export default function PathPage() {
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
-      <header className="flex items-center gap-3 px-6 py-4 bg-surface-100/80 backdrop-blur-xl border-b border-gray-700/30 shrink-0">
-        <button className="lg:hidden text-gray-400 hover:text-gray-200" onClick={toggleSidebar}>
+      <header className="flex items-center gap-3 px-6 py-4 page-header shrink-0">
+        <button className="lg:hidden text-ink-muted hover:text-ink" onClick={toggleSidebar}>
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
         </button>
-        <div className="flex-1"><h2 className="text-lg font-semibold text-white">学习路径规划</h2><p className="text-xs text-gray-400">7 阶段渐进式学习路线，从入门到竞赛</p></div>
-        <div className="flex items-center gap-2 text-sm"><span className="text-gray-400">总进度</span><span className="font-bold text-primary-300">{totalProgress}%</span></div>
+        <div className="flex-1"><h2 className="text-lg font-semibold text-ink-strong">学习路径规划</h2><p className="text-xs text-ink-muted">7 阶段渐进式学习路线，从入门到竞赛</p></div>
+        <div className="flex items-center gap-2 text-sm"><span className="text-ink-muted">总进度</span><span className="font-bold text-primary-300">{totalProgress}%</span></div>
       </header>
 
       <div className="p-6">
         <div className="card mb-6">
-          <div className="flex items-center justify-between mb-4"><h3 className="flex items-center gap-2 text-base font-semibold text-white"><AppIcon name="📊" size={17} className="text-primary-400" /> 各阶段完成度</h3><span className="text-xs text-gray-500">每日更新</span></div>
+          <div className="flex items-center justify-between mb-4"><h3 className="flex items-center gap-2 text-base font-semibold text-ink-strong"><AppIcon name="📊" size={17} className="text-primary-400" /> 各阶段完成度</h3><span className="text-xs text-ink-subtle">每日更新</span></div>
           <div className="space-y-2">
             {STAGES.map((stage) => {
               const pct = progress[stage.id] || 0
               return (
                 <div key={stage.id} className="flex items-center gap-3">
-                  <span className="text-sm min-w-[24px] font-mono text-gray-500">S{stage.id}</span>
-                  <span className="text-sm min-w-[100px] text-gray-300">{stage.title}</span>
-                  <div className="flex-1 bg-gray-700/50 rounded-full h-2">
-                    <div className={`h-2 rounded-full transition-all duration-700 ${pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-gray-600'}`}
+                  <span className="text-sm min-w-[24px] font-mono text-ink-subtle">S{stage.id}</span>
+                  <span className="text-sm min-w-[100px] text-ink">{stage.title}</span>
+                  <div className="flex-1 bg-surface-400/60 rounded-full h-2">
+                    <div className={`h-2 rounded-full transition-all duration-700 ${pct >= 80 ? 'bg-emerald-500' : pct >= 40 ? 'bg-amber-500' : 'bg-line/60'}`}
                       style={{ width: `${pct}%` }} />
                   </div>
-                  <span className="text-xs font-medium text-gray-500 w-10 text-right">{pct}%</span>
+                  <span className="text-xs font-medium text-ink-subtle w-10 text-right">{pct}%</span>
                 </div>
               )
             })}
@@ -107,22 +107,22 @@ export default function PathPage() {
                   <div className={`w-12 h-12 rounded-xl ${stage.bgClass} flex items-center justify-center ${stage.colorClass}`}><AppIcon name={stage.icon} size={24} /></div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">阶段 {stage.id}</span>
+                      <span className="text-xs font-mono text-ink-subtle bg-surface-300/50 px-1.5 py-0.5 rounded">阶段 {stage.id}</span>
                       <h3 className={`text-base font-semibold ${stage.colorClass}`}>{stage.title}</h3>
-                      <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${pct>=80?'bg-emerald-500/10 text-emerald-300':pct>=40?'bg-amber-500/10 text-amber-300':'bg-gray-700/30 text-gray-500'}`}>{pct}%</span>
+                      <span className={`ml-auto px-2 py-0.5 rounded-full text-xs font-medium ${pct>=80?'bg-emerald-500/10 text-emerald-300':pct>=40?'bg-amber-500/10 text-amber-300':'bg-surface-300/50 text-ink-subtle'}`}>{pct}%</span>
                     </div>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="text-xs text-gray-500">{stage.milestones.length} 个里程碑</span>
-                      <span className="text-xs text-gray-500">{stage.milestones.reduce((s,m)=>{const mm=m.estimated.match(/(\d+)/);return mm?s+parseInt(mm[1]):s},0)} 天</span>
+                      <span className="text-xs text-ink-subtle">{stage.milestones.length} 个里程碑</span>
+                      <span className="text-xs text-ink-subtle">{stage.milestones.reduce((s,m)=>{const mm=m.estimated.match(/(\d+)/);return mm?s+parseInt(mm[1]):s},0)} 天</span>
                     </div>
                   </div>
-                  <svg className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${isExpanded?'rotate-180':''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  <svg className={`w-5 h-5 text-ink-subtle transition-transform duration-200 ${isExpanded?'rotate-180':''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 </div>
-                <div className="mt-3 bg-gray-700/50 rounded-full h-1.5">
-                  <div className={`h-1.5 rounded-full transition-all duration-700 ${pct>=80?'bg-emerald-500':pct>=40?'bg-amber-500':'bg-gray-600'}`} style={{width:`${pct}%`}} />
+                <div className="mt-3 bg-surface-400/60 rounded-full h-1.5">
+                  <div className={`h-1.5 rounded-full transition-all duration-700 ${pct>=80?'bg-emerald-500':pct>=40?'bg-amber-500':'bg-line/60'}`} style={{width:`${pct}%`}} />
                 </div>
                 {isExpanded && (
-                  <div className="mt-4 pt-4 border-t border-gray-700/30 space-y-3">
+                  <div className="mt-4 pt-4 border-t border-line/30 space-y-3">
                     {stage.milestones.map((m, idx) => {
                       const isCompleted = completedMap.get(stage.id)?.includes(m.name)
                       return (
@@ -136,11 +136,11 @@ export default function PathPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-medium ${isCompleted ? 'text-gray-500 line-through' : 'text-gray-200'}`}>{m.name}</span>
-                            <span className="text-xs text-gray-500 bg-surface-300/50 px-1.5 py-0.5 rounded">{m.estimated}</span>
+                            <span className={`text-sm font-medium ${isCompleted ? 'text-ink-subtle line-through' : 'text-ink'}`}>{m.name}</span>
+                            <span className="text-xs text-ink-subtle bg-surface-300/50 px-1.5 py-0.5 rounded">{m.estimated}</span>
                             {isCompleted && <span className="inline-flex items-center gap-1 text-xs text-emerald-400"><AppIcon name="✅" size={12} /> 已完成</span>}
                           </div>
-                          <p className="text-xs text-gray-500 mt-0.5">{m.desc}</p>
+                          <p className="text-xs text-ink-subtle mt-0.5">{m.desc}</p>
                         </div>
                       </div>
                     )})}
@@ -156,7 +156,7 @@ export default function PathPage() {
             <AppIcon name="💡" size={22} className="text-primary-400 mt-0.5" />
             <div>
               <h4 className="text-sm font-semibold text-primary-300">路径调整建议</h4>
-              <p className="text-xs text-gray-400 mt-1">以上学习路径基于你的六维画像动态生成。在「智能对话」中说<strong className="text-primary-400">"我已学完XX"</strong>，AI会自动更新进度并调整后续路径。</p>
+              <p className="text-xs text-ink-muted mt-1">以上学习路径基于你的六维画像动态生成。在「智能对话」中说<strong className="text-primary-400">"我已学完XX"</strong>，AI会自动更新进度并调整后续路径。</p>
             </div>
           </div>
         </div>
