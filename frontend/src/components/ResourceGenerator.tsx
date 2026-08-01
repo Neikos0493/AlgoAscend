@@ -1,24 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useStore } from '../stores/useStore'
 import { generateImage, generatePPT, generateMindmap, generateVideo, generateCodeCase, generateProject, getLLMApiKey, getSelectedModelId } from '../services/api'
 import MindmapRenderer from './MindmapRenderer'
 import MarkdownRenderer from './MarkdownRenderer'
 import { AppIcon } from './Icon'
 import { CheckCircle2, Download, Loader2 } from 'lucide-react'
+import flvjs from 'flv.js'
 
 type GenTab = 'image' | 'ppt' | 'mindmap' | 'video' | 'code_case' | 'project'
 type VideoMode = 'manim' | 'xfyun'
 
-const AVATARS = [
-  { id: 'male_casual', name: '休闲男(可用)', icon: '👨' },
-  { id: 'female_business', name: '商务女(可用)', icon: '👩‍💼' },
-  { id: 'male_business', name: '商务男(待授权)', icon: '👨‍💼' },
-  { id: 'female_casual', name: '休闲女(待授权)', icon: '👩' },
-  { id: 'female_teacher', name: '教师女(待授权)', icon: '👩‍🏫' },
-  { id: 'male_service', name: '服务男(待授权)', icon: '👨‍💻' },
-]
+// FLV 视频播放器组件
+function FlvPlayer({ url, className }: { url: string; className?: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const playerRef = useRef<flvjs.Player | null>(null)
 
-const AVATARS_NOTE = '⚠️ 每个虚拟人形象需在讯飞控制台单独领取/购买。标"(可用)"的来自官方demo确认可用，"(待授权)"的需到 console.xfyun.cn → AI虚拟人 → 形象列表 获取实际可用ID后替换'
+  useEffect(() => {
+    if (flvjs.isSupported() && videoRef.current) {
+      const player = flvjs.createPlayer({
+        type: 'flv',
+        url: url,
+        isLive: true,
+      })
+      player.attachMediaElement(videoRef.current)
+      player.load()
+      player.play()
+      playerRef.current = player
+
+      return () => {
+        player.destroy()
+        playerRef.current = null
+      }
+    }
+  }, [url])
+
+  return (
+    <video
+      ref={videoRef}
+      className={className || 'w-full max-h-80'}
+      controls
+      autoPlay={false}
+    />
+  )
+}
+
+const AVATARS = [
+  { id: 'female', name: '女形象', icon: '👩' },
+  { id: 'male', name: '男形象', icon: '👨' },
+]
 
 const TABS: { key: GenTab; label: string; icon: string }[] = [
   { key: 'image', label: 'AI 生图', icon: '🎨' },
@@ -64,7 +93,7 @@ export default function ResourceGenerator() {
   const [videoScript, setVideoScript] = useState('')
   const [videoGuide, setVideoGuide] = useState('')
   const [videoMode, setVideoMode] = useState<VideoMode>('manim')
-  const [xfyunAvatar, setXfyunAvatar] = useState('male_casual')
+  const [xfyunAvatar, setXfyunAvatar] = useState('female')
 
   // 代码实操相关
   const [codeCaseTopic, setCodeCaseTopic] = useState('')
@@ -795,8 +824,12 @@ export default function ResourceGenerator() {
                     </span>
                   </div>
                   {result.data.stream_url && (
-                    <div className="text-[10px] text-ink-subtle bg-surface-300/30 rounded px-2 py-1 truncate">
-                      RTMP 流地址: {result.data.stream_url}
+                    <div className="rounded-lg overflow-hidden border border-line/30 bg-black">
+                      <FlvPlayer url={result.data.stream_url} className="w-full max-h-80" />
+                      <div className="px-3 py-1.5 bg-surface-300/50 flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1 text-xs text-green-400"><CheckCircle2 size={13} /> 数字人播报中</span>
+                        <span className="text-[10px] text-ink-subtle">直播流</span>
+                      </div>
                     </div>
                   )}
                   {result.data.message && (

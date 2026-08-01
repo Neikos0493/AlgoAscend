@@ -1087,7 +1087,7 @@ export async function generateVideo(params: {
         app_id: xfyunCreds.app_id || '',
         api_key: xfyunCreds.api_key || '',
         api_secret: xfyunCreds.api_secret || '',
-        avatar: getModelCreds('xfyun-digital-human').avatar || 'male_business',
+        avatar: getModelCreds('xfyun-digital-human').avatar || 'female',
         llm_api_key: llmKey,
         llm_model: llmApiModel,
         llm_api_base: llmBase,

@@ -334,15 +334,15 @@ def _parse_nowcoder_list(html: str) -> list[dict]:
     return problems
 
 
-_NOWCODER_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "strong", "div")
+_NOWCODER_HEADING_TAGS = ("h1", "h2", "h3", "h4", "h5", "strong", "div", "section")
 _NOWCODER_SECTION_LABELS = {
-    "description": ("题目描述", "描述"),
-    "input_description": ("输入描述", "输入格式"),
-    "output_description": ("输出描述", "输出格式"),
-    "notes": ("备注", "说明"),
-    "hints": ("提示", "Hint", "Hints"),
-    "constraints": ("数据范围", "数据范围及提示", "约束", "限制"),
-    "sample_input": ("样例输入", "样例输入1", "示例输入", "输入样例"),
+    "description": ("题目描述", "描述", "题目内容", "问题描述"),
+    "input_description": ("输入描述", "输入格式", "输入说明"),
+    "output_description": ("输出描述", "输出格式", "输出说明"),
+    "notes": ("备注", "说明", "注意", "注意事项"),
+    "hints": ("提示", "Hint", "Hints", "提示信息"),
+    "constraints": ("数据范围", "数据范围及提示", "约束", "限制", "数据约束", "输入限制"),
+    "sample_input": ("样例输入", "样例输入1", "示例输入", "输入样例", "样例", "示例1"),
     "sample_output": ("样例输出", "样例输出1", "示例输出", "输出样例"),
 }
 
@@ -372,6 +372,19 @@ def _section_content(heading) -> str:
         else:
             if sibling.name in _NOWCODER_HEADING_TAGS and _heading_key(sibling):
                 break
+            # Preserve code blocks and preformatted text
+            if sibling.name in ("pre", "code"):
+                text = sibling.get_text("\n", strip=False)
+                # Wrap in markdown code block for better rendering
+                if text.strip():
+                    parts.append(f"```\n{text.strip()}\n```")
+                continue
+            # Preserve inline code
+            if sibling.name == "span" and sibling.get("class") and any("code" in str(c).lower() for c in sibling.get("class", [])):
+                text = sibling.get_text(strip=True)
+                if text:
+                    parts.append(f"`{text}`")
+                continue
             text = _clean_text(sibling)
         if text:
             parts.append(text)
@@ -380,10 +393,18 @@ def _section_content(heading) -> str:
 
 def _heading_sections(root) -> list[tuple[str, str]]:
     sections = []
+    # Look for headings in various container types
     for heading in root.find_all(_NOWCODER_HEADING_TAGS):
         key = _heading_key(heading)
         if key and not any(_heading_key(parent) for parent in heading.parents if parent is not root):
             content = _section_content(heading)
+            if content:
+                sections.append((key, content))
+    # Also check for section/div elements with specific classes
+    for section in root.select("section[class*='section'], div[class*='section'], div[class*='part']"):
+        key = _heading_key(section)
+        if key:
+            content = _section_content(section)
             if content:
                 sections.append((key, content))
     return sections
@@ -459,13 +480,21 @@ def _parse_nowcoder_detail(html: str) -> dict:
     if _is_nowcoder_waf(html):
         return {"waf_blocked": True}
     soup = BeautifulSoup(html, "html.parser")
-    root = soup.select_one(".terminal-topic, .subject-item-wrap") or soup
+    # Support multiple container types for different problem formats
+    root = soup.select_one(
+        ".terminal-topic, .subject-item-wrap, .question-content, .problem-content, "
+        "[class*='question-'], [class*='problem-'], .topic-main"
+    ) or soup
     detail: dict = {}
     images = _preserve_statement_images(root)
     if images:
         detail["media"] = images
 
-    title_node = root.select_one("h1.subject-title, .subject-title, .topic-title")
+    # Try multiple title selectors
+    title_node = root.select_one(
+        "h1.subject-title, .subject-title, .topic-title, .question-title, "
+        ".problem-title, h1.title, [class*='title']"
+    )
     if not title_node:
         title_node = next((node for node in root.find_all("h1") if not _heading_key(node)), None)
     if title_node:
@@ -476,8 +505,10 @@ def _parse_nowcoder_detail(html: str) -> dict:
     for key, content in sections:
         section_values.setdefault(key, []).append(content)
 
+    # Try multiple description selectors
     description_node = root.select_one(
-        ".subject-des, .topic-des, .question-content, [data-role='description']"
+        ".subject-des, .topic-des, .question-content, .problem-description, "
+        "[data-role='description'], .description, .content"
     )
     description = _clean_text(description_node) or "\n".join(section_values.get("description", []))
     if description:

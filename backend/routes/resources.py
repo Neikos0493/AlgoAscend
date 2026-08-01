@@ -141,10 +141,16 @@ XF_TTI_URL = f"https://{XF_TTI_HOST}{XF_TTI_PATH}"
 @router.post("/generate-image")
 async def generate_image(req: ImageGenRequest):
     """调用讯飞星火文生图 API 生成图片，返回 base64 + 保存路径"""
+    import logging
+    logger = logging.getLogger(__name__)
+
     if not all([req.app_id, req.api_key, req.api_secret]):
         raise HTTPException(400, "缺少讯飞星火鉴权信息 (app_id/api_key/api_secret)")
 
-    date, authorization = _xfyun_auth(XF_TTI_HOST, XF_TTI_PATH, req.api_key, req.api_secret)
+    logger.info(f"文生图请求: app_id={req.app_id}, prompt={req.prompt[:50]}...")
+
+    # 讯飞 TTI v2.1 需要将鉴权信息放在 URL 查询参数中
+    auth_url = _xfyun_build_auth_url(XF_TTI_HOST, XF_TTI_PATH, req.api_key, req.api_secret)
 
     body = {
         "header": {"app_id": req.app_id},
@@ -162,22 +168,23 @@ async def generate_image(req: ImageGenRequest):
         }
     }
 
+    logger.info(f"请求 URL: {auth_url[:100]}...")
+
     async with httpx.AsyncClient(timeout=60.0) as client:
         resp = await client.post(
-            XF_TTI_URL,
+            auth_url,
             json=body,
-            headers={
-                "Content-Type": "application/json;charset=UTF-8",
-                "Authorization": authorization,
-                "Date": date,
-                "Host": XF_TTI_HOST,
-            }
+            headers={"content-type": "application/json"}
         )
         data = resp.json()
 
+    logger.info(f"响应状态码: {resp.status_code}")
+
     if data.get("header", {}).get("code") != 0:
+        err_code = data.get("header", {}).get("code")
         err_msg = data.get("header", {}).get("message", "未知错误")
-        raise HTTPException(500, f"讯飞星火返回错误: {err_msg}")
+        logger.error(f"讯飞 API 错误: code={err_code}, message={err_msg}")
+        raise HTTPException(500, f"讯飞星火返回错误: {err_msg} (code: {err_code})")
 
     # 提取 base64 图片
     choices = data.get("payload", {}).get("choices", {})
@@ -1431,15 +1438,14 @@ XF_VMS_STOP_PATH = "/v1/private/vms2d_stop"
 # 获取方式：console.xfyun.cn → AI虚拟人 → 接口服务 → 形象列表 → 复制形象ID
 # 以下ID来自官方Python demo + Web SDK demo，可能已过期
 DIGITAL_HUMAN_AVATARS = {
-    "demo_default":   {"id": "118801001", "name": "默认形象(官方demo)"},
-    "male_casual":    {"id": "118801001", "name": "休闲男(demo确认可用)"},
-    "female_business": {"id": "110021007", "name": "商务女(demo确认可用)"},
-    # 以下ID需到控制台确认是否已授权
-    "male_business":  {"id": "110017006", "name": "商务男(需授权)"},
-    "female_casual":  {"id": "110022010", "name": "休闲女(需授权)"},
-    "female_teacher": {"id": "110005018", "name": "教师女(需授权)"},
-    "male_service":   {"id": "110018008", "name": "服务男(需授权)"},
+    "female": {"id": "201165002", "name": "女形象", "voice": "x4_yezi"},
+    "male":   {"id": "201357001", "name": "男形象", "voice": "x4_xiaozhong"},
 }
+
+# 讯飞虚拟人 WebSocket API（虚拟人交互平台）
+XF_AVATAR_WS_HOST = "avatar.cn-huadong-1.xf-yun.com"
+XF_AVATAR_WS_PATH = "/v1/interact"
+XF_AVATAR_WS_URL = f"wss://{XF_AVATAR_WS_HOST}{XF_AVATAR_WS_PATH}"
 
 DIGITAL_HUMAN_SYSTEM_PROMPT = """你是一位专业的算法讲师。为讯飞AI数字人生成一份播报文稿，用于讲解算法主题。
 
@@ -1459,7 +1465,7 @@ class DigitalHumanVideoRequest(BaseModel):
     topic: str = ""
     title: str = ""
     student_id: int = 1
-    avatar: str = "male_business"
+    avatar: str = "female"
     app_id: str = ""
     api_key: str = ""
     api_secret: str = ""
@@ -1470,7 +1476,13 @@ class DigitalHumanVideoRequest(BaseModel):
 
 @router.post("/generate-xfyun-digital-human")
 async def generate_xfyun_digital_human(req: DigitalHumanVideoRequest):
-    """生成讯飞AI数字人讲解视频"""
+    """生成讯飞AI数字人讲解视频（使用 WebSocket API）"""
+    import sys
+    print("=" * 60, flush=True)
+    print("[数字人] 接口被调用！", flush=True)
+    print(f"[数字人] 请求参数: topic={req.topic}, avatar={req.avatar}", flush=True)
+    sys.stdout.flush()
+    
     topic = req.topic.strip()
     if not topic:
         raise HTTPException(400, "请提供讲解主题")
@@ -1483,8 +1495,9 @@ async def generate_xfyun_digital_human(req: DigitalHumanVideoRequest):
     llm_model = req.llm_model or "deepseek-v4-flash"
     llm_api_base = req.llm_api_base or ""
 
-    # 调试日志
-    print(f"[数字人] LLM调用: model={llm_model}, base={llm_api_base}, key_len={len(llm_api_key)}, key_prefix={llm_api_key[:8]}...")
+    import sys
+    print(f"[数字人] LLM调用: model={llm_model}, base={llm_api_base}, key_len={len(llm_api_key)}, key_prefix={llm_api_key[:8]}...", flush=True)
+    sys.stdout.flush()
 
     try:
         from llm_service import chat_completion
@@ -1499,12 +1512,11 @@ async def generate_xfyun_digital_human(req: DigitalHumanVideoRequest):
         )
     except Exception as e:
         err_str = str(e)
-        # 401 时给出更友好的提示
         if "401" in err_str:
             raise HTTPException(500, f"讯飞API认证失败(401)。请确认在设置中填入的是「APIPassword」(HTTP协议密码)，而不是APIKey/APISecret。获取地址: console.xfyun.cn → 对应模型 → HTTP服务接口认证信息 → APIPassword。原始错误: {err_str}")
         raise HTTPException(500, f"LLM 文稿生成失败: {err_str}")
 
-    # ===== 步骤2: 调用讯飞虚拟人API =====
+    # ===== 步骤2: 调用讯飞虚拟人 WebSocket API =====
     xf_app_id = req.app_id
     xf_api_key = req.api_key
     xf_api_secret = req.api_secret
@@ -1512,183 +1524,232 @@ async def generate_xfyun_digital_human(req: DigitalHumanVideoRequest):
     if not all([xf_app_id, xf_api_key, xf_api_secret]):
         raise HTTPException(400, "请提供讯飞虚拟人API鉴权信息（APP ID + API Key + API Secret）")
 
-    avatar_info = DIGITAL_HUMAN_AVATARS.get(req.avatar, DIGITAL_HUMAN_AVATARS["demo_default"])
+    avatar_info = DIGITAL_HUMAN_AVATARS.get(req.avatar, DIGITAL_HUMAN_AVATARS["female"])
+    avatar_id = avatar_info["id"]
+    voice_name = avatar_info["voice"]
+
+    drive_status = "pending"
+    ws_error = ""
 
     try:
-        # 2.1 启动虚拟人会话（鉴权参数作为URL查询参数，不放header）
-        start_url = _xfyun_build_auth_url(XF_VMS_HOST, XF_VMS_START_PATH, xf_api_key, xf_api_secret)
+        import websocket
+        import hashlib
+        import hmac
+        from time import mktime
+        from wsgiref.handlers import format_date_time
+        from datetime import datetime as dt
 
-        start_body = {
-            "header": {
-                "app_id": xf_app_id,
-                "uid": f"algoascend_{req.student_id}",
-            },
-            "parameter": {
-                "vmr": {
-                    "stream": {"protocol": "rtmp"},
-                    "avatar_id": avatar_info["id"],
-                    "width": 1280,
-                    "height": 720,
-                }
-            }
-        }
+        # 构建鉴权URL
+        def _build_ws_auth_url(api_key, api_secret, host=XF_AVATAR_WS_HOST, path=XF_AVATAR_WS_PATH):
+            from urllib.parse import quote
+            now = dt.now()
+            date = format_date_time(mktime(now.timetuple()))
+            signature_origin = f"host: {host}\ndate: {date}\nGET {path} HTTP/1.1"
+            signature_sha = hmac.new(api_secret.encode('utf-8'), signature_origin.encode('utf-8'), digestmod=hashlib.sha256).digest()
+            signature = base64.b64encode(signature_sha).decode('utf-8')
+            authorization_origin = f'api_key="{api_key}", algorithm="hmac-sha256", headers="host date request-line", signature="{signature}"'
+            authorization = base64.b64encode(authorization_origin.encode('utf-8')).decode('utf-8')
+            # URL 编码参数，避免空格等特殊字符导致握手失败
+            url = f"wss://{host}{path}?authorization={quote(authorization, safe='')}&date={quote(date, safe='')}&host={quote(host, safe='')}"
+            return url
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            start_resp = await client.post(
-                start_url,
-                json=start_body,
-                headers={
-                    "Content-Type": "application/json;charset=UTF-8",
+        ws_url = _build_ws_auth_url(xf_api_key, xf_api_secret)
+        print(f"[数字人] WebSocket连接: {ws_url[:100]}...", flush=True)
+
+        # 同步 WebSocket 调用（在线程池中执行）
+        def _run_ws_session():
+            import websocket
+            import time
+
+            stream_url = ""
+            ws_error_msg = ""
+            session_started = False
+            drive_completed = False
+
+            def on_message(ws, message):
+                nonlocal ws_error_msg, stream_url, session_started, drive_completed
+                if isinstance(message, bytes):
+                    # 二进制消息可能是视频流数据，暂时忽略
+                    pass
+                else:
+                    try:
+                        data = json.loads(message)
+                        print(f"[数字人] 收到消息: {json.dumps(data, ensure_ascii=False)[:300]}", flush=True)
+                        
+                        code = data.get("header", {}).get("code", 0)
+                        if code != 0:
+                            ws_error_msg = f"讯飞返回错误: code={code}, msg={data.get('header', {}).get('message', '')}"
+                            ws.close()
+                        else:
+                            # 根据文档，流地址在 payload.avatar.stream_url
+                            payload = data.get("payload", {})
+                            avatar_data = payload.get("avatar", {})
+                            event_type = avatar_data.get("event_type", "")
+                            
+                            if event_type == "stream_info":
+                                stream_url = avatar_data.get("stream_url", "")
+                                if stream_url:
+                                    session_started = True
+                                    print(f"[数字人] 收到流地址: {stream_url}", flush=True)
+                                    
+                                    # 收到流地址后，发送文本驱动协议
+                                    import uuid as _uuid
+                                    text_msg = {
+                                        "header": {
+                                            "app_id": xf_app_id,
+                                            "ctrl": "text_driver",
+                                            "request_id": str(_uuid.uuid4())
+                                        },
+                                        "parameter": {
+                                            "avatar_dispatch": {
+                                                "interactive_mode": 1
+                                            },
+                                            "tts": {
+                                                "vcn": voice_name,
+                                                "speed": 50,
+                                                "pitch": 50,
+                                                "volume": 50
+                                            }
+                                        },
+                                        "payload": {
+                                            "text": {
+                                                "content": script_text[:2000]
+                                            }
+                                        }
+                                    }
+                                    ws.send(json.dumps(text_msg))
+                                    print(f"[数字人] 已发送文本驱动: {len(script_text[:2000])} 字符", flush=True)
+                            elif event_type == "stream_start":
+                                print(f"[数字人] 推流首帧回调", flush=True)
+                            else:
+                                # 其他响应（如文本驱动状态）
+                                vmr_status = avatar_data.get("vmr_status", -1)
+                                error_code = avatar_data.get("error_code", 0)
+                                if error_code != 0:
+                                    ws_error_msg = f"驱动错误: {avatar_data.get('error_message', '')}"
+                                elif vmr_status == 2:
+                                    drive_completed = True
+                                    print(f"[数字人] 播报完成", flush=True)
+                    except Exception as e:
+                        print(f"[数字人] 解析消息失败: {e}", flush=True)
+
+            def on_error(ws, error):
+                nonlocal ws_error_msg
+                ws_error_msg = str(error)
+                print(f"[数字人] WebSocket错误: {error}", flush=True)
+
+            def on_close(ws, close_status_code, close_msg):
+                print(f"[数字人] WebSocket关闭: {close_status_code} {close_msg}", flush=True)
+
+            def on_open(ws):
+                import uuid
+                # 步骤1: 发送启动协议（按讯飞虚拟人 Web API 文档）
+                start_msg = {
+                    "header": {
+                        "app_id": xf_app_id,
+                        "ctrl": "start",
+                        "request_id": str(uuid.uuid4())
+                    },
+                    "parameter": {
+                        "avatar": {
+                            "stream": {
+                                "protocol": "flv"
+                            },
+                            "avatar_id": avatar_id,
+                            "width": 720,
+                            "height": 1280
+                        },
+                        "tts": {
+                            "vcn": voice_name,
+                            "speed": 50,
+                            "pitch": 50,
+                            "volume": 50
+                        }
+                    }
                 }
+                ws.send(json.dumps(start_msg))
+                print(f"[数字人] 已发送启动指令: avatar_id={avatar_id}, voice={voice_name}", flush=True)
+
+            ws = websocket.WebSocketApp(
+                ws_url,
+                on_message=on_message,
+                on_error=on_error,
+                on_close=on_close,
+                on_open=on_open,
             )
-            # 先拿原始文本，避免 .json() 抛异常丢失诊断信息
-            start_text = start_resp.text
+
+            # 运行 WebSocket，最长等待120秒让播报完成
+            import threading
+            ws_thread = threading.Thread(target=ws.run_forever, kwargs={"ping_timeout": 10})
+            ws_thread.daemon = True
+            ws_thread.start()
+
+            # 等待播报完成或超时，每5秒发送心跳
+            start_wait = time.time()
+            last_ping = time.time()
+            while time.time() - start_wait < 120:
+                if ws_error_msg or drive_completed:
+                    break
+                # 每5秒发送心跳保活
+                if time.time() - last_ping >= 5:
+                    try:
+                        import uuid as _uuid
+                        ping_msg = {
+                            "header": {
+                                "app_id": xf_app_id,
+                                "ctrl": "ping",
+                                "request_id": str(_uuid.uuid4())
+                            }
+                        }
+                        ws.send(json.dumps(ping_msg))
+                        last_ping = time.time()
+                    except:
+                        pass
+                time.sleep(1)
+
             try:
-                start_data = start_resp.json()
-            except Exception:
-                raise HTTPException(500, f"讯飞虚拟人启动接口返回非JSON响应 (HTTP {start_resp.status_code}): {start_text[:500]}")
+                ws.close()
+            except:
+                pass
 
-        # 打印完整响应便于服务端日志诊断
-        print(f"[数字人] vms2d_start 响应: {json.dumps(start_data, ensure_ascii=False)[:800]}")
+            return stream_url, ws_error_msg
 
-        if start_data.get("header", {}).get("code") != 0:
-            header = start_data.get("header", {})
-            err_code = header.get("code", "unknown")
-            err_msg = header.get("message", "")
-            # 把完整响应一并返回，避免显示"未知错误"
-            raise HTTPException(
-                500,
-                f"讯飞虚拟人启动失败 [code={err_code}]: {err_msg or '讯飞未返回错误描述'} | 完整响应: {json.dumps(start_data, ensure_ascii=False)[:500]}"
-            )
+        import asyncio
+        loop = asyncio.get_event_loop()
+        stream_url, ws_error = await loop.run_in_executor(None, _run_ws_session)
 
-        # 修正：session 和 stream_url 都在 header 里（按官方文档）
-        session_id = start_data.get("header", {}).get("session", "")
-        stream_url = start_data.get("header", {}).get("stream_url", "")
+        if ws_error:
+            raise Exception(ws_error)
 
-        # stream_url 兼容处理：可能是 base64 编码，也可能是原始URL
         if stream_url:
-            try:
-                decoded = base64.b64decode(stream_url).decode("utf-8")
-                if decoded.startswith("rtmp") or decoded.startswith("http"):
-                    stream_url = decoded
-            except Exception:
-                pass  # 已经是原始URL，直接用
+            video_url = ""
+            drive_status = "success"
+            print(f"[数字人] 播报会话已创建，流地址: {stream_url}", flush=True)
+        else:
+            video_url = ""
+            drive_status = "success_no_stream"
+            print("[数字人] 会话完成但未收到流地址")
 
-        # 2.2 文本驱动数字人播报（按官方demo：tts在parameter下，text在payload下且需base64编码）
-        ctrl_url = _xfyun_build_auth_url(XF_VMS_HOST, XF_VMS_CTRL_PATH, xf_api_key, xf_api_secret)
-
-        text_b64 = base64.b64encode(script_text.encode("utf-8")).decode("utf-8")
-        ctrl_body = {
-            "header": {
-                "app_id": xf_app_id,
-                "uid": f"algoascend_{req.student_id}",
-                "session": session_id,
-            },
-            "parameter": {
-                "tts": {
-                    "vcn": "x3_lingxiaoxuan",  # 发音人
-                    "speed": 50,
-                    "volume": 50,
-                    "pitch": 50,
-                }
-            },
-            "payload": {
-                "text": {
-                    "encoding": "utf8",
-                    "status": 3,  # 3=最后一帧
-                    "text": text_b64,
-                }
-            }
-        }
-
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            ctrl_resp = await client.post(
-                ctrl_url,
-                json=ctrl_body,
-                headers={
-                    "Content-Type": "application/json;charset=UTF-8",
-                }
-            )
-            ctrl_text = ctrl_resp.text
-            try:
-                ctrl_data = ctrl_resp.json()
-            except Exception:
-                raise HTTPException(500, f"数字人驱动接口返回非JSON响应 (HTTP {ctrl_resp.status_code}): {ctrl_text[:500]}")
-
-        print(f"[数字人] vms2d_ctrl 响应: {json.dumps(ctrl_data, ensure_ascii=False)[:800]}")
-
-        if ctrl_data.get("header", {}).get("code") != 0:
-            ctrl_header = ctrl_data.get("header", {})
-            ctrl_code = ctrl_header.get("code", "unknown")
-            ctrl_msg = ctrl_header.get("message", "")
-            raise HTTPException(
-                500,
-                f"数字人驱动失败 [code={ctrl_code}]: {ctrl_msg or '讯飞未返回错误描述'} | 完整响应: {json.dumps(ctrl_data, ensure_ascii=False)[:500]}"
-            )
-
-        drive_status = "success"
-
-    except HTTPException:
-        raise
     except Exception as e:
-        # 讯飞API调用失败，返回文稿让用户查看
         import traceback
         traceback.print_exc()
-
-        # 保存文稿到文件
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        safe_topic = "".join(c if c.isalnum() or c in '_-' else '_' for c in topic[:30])
-        filename = f"xfyun_script_{safe_topic}_{timestamp}.txt"
-        filepath = OUTPUT_DIR / filename
-        filepath.write_text(script_text, encoding='utf-8')
-
-        return {
-            "status": "partial",
-            "resource_id": 0,
-            "topic": topic,
-            "script": script_text,
-            "avatar": avatar_info["name"],
-            "stream_url": "",
-            "video_url": "",
-            "drive_status": "xfyun_api_failed",
-            "message": f"讯飞虚拟人API调用失败: {str(e)}，已生成讲解文稿供参考",
-            "script_filename": filename,
-        }
-
-    # ===== 步骤3: 尝试用 ffmpeg 录制 RTMP 流 =====
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    safe_topic = "".join(c if c.isalnum() or c in '_-' else '_' for c in topic[:30])
-    video_filename = f"xfyun_video_{safe_topic}_{timestamp}.mp4"
-    video_path = OUTPUT_DIR / video_filename
-    video_url = ""
-    record_status = "not_attempted"
-
-    if stream_url and stream_url.startswith("rtmp"):
-        try:
-            import subprocess
-            # 用 ffmpeg 录制 RTMP 流（录制10秒后自动停止）
-            result = subprocess.run(
-                ["ffmpeg", "-y", "-i", stream_url, "-t", "15", "-c", "copy", str(video_path)],
-                capture_output=True, text=True, timeout=30,
-            )
-            if video_path.exists() and video_path.stat().st_size > 1000:
-                video_url = f"/api/resources/file/{video_filename}"
-                record_status = "recorded"
-            else:
-                record_status = f"record_failed: {result.stderr[:200]}"
-        except FileNotFoundError:
-            record_status = "ffmpeg_not_installed"
-        except Exception as e:
-            record_status = f"record_error: {str(e)[:200]}"
+        ws_error = str(e)
+        drive_status = "ws_failed"
+        video_url = ""
+        stream_url = ""
+        print(f"[数字人] WebSocket调用失败: {ws_error}", flush=True)
 
     # ===== 保存资源到数据库 =====
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    safe_topic = "".join(c if c.isalnum() or c in '_-' else '_' for c in topic[:30])
+
     db = get_db_sync()
     try:
         resource = LearningResource(
             student_id=req.student_id,
             title=req.title or f"数字人讲解: {topic[:40]}",
             resource_type="video_script",
-            content=script_text if not video_url else video_url,
+            content=video_url if video_url else script_text,
             topic=topic,
             difficulty="基础",
             tags=["数字人", "AI生成", "讯飞星火", "讲解视频", topic],
@@ -1700,18 +1761,30 @@ async def generate_xfyun_digital_human(req: DigitalHumanVideoRequest):
     finally:
         db.close()
 
+    # 保存文稿到文件（无论成功失败）
+    script_filename = f"xfyun_script_{safe_topic}_{timestamp}.txt"
+    script_filepath = OUTPUT_DIR / script_filename
+    script_filepath.write_text(script_text, encoding='utf-8')
+
+    message = "数字人讲解视频已生成" if video_url else f"数字人会话已完成（状态: {drive_status}）"
+    if stream_url:
+        message += f"，流地址: {stream_url}"
+    if ws_error:
+        message += f"，错误: {ws_error}"
+
     return {
-        "status": "ok",
+        "status": "ok" if drive_status == "success" else "partial",
         "resource_id": resource_id,
         "topic": topic,
         "script": script_text,
         "avatar": avatar_info["name"],
-        "avatar_id": avatar_info["id"],
+        "avatar_id": avatar_id,
+        "voice_name": voice_name,
         "stream_url": stream_url,
         "video_url": video_url,
-        "record_status": record_status,
         "drive_status": drive_status,
-        "message": "数字人讲解视频已生成" if video_url else f"数字人播报会话已创建（RTMP流: {stream_url}），录制状态: {record_status}",
+        "message": message,
+        "script_filename": script_filename,
     }
 
 

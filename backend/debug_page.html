@@ -1,0 +1,1735 @@
+<!DOCTYPE html><html><head>
+        <meta charset="utf-8">
+    <meta http-equiv="content-language" content="zh-CN">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="google-site-verification" content="lFSmn0rlLR-OPkas5c2GxdhTKP4J4PyaahhQ2TNanjs">
+    <meta itemprop="image" content="https://static.nowcoder.com/acm/images-acm/res/logo/acm-logo.png">
+    <meta name="description" content="牛客竞赛是专业的编程比赛和算法训练平台，包括ACM校赛、ICPC、CCPC、信息学奥赛、NOIP、NOI等编程比赛提高训练营。适合初级小白编程入门训练，包含NOIP普及组提高组赛前集训、ACM区域赛前多校训练营。">
+    <meta name="keywords" content="ACM,NOIP,CCPC,NOI,OI,ICPC,OJ,OJ,Virtual Judge,提高组,普及组,算法,编程比赛,程序设计,coding,在线编程,编程学习,训练,牛客竞赛">
+        <title>正方形检测</title>
+        <meta name="nowcoder-uuid" content="734e063a-5c89-4cba-a60e-85df26a85fb5">
+    
+
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/v2lib/fontcustom/global/global.css">
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/v2lib/global/global.ui.css">
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/v2lib/base.css">
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/common.css">
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/env.css">
+<link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/element-ui.css">
+    <link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/v2lib/fontcustom/code/code.css">
+    <link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/stylesheets-acm/v2/coding.css">
+    <link rel="stylesheet" href="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/page/terminal/code/main.entry.css">
+<style type="text/css">/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+/** Dialog: Modal Block */
+.monaco-dialog-modal-block {
+	position: fixed;
+	height: 100%;
+	width: 100%;
+	left:0;
+	top:0;
+	z-index: 2600;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.monaco-dialog-modal-block.dimmed {
+	background: rgba(0, 0, 0, 0.3);
+}
+
+/** Dialog: Container */
+.monaco-dialog-box {
+	display: flex;
+	flex-direction: column-reverse;
+	width: min-content;
+	min-width: 500px;
+	max-width: 90vw;
+	min-height: 75px;
+	padding: 10px;
+	transform: translate3d(0px, 0px, 0px);
+}
+
+/** Dialog: Title Actions Row */
+.monaco-dialog-box .dialog-toolbar-row {
+	height: 22px;
+	padding-bottom: 4px;
+}
+
+.monaco-dialog-box .dialog-toolbar-row .actions-container {
+	justify-content: flex-end;
+}
+
+/** Dialog: Message Row */
+.monaco-dialog-box .dialog-message-row {
+	display: flex;
+	flex-grow: 1;
+	align-items: center;
+	padding: 0 10px;
+}
+
+.monaco-dialog-box .dialog-message-row > .dialog-icon.codicon {
+	flex: 0 0 48px;
+	height: 48px;
+	align-self: baseline;
+	font-size: 48px;
+}
+
+/** Dialog: Message Container */
+.monaco-dialog-box .dialog-message-row .dialog-message-container {
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding-left: 24px;
+	user-select: text;
+	-webkit-user-select: text;
+	-ms-user-select: text;
+	word-wrap: break-word; /* never overflow long words, but break to next line */
+	white-space: normal;
+}
+
+/** Dialog: Message */
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message {
+	line-height: 22px;
+	font-size: 18px;
+	flex: 1; /* let the message always grow */
+	white-space: normal;
+	word-wrap: break-word; /* never overflow long words, but break to next line */
+	min-height: 48px; /* matches icon height */
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+}
+
+/** Dialog: Details */
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-detail {
+	line-height: 22px;
+	flex: 1; /* let the message always grow */
+}
+
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message a:focus {
+	outline-width: 1px;
+	outline-style: solid;
+}
+
+/** Dialog: Checkbox */
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-checkbox-row {
+	padding: 15px 0px 0px;
+	display: flex;
+}
+
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-checkbox-row .dialog-checkbox-message {
+	cursor: pointer;
+	user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+/** Dialog: Input */
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input {
+	padding: 15px 0px 0px;
+	display: flex;
+}
+
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input .monaco-inputbox {
+	flex: 1;
+}
+
+/** Dialog: File Path */
+.monaco-dialog-box code {
+	font-family: var(--monaco-monospace-font);
+}
+
+/** Dialog: Buttons Row */
+.monaco-dialog-box > .dialog-buttons-row {
+	display: flex;
+	align-items: center;
+	padding-right: 1px;
+	overflow: hidden; /* buttons row should never overflow */
+}
+
+.monaco-dialog-box > .dialog-buttons-row {
+	display: flex;
+	white-space: nowrap;
+	padding: 20px 10px 10px;
+}
+
+/** Dialog: Buttons */
+.monaco-dialog-box > .dialog-buttons-row > .dialog-buttons {
+	display: flex;
+	width: 100%;
+	justify-content: flex-end;
+	overflow: hidden;
+	margin-left: 67px; /* for long buttons, force align with text */
+}
+
+.monaco-dialog-box > .dialog-buttons-row > .dialog-buttons > .monaco-button {
+	width: fit-content;
+	width: -moz-fit-content;
+	padding: 5px 10px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	margin: 4px 5px; /* allows button focus outline to be visible */
+	outline-offset: 2px !important;
+}
+</style><style type="text/css" class="contributedColorTheme">.monaco-workbench { forced-color-adjust: none; }
+.monaco-editor, .monaco-editor-background { background-color: #ffffff; }
+.monaco-editor .inputarea.ime-input { background-color: #ffffff; }
+.monaco-editor, .monaco-editor .inputarea.ime-input { color: #000000; }
+.monaco-editor .margin { background-color: #ffffff; }
+.monaco-editor .rangeHighlight { background-color: rgba(253, 255, 0, 0.2); }
+.monaco-editor .symbolHighlight { background-color: rgba(234, 92, 0, 0.33); }
+.monaco-editor .mtkw { color: rgba(51, 51, 51, 0.2) !important; }
+.monaco-editor .mtkz { color: rgba(51, 51, 51, 0.2) !important; }
+.monaco-editor .line-numbers { color: #237893; }
+.monaco-editor .line-numbers.active-line-number { color: #0b216f; }
+.monaco-editor .view-overlays .current-line { border: 2px solid #eeeeee; }
+.monaco-editor .margin-view-overlays .current-line-margin { border: 2px solid #eeeeee; }
+
+			.monaco-scrollable-element > .shadow.top {
+				box-shadow: #dddddd 0 6px 6px -6px inset;
+			}
+
+			.monaco-scrollable-element > .shadow.left {
+				box-shadow: #dddddd 6px 0 6px -6px inset;
+			}
+
+			.monaco-scrollable-element > .shadow.top.left {
+				box-shadow: #dddddd 6px 6px 6px -6px inset;
+			}
+		
+
+			.monaco-scrollable-element > .scrollbar > .slider {
+				background: rgba(100, 100, 100, 0.4);
+			}
+		
+
+			.monaco-scrollable-element > .scrollbar > .slider:hover {
+				background: rgba(100, 100, 100, 0.7);
+			}
+		
+
+			.monaco-scrollable-element > .scrollbar > .slider.active {
+				background: rgba(0, 0, 0, 0.6);
+			}
+		
+.monaco-editor .lines-content .core-guide-indent { box-shadow: 1px 0 0 0 #d3d3d3 inset; }
+.monaco-editor .lines-content .core-guide-indent-active { box-shadow: 1px 0 0 0 #939393 inset; }
+.monaco-editor .bracket-indent-guide.lvl-0 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-1 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-2 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-3 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-4 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-5 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-6 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-7 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-8 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-9 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-10 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-11 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-12 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-13 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-14 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-15 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-16 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-17 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-18 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-19 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-20 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-21 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-22 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-23 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-24 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-25 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-26 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .bracket-indent-guide.lvl-27 { --guide-color: rgba(4, 49, 250, 0.3); --guide-color-active: #0431fa; }
+.monaco-editor .bracket-indent-guide.lvl-28 { --guide-color: rgba(49, 147, 49, 0.3); --guide-color-active: #319331; }
+.monaco-editor .bracket-indent-guide.lvl-29 { --guide-color: rgba(123, 56, 20, 0.3); --guide-color-active: #7b3814; }
+.monaco-editor .vertical { box-shadow: 1px 0 0 0 var(--guide-color) inset; }
+.monaco-editor .horizontal-top { border-top: 1px solid var(--guide-color); }
+.monaco-editor .horizontal-bottom { border-bottom: 1px solid var(--guide-color); }
+.monaco-editor .vertical.indent-active { box-shadow: 1px 0 0 0 var(--guide-color-active) inset; }
+.monaco-editor .horizontal-top.indent-active { border-top: 1px solid var(--guide-color-active); }
+.monaco-editor .horizontal-bottom.indent-active { border-bottom: 1px solid var(--guide-color-active); }
+.monaco-editor .minimap-slider .minimap-slider-horizontal { background: rgba(100, 100, 100, 0.2); }
+.monaco-editor .minimap-slider:hover .minimap-slider-horizontal { background: rgba(100, 100, 100, 0.35); }
+.monaco-editor .minimap-slider.active .minimap-slider-horizontal { background: rgba(0, 0, 0, 0.3); }
+.monaco-editor .minimap-shadow-visible { box-shadow: #dddddd -6px 0 6px -6px inset; }
+.monaco-editor .view-ruler { box-shadow: 1px 0 0 0 #d3d3d3 inset; }
+.monaco-editor .scroll-decoration { box-shadow: #dddddd 0 6px 6px -6px inset; }
+.monaco-editor .focused .selected-text { background-color: #add6ff; }
+.monaco-editor .selected-text { background-color: #e5ebf1; }
+.monaco-editor .inputarea.ime-input { caret-color: #000000; }
+.monaco-editor .cursors-layer .cursor { background-color: #000000; border-color: #000000; color: #ffffff; }
+.monaco-editor .unexpected-closing-bracket { color: rgba(255, 18, 18, 0.8); }
+.monaco-editor .bracket-highlighting-0 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-1 { color: #319331; }
+.monaco-editor .bracket-highlighting-2 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-3 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-4 { color: #319331; }
+.monaco-editor .bracket-highlighting-5 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-6 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-7 { color: #319331; }
+.monaco-editor .bracket-highlighting-8 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-9 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-10 { color: #319331; }
+.monaco-editor .bracket-highlighting-11 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-12 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-13 { color: #319331; }
+.monaco-editor .bracket-highlighting-14 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-15 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-16 { color: #319331; }
+.monaco-editor .bracket-highlighting-17 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-18 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-19 { color: #319331; }
+.monaco-editor .bracket-highlighting-20 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-21 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-22 { color: #319331; }
+.monaco-editor .bracket-highlighting-23 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-24 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-25 { color: #319331; }
+.monaco-editor .bracket-highlighting-26 { color: #7b3814; }
+.monaco-editor .bracket-highlighting-27 { color: #0431fa; }
+.monaco-editor .bracket-highlighting-28 { color: #319331; }
+.monaco-editor .bracket-highlighting-29 { color: #7b3814; }
+.monaco-editor .squiggly-error { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23e51400'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left; }
+.monaco-editor .squiggly-warning { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%23bf8803'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left; }
+.monaco-editor .squiggly-info { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%206%203'%20enable-background%3D'new%200%200%206%203'%20height%3D'3'%20width%3D'6'%3E%3Cg%20fill%3D'%231a85ff'%3E%3Cpolygon%20points%3D'5.5%2C0%202.5%2C3%201.1%2C3%204.1%2C0'%2F%3E%3Cpolygon%20points%3D'4%2C0%206%2C2%206%2C0.6%205.4%2C0'%2F%3E%3Cpolygon%20points%3D'0%2C2%201%2C3%202.4%2C3%200%2C0.6'%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") repeat-x bottom left; }
+.monaco-editor .squiggly-hint { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20height%3D%223%22%20width%3D%2212%22%3E%3Cg%20fill%3D%22%236c6c6c%22%3E%3Ccircle%20cx%3D%221%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%225%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3Ccircle%20cx%3D%229%22%20cy%3D%221%22%20r%3D%221%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E") no-repeat bottom left; }
+.monaco-editor.showUnused .squiggly-inline-unnecessary { opacity: 0.467; }
+.monaco-editor.showDeprecated .squiggly-inline-deprecated { text-decoration: line-through; text-decoration-color: #000000}
+.monaco-diff-editor .diff-review-line-number { color: #237893; }
+.monaco-diff-editor .diff-review-shadow { box-shadow: #dddddd 0 -6px 6px -6px inset; }
+.monaco-editor .char-insert, .monaco-diff-editor .char-insert { background-color: rgba(156, 204, 44, 0.4); }
+.monaco-editor .line-insert, .monaco-diff-editor .line-insert { background-color: rgba(155, 185, 85, 0.2); }
+.monaco-editor .inline-added-margin-view-zone { background-color: rgba(155, 185, 85, 0.2); }
+.monaco-editor .gutter-insert, .monaco-diff-editor .gutter-insert { background-color: rgba(155, 185, 85, 0.2); }
+.monaco-editor .char-delete, .monaco-diff-editor .char-delete { background-color: rgba(255, 0, 0, 0.3); }
+.monaco-editor .line-delete, .monaco-diff-editor .line-delete { background-color: rgba(255, 0, 0, 0.2); }
+.monaco-editor .inline-deleted-margin-view-zone { background-color: rgba(255, 0, 0, 0.2); }
+.monaco-editor .gutter-delete, .monaco-diff-editor .gutter-delete { background-color: rgba(255, 0, 0, 0.2); }
+.monaco-diff-editor.side-by-side .editor.modified { box-shadow: -6px 0 5px -5px #dddddd; }
+
+			.monaco-diff-editor .diffViewport {
+				background: rgba(100, 100, 100, 0.4);
+			}
+		
+
+			.monaco-diff-editor .diffViewport:hover {
+				background: rgba(100, 100, 100, 0.7);
+			}
+		
+
+			.monaco-diff-editor .diffViewport:active {
+				background: rgba(0, 0, 0, 0.6);
+			}
+		
+
+	.monaco-editor .diagonal-fill {
+		background-image: linear-gradient(
+			-45deg,
+			rgba(34, 34, 34, 0.2) 12.5%,
+			#0000 12.5%, #0000 50%,
+			rgba(34, 34, 34, 0.2) 50%, rgba(34, 34, 34, 0.2) 62.5%,
+			#0000 62.5%, #0000 100%
+		);
+		background-size: 8px 8px;
+	}
+	
+.monaco-editor .bracket-match { background-color: rgba(0, 100, 0, 0.1); }
+.monaco-editor .bracket-match { border: 1px solid #b9b9b9; }
+
+		.monaco-editor .contentWidgets .codicon.codicon-light-bulb {
+			color: #ddb100;
+			background-color: rgba(255, 255, 255, 0.7);
+		}
+
+		.monaco-editor .contentWidgets .codicon.codicon-lightbulb-autofix {
+			color: #007acc;
+			background-color: rgba(255, 255, 255, 0.7);
+		}
+.monaco-editor .goto-definition-link { color: #0000ff !important; }
+
+			.monaco-editor .zone-widget .codicon.codicon-error,
+			.markers-panel .marker-icon.codicon.codicon-error,
+			.text-search-provider-messages .providerMessage .codicon.codicon-error,
+			.extensions-viewlet > .extensions .codicon.codicon-error {
+				color: #e51400;
+			}
+		
+
+			.monaco-editor .zone-widget .codicon.codicon-warning,
+			.markers-panel .marker-icon.codicon.codicon-warning,
+			.extensions-viewlet > .extensions .codicon.codicon-warning,
+			.extension-editor .codicon.codicon-warning,
+			.text-search-provider-messages .providerMessage .codicon.codicon-warning,
+			.preferences-editor .codicon.codicon-warning {
+				color: #bf8803;
+			}
+		
+
+			.monaco-editor .zone-widget .codicon.codicon-info,
+			.markers-panel .marker-icon.codicon.codicon-info,
+			.extensions-viewlet > .extensions .codicon.codicon-info,
+			.text-search-provider-messages .providerMessage .codicon.codicon-info,
+			.extension-editor .codicon.codicon-info {
+				color: #1a85ff;
+			}
+		
+.monaco-hover .hover-contents a.code-link span { color: #006ab1; }
+.monaco-hover .hover-contents a.code-link span:hover { color: #006ab1; }
+.monaco-editor .hoverHighlight { background-color: rgba(173, 214, 255, 0.15); }
+.monaco-editor .monaco-hover { background-color: #f3f3f3; }
+.monaco-editor .monaco-hover { border: 1px solid #c8c8c8; }
+.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid rgba(200, 200, 200, 0.5); }
+.monaco-editor .monaco-hover hr { border-top: 1px solid rgba(200, 200, 200, 0.5); }
+.monaco-editor .monaco-hover hr { border-bottom: 0px solid rgba(200, 200, 200, 0.5); }
+.monaco-editor .monaco-hover a { color: #006ab1; }
+.monaco-editor .monaco-hover a:hover { color: #006ab1; }
+.monaco-editor .monaco-hover { color: #616161; }
+.monaco-editor .monaco-hover .hover-row .actions { background-color: #e7e7e7; }
+.monaco-editor .monaco-hover code { background-color: rgba(220, 220, 220, 0.4); }
+.monaco-editor .findOptionsWidget { background-color: #f3f3f3; }
+.monaco-editor .findOptionsWidget { color: #616161; }
+.monaco-editor .findOptionsWidget { box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.16); }
+.monaco-editor .findMatch { background-color: rgba(234, 92, 0, 0.33); }
+.monaco-editor .currentFindMatch { background-color: #a8ac94; }
+.monaco-editor .findScope { background-color: rgba(180, 180, 180, 0.3); }
+.monaco-editor .find-widget { background-color: #f3f3f3; }
+.monaco-editor .find-widget { box-shadow: 0 0 8px 2px rgba(0, 0, 0, 0.16); }
+.monaco-editor .find-widget { color: #616161; }
+.monaco-editor .find-widget.no-results .matchesCount { color: #a1260d; }
+.monaco-editor .find-widget .monaco-sash { background-color: #c8c8c8; }
+
+		.monaco-editor .find-widget .button:not(.disabled):hover,
+		.monaco-editor .find-widget .codicon-find-selection:hover {
+			background-color: rgba(184, 184, 184, 0.31) !important;
+		}
+	
+.monaco-editor .find-widget .monaco-inputbox.synthetic-focus { outline-color: #0090f1; }
+.monaco-editor .folded-background { background-color: rgba(173, 214, 255, 0.3); }
+
+		.monaco-editor .cldr.codicon.codicon-folding-expanded,
+		.monaco-editor .cldr.codicon.codicon-folding-collapsed,
+		.monaco-editor .cldr.codicon.codicon-folding-manual-expanded,
+		.monaco-editor .cldr.codicon.codicon-folding-manual-collapsed {
+			color: #424242 !important;
+		}
+		
+.codicon.codicon-symbol-array { color: #616161; }
+.codicon.codicon-symbol-boolean { color: #616161; }
+.codicon.codicon-symbol-class { color: #d67e00; }
+.codicon.codicon-symbol-method { color: #652d90; }
+.codicon.codicon-symbol-color { color: #616161; }
+.codicon.codicon-symbol-constant { color: #616161; }
+.codicon.codicon-symbol-constructor { color: #652d90; }
+
+			.codicon.codicon-symbol-value,.codicon.codicon-symbol-enum { color: #d67e00; }
+.codicon.codicon-symbol-enum-member { color: #007acc; }
+.codicon.codicon-symbol-event { color: #d67e00; }
+.codicon.codicon-symbol-field { color: #007acc; }
+.codicon.codicon-symbol-file { color: #616161; }
+.codicon.codicon-symbol-folder { color: #616161; }
+.codicon.codicon-symbol-function { color: #652d90; }
+.codicon.codicon-symbol-interface { color: #007acc; }
+.codicon.codicon-symbol-key { color: #616161; }
+.codicon.codicon-symbol-keyword { color: #616161; }
+.codicon.codicon-symbol-module { color: #616161; }
+.codicon.codicon-symbol-namespace { color: #616161; }
+.codicon.codicon-symbol-null { color: #616161; }
+.codicon.codicon-symbol-number { color: #616161; }
+.codicon.codicon-symbol-object { color: #616161; }
+.codicon.codicon-symbol-operator { color: #616161; }
+.codicon.codicon-symbol-package { color: #616161; }
+.codicon.codicon-symbol-property { color: #616161; }
+.codicon.codicon-symbol-reference { color: #616161; }
+.codicon.codicon-symbol-snippet { color: #616161; }
+.codicon.codicon-symbol-string { color: #616161; }
+.codicon.codicon-symbol-struct { color: #616161; }
+.codicon.codicon-symbol-text { color: #616161; }
+.codicon.codicon-symbol-type-parameter { color: #616161; }
+.codicon.codicon-symbol-unit { color: #616161; }
+.codicon.codicon-symbol-variable { color: #007acc; }
+.monaco-editor .ghost-text-decoration { color: rgba(0, 0, 0, 0.47) !important; }
+.monaco-editor .ghost-text-decoration-preview { color: rgba(0, 0, 0, 0.47) !important; }
+.monaco-editor .suggest-preview-text .ghost-text { color: rgba(0, 0, 0, 0.47) !important; }
+.monaco-editor.vs .valueSetReplacement { outline: solid 2px #b9b9b9; }
+.monaco-editor .linked-editing-decoration { background: rgba(255, 0, 0, 0.3); border-left-color: rgba(255, 0, 0, 0.3); }
+.monaco-editor .detected-link-active { color: #0000ff !important; }
+.monaco-editor .parameter-hints-widget { border: 1px solid #c8c8c8; }
+.monaco-editor .parameter-hints-widget.multiple .body { border-left: 1px solid rgba(200, 200, 200, 0.5); }
+.monaco-editor .parameter-hints-widget .signature.has-docs { border-bottom: 1px solid rgba(200, 200, 200, 0.5); }
+.monaco-editor .parameter-hints-widget { background-color: #f3f3f3; }
+.monaco-editor .parameter-hints-widget a { color: #006ab1; }
+.monaco-editor .parameter-hints-widget a:hover { color: #006ab1; }
+.monaco-editor .parameter-hints-widget { color: #616161; }
+.monaco-editor .parameter-hints-widget code { background-color: rgba(220, 220, 220, 0.4); }
+.monaco-editor .parameter-hints-widget .parameter.active { color: #0066bf}
+.monaco-link { color: #006ab1; }
+.monaco-link:hover { color: #006ab1; }
+.monaco-editor .focused .selectionHighlight { background-color: rgba(173, 214, 255, 0.5); }
+.monaco-editor .selectionHighlight { background-color: rgba(173, 214, 255, 0.25); }
+.monaco-editor .wordHighlight { background-color: rgba(87, 87, 87, 0.25); }
+.monaco-editor .wordHighlightStrong { background-color: rgba(14, 99, 156, 0.25); }
+.monaco-editor .accessibilityHelpWidget { background-color: #f3f3f3; }
+.monaco-editor .accessibilityHelpWidget { color: #616161; }
+.monaco-editor .accessibilityHelpWidget { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16); }
+.monaco-editor .tokens-inspect-widget { border: 1px solid #c8c8c8; }
+.monaco-editor .tokens-inspect-widget .tokens-inspect-separator { background-color: #c8c8c8; }
+.monaco-editor .tokens-inspect-widget { background-color: #f3f3f3; }
+.monaco-editor .tokens-inspect-widget { color: #616161; }
+.monaco-workbench { --vscode-foreground: #616161;
+--vscode-disabledForeground: rgba(97, 97, 97, 0.5);
+--vscode-errorForeground: #a1260d;
+--vscode-descriptionForeground: #717171;
+--vscode-icon-foreground: #424242;
+--vscode-focusBorder: #0090f1;
+--vscode-textSeparator-foreground: rgba(0, 0, 0, 0.18);
+--vscode-textLink-foreground: #006ab1;
+--vscode-textLink-activeForeground: #006ab1;
+--vscode-textPreformat-foreground: #a31515;
+--vscode-textBlockQuote-background: rgba(127, 127, 127, 0.1);
+--vscode-textBlockQuote-border: rgba(0, 122, 204, 0.5);
+--vscode-textCodeBlock-background: rgba(220, 220, 220, 0.4);
+--vscode-widget-shadow: rgba(0, 0, 0, 0.16);
+--vscode-input-background: #ffffff;
+--vscode-input-foreground: #616161;
+--vscode-inputOption-activeBorder: rgba(0, 122, 204, 0);
+--vscode-inputOption-hoverBackground: rgba(184, 184, 184, 0.31);
+--vscode-inputOption-activeBackground: rgba(0, 144, 241, 0.2);
+--vscode-inputOption-activeForeground: #000000;
+--vscode-input-placeholderForeground: #767676;
+--vscode-inputValidation-infoBackground: #d6ecf2;
+--vscode-inputValidation-infoBorder: #007acc;
+--vscode-inputValidation-warningBackground: #f6f5d2;
+--vscode-inputValidation-warningBorder: #b89500;
+--vscode-inputValidation-errorBackground: #f2dede;
+--vscode-inputValidation-errorBorder: #be1100;
+--vscode-dropdown-background: #ffffff;
+--vscode-dropdown-border: #cecece;
+--vscode-checkbox-background: #ffffff;
+--vscode-checkbox-border: #cecece;
+--vscode-button-foreground: #ffffff;
+--vscode-button-separator: rgba(255, 255, 255, 0.4);
+--vscode-button-background: #007acc;
+--vscode-button-hoverBackground: #0062a3;
+--vscode-button-secondaryForeground: #ffffff;
+--vscode-button-secondaryBackground: #5f6a79;
+--vscode-button-secondaryHoverBackground: #4c5561;
+--vscode-badge-background: #c4c4c4;
+--vscode-badge-foreground: #333333;
+--vscode-scrollbar-shadow: #dddddd;
+--vscode-scrollbarSlider-background: rgba(100, 100, 100, 0.4);
+--vscode-scrollbarSlider-hoverBackground: rgba(100, 100, 100, 0.7);
+--vscode-scrollbarSlider-activeBackground: rgba(0, 0, 0, 0.6);
+--vscode-progressBar-background: #0e70c0;
+--vscode-editorError-foreground: #e51400;
+--vscode-editorWarning-foreground: #bf8803;
+--vscode-editorInfo-foreground: #1a85ff;
+--vscode-editorHint-foreground: #6c6c6c;
+--vscode-sash-hoverBorder: #0090f1;
+--vscode-editor-background: #ffffff;
+--vscode-editor-foreground: #000000;
+--vscode-editorStickyScroll-background: #ffffff;
+--vscode-editorStickyScrollHover-background: #f0f0f0;
+--vscode-editorWidget-background: #f3f3f3;
+--vscode-editorWidget-foreground: #616161;
+--vscode-editorWidget-border: #c8c8c8;
+--vscode-quickInput-background: #f3f3f3;
+--vscode-quickInput-foreground: #616161;
+--vscode-quickInputTitle-background: rgba(0, 0, 0, 0.06);
+--vscode-pickerGroup-foreground: #0066bf;
+--vscode-pickerGroup-border: #cccedb;
+--vscode-keybindingLabel-background: rgba(221, 221, 221, 0.4);
+--vscode-keybindingLabel-foreground: #555555;
+--vscode-keybindingLabel-border: rgba(204, 204, 204, 0.4);
+--vscode-keybindingLabel-bottomBorder: rgba(187, 187, 187, 0.4);
+--vscode-editor-selectionBackground: #add6ff;
+--vscode-editor-inactiveSelectionBackground: #e5ebf1;
+--vscode-editor-selectionHighlightBackground: rgba(173, 214, 255, 0.5);
+--vscode-editor-findMatchBackground: #a8ac94;
+--vscode-editor-findMatchHighlightBackground: rgba(234, 92, 0, 0.33);
+--vscode-editor-findRangeHighlightBackground: rgba(180, 180, 180, 0.3);
+--vscode-searchEditor-findMatchBackground: rgba(234, 92, 0, 0.22);
+--vscode-editor-hoverHighlightBackground: rgba(173, 214, 255, 0.15);
+--vscode-editorHoverWidget-background: #f3f3f3;
+--vscode-editorHoverWidget-foreground: #616161;
+--vscode-editorHoverWidget-border: #c8c8c8;
+--vscode-editorHoverWidget-statusBarBackground: #e7e7e7;
+--vscode-editorLink-activeForeground: #0000ff;
+--vscode-editorInlayHint-foreground: rgba(51, 51, 51, 0.8);
+--vscode-editorInlayHint-background: rgba(196, 196, 196, 0.3);
+--vscode-editorInlayHint-typeForeground: rgba(51, 51, 51, 0.8);
+--vscode-editorInlayHint-typeBackground: rgba(196, 196, 196, 0.3);
+--vscode-editorInlayHint-parameterForeground: rgba(51, 51, 51, 0.8);
+--vscode-editorInlayHint-parameterBackground: rgba(196, 196, 196, 0.3);
+--vscode-editorLightBulb-foreground: #ddb100;
+--vscode-editorLightBulbAutoFix-foreground: #007acc;
+--vscode-diffEditor-insertedTextBackground: rgba(156, 204, 44, 0.4);
+--vscode-diffEditor-removedTextBackground: rgba(255, 0, 0, 0.3);
+--vscode-diffEditor-insertedLineBackground: rgba(155, 185, 85, 0.2);
+--vscode-diffEditor-removedLineBackground: rgba(255, 0, 0, 0.2);
+--vscode-diffEditor-diagonalFill: rgba(34, 34, 34, 0.2);
+--vscode-list-focusOutline: #0090f1;
+--vscode-list-focusAndSelectionOutline: #90c2f9;
+--vscode-list-activeSelectionBackground: #0060c0;
+--vscode-list-activeSelectionForeground: #ffffff;
+--vscode-list-activeSelectionIconForeground: #ffffff;
+--vscode-list-inactiveSelectionBackground: #e4e6f1;
+--vscode-list-hoverBackground: #e8e8e8;
+--vscode-list-dropBackground: #d6ebff;
+--vscode-list-highlightForeground: #0066bf;
+--vscode-list-focusHighlightForeground: #bbe7ff;
+--vscode-list-invalidItemForeground: #b89500;
+--vscode-list-errorForeground: #b01011;
+--vscode-list-warningForeground: #855f00;
+--vscode-listFilterWidget-background: #f3f3f3;
+--vscode-listFilterWidget-outline: rgba(0, 0, 0, 0);
+--vscode-listFilterWidget-noMatchesOutline: #be1100;
+--vscode-listFilterWidget-shadow: rgba(0, 0, 0, 0.16);
+--vscode-list-filterMatchBackground: rgba(234, 92, 0, 0.33);
+--vscode-tree-indentGuidesStroke: #a9a9a9;
+--vscode-tree-tableColumnsBorder: rgba(97, 97, 97, 0.13);
+--vscode-tree-tableOddRowsBackground: rgba(97, 97, 97, 0.04);
+--vscode-list-deemphasizedForeground: #8e8e90;
+--vscode-quickInputList-focusForeground: #ffffff;
+--vscode-quickInputList-focusIconForeground: #ffffff;
+--vscode-quickInputList-focusBackground: #0060c0;
+--vscode-menu-foreground: #616161;
+--vscode-menu-background: #ffffff;
+--vscode-menu-selectionForeground: #ffffff;
+--vscode-menu-selectionBackground: #0060c0;
+--vscode-menu-separatorBackground: #d4d4d4;
+--vscode-toolbar-hoverBackground: rgba(184, 184, 184, 0.31);
+--vscode-toolbar-activeBackground: rgba(166, 166, 166, 0.31);
+--vscode-editor-snippetTabstopHighlightBackground: rgba(10, 50, 100, 0.2);
+--vscode-editor-snippetFinalTabstopHighlightBorder: rgba(10, 50, 100, 0.5);
+--vscode-breadcrumb-foreground: rgba(97, 97, 97, 0.8);
+--vscode-breadcrumb-background: #ffffff;
+--vscode-breadcrumb-focusForeground: #4e4e4e;
+--vscode-breadcrumb-activeSelectionForeground: #4e4e4e;
+--vscode-breadcrumbPicker-background: #f3f3f3;
+--vscode-merge-currentHeaderBackground: rgba(64, 200, 174, 0.5);
+--vscode-merge-currentContentBackground: rgba(64, 200, 174, 0.2);
+--vscode-merge-incomingHeaderBackground: rgba(64, 166, 255, 0.5);
+--vscode-merge-incomingContentBackground: rgba(64, 166, 255, 0.2);
+--vscode-merge-commonHeaderBackground: rgba(96, 96, 96, 0.4);
+--vscode-merge-commonContentBackground: rgba(96, 96, 96, 0.16);
+--vscode-editorOverviewRuler-currentContentForeground: rgba(64, 200, 174, 0.5);
+--vscode-editorOverviewRuler-incomingContentForeground: rgba(64, 166, 255, 0.5);
+--vscode-editorOverviewRuler-commonContentForeground: rgba(96, 96, 96, 0.4);
+--vscode-editorOverviewRuler-findMatchForeground: rgba(209, 134, 22, 0.49);
+--vscode-editorOverviewRuler-selectionHighlightForeground: rgba(160, 160, 160, 0.8);
+--vscode-minimap-findMatchHighlight: #d18616;
+--vscode-minimap-selectionOccurrenceHighlight: #c9c9c9;
+--vscode-minimap-selectionHighlight: #add6ff;
+--vscode-minimap-errorHighlight: rgba(255, 18, 18, 0.7);
+--vscode-minimap-warningHighlight: #bf8803;
+--vscode-minimap-foregroundOpacity: #000000;
+--vscode-minimapSlider-background: rgba(100, 100, 100, 0.2);
+--vscode-minimapSlider-hoverBackground: rgba(100, 100, 100, 0.35);
+--vscode-minimapSlider-activeBackground: rgba(0, 0, 0, 0.3);
+--vscode-problemsErrorIcon-foreground: #e51400;
+--vscode-problemsWarningIcon-foreground: #bf8803;
+--vscode-problemsInfoIcon-foreground: #1a85ff;
+--vscode-charts-foreground: #616161;
+--vscode-charts-lines: rgba(97, 97, 97, 0.5);
+--vscode-charts-red: #e51400;
+--vscode-charts-blue: #1a85ff;
+--vscode-charts-yellow: #bf8803;
+--vscode-charts-orange: #d18616;
+--vscode-charts-green: #388a34;
+--vscode-charts-purple: #652d90;
+--vscode-editor-lineHighlightBorder: #eeeeee;
+--vscode-editor-rangeHighlightBackground: rgba(253, 255, 0, 0.2);
+--vscode-editor-symbolHighlightBackground: rgba(234, 92, 0, 0.33);
+--vscode-editorCursor-foreground: #000000;
+--vscode-editorWhitespace-foreground: rgba(51, 51, 51, 0.2);
+--vscode-editorIndentGuide-background: #d3d3d3;
+--vscode-editorIndentGuide-activeBackground: #939393;
+--vscode-editorLineNumber-foreground: #237893;
+--vscode-editorActiveLineNumber-foreground: #0b216f;
+--vscode-editorLineNumber-activeForeground: #0b216f;
+--vscode-editorRuler-foreground: #d3d3d3;
+--vscode-editorCodeLens-foreground: #919191;
+--vscode-editorBracketMatch-background: rgba(0, 100, 0, 0.1);
+--vscode-editorBracketMatch-border: #b9b9b9;
+--vscode-editorOverviewRuler-border: rgba(127, 127, 127, 0.3);
+--vscode-editorGutter-background: #ffffff;
+--vscode-editorUnnecessaryCode-opacity: rgba(0, 0, 0, 0.47);
+--vscode-editorGhostText-foreground: rgba(0, 0, 0, 0.47);
+--vscode-editorOverviewRuler-rangeHighlightForeground: rgba(0, 122, 204, 0.6);
+--vscode-editorOverviewRuler-errorForeground: rgba(255, 18, 18, 0.7);
+--vscode-editorOverviewRuler-warningForeground: #bf8803;
+--vscode-editorOverviewRuler-infoForeground: #1a85ff;
+--vscode-editorBracketHighlight-foreground1: #0431fa;
+--vscode-editorBracketHighlight-foreground2: #319331;
+--vscode-editorBracketHighlight-foreground3: #7b3814;
+--vscode-editorBracketHighlight-foreground4: rgba(0, 0, 0, 0);
+--vscode-editorBracketHighlight-foreground5: rgba(0, 0, 0, 0);
+--vscode-editorBracketHighlight-foreground6: rgba(0, 0, 0, 0);
+--vscode-editorBracketHighlight-unexpectedBracket-foreground: rgba(255, 18, 18, 0.8);
+--vscode-editorBracketPairGuide-background1: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-background2: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-background3: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-background4: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-background5: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-background6: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground1: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground2: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground3: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground4: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground5: rgba(0, 0, 0, 0);
+--vscode-editorBracketPairGuide-activeBackground6: rgba(0, 0, 0, 0);
+--vscode-editorUnicodeHighlight-border: #cea33d;
+--vscode-editorUnicodeHighlight-background: rgba(206, 163, 61, 0.08);
+--vscode-editorOverviewRuler-bracketMatchForeground: #a0a0a0;
+--vscode-peekViewTitle-background: rgba(26, 133, 255, 0.1);
+--vscode-peekViewTitleLabel-foreground: #000000;
+--vscode-peekViewTitleDescription-foreground: #616161;
+--vscode-peekView-border: #1a85ff;
+--vscode-peekViewResult-background: #f3f3f3;
+--vscode-peekViewResult-lineForeground: #646465;
+--vscode-peekViewResult-fileForeground: #1e1e1e;
+--vscode-peekViewResult-selectionBackground: rgba(51, 153, 255, 0.2);
+--vscode-peekViewResult-selectionForeground: #6c6c6c;
+--vscode-peekViewEditor-background: #f2f8fc;
+--vscode-peekViewEditorGutter-background: #f2f8fc;
+--vscode-peekViewResult-matchHighlightBackground: rgba(234, 92, 0, 0.3);
+--vscode-peekViewEditor-matchHighlightBackground: rgba(245, 216, 2, 0.87);
+--vscode-editorMarkerNavigationError-background: #e51400;
+--vscode-editorMarkerNavigationError-headerBackground: rgba(229, 20, 0, 0.1);
+--vscode-editorMarkerNavigationWarning-background: #bf8803;
+--vscode-editorMarkerNavigationWarning-headerBackground: rgba(191, 136, 3, 0.1);
+--vscode-editorMarkerNavigationInfo-background: #1a85ff;
+--vscode-editorMarkerNavigationInfo-headerBackground: rgba(26, 133, 255, 0.1);
+--vscode-editorMarkerNavigation-background: #ffffff;
+--vscode-editor-foldBackground: rgba(173, 214, 255, 0.3);
+--vscode-editorGutter-foldingControlForeground: #424242;
+--vscode-symbolIcon-arrayForeground: #616161;
+--vscode-symbolIcon-booleanForeground: #616161;
+--vscode-symbolIcon-classForeground: #d67e00;
+--vscode-symbolIcon-colorForeground: #616161;
+--vscode-symbolIcon-constantForeground: #616161;
+--vscode-symbolIcon-constructorForeground: #652d90;
+--vscode-symbolIcon-enumeratorForeground: #d67e00;
+--vscode-symbolIcon-enumeratorMemberForeground: #007acc;
+--vscode-symbolIcon-eventForeground: #d67e00;
+--vscode-symbolIcon-fieldForeground: #007acc;
+--vscode-symbolIcon-fileForeground: #616161;
+--vscode-symbolIcon-folderForeground: #616161;
+--vscode-symbolIcon-functionForeground: #652d90;
+--vscode-symbolIcon-interfaceForeground: #007acc;
+--vscode-symbolIcon-keyForeground: #616161;
+--vscode-symbolIcon-keywordForeground: #616161;
+--vscode-symbolIcon-methodForeground: #652d90;
+--vscode-symbolIcon-moduleForeground: #616161;
+--vscode-symbolIcon-namespaceForeground: #616161;
+--vscode-symbolIcon-nullForeground: #616161;
+--vscode-symbolIcon-numberForeground: #616161;
+--vscode-symbolIcon-objectForeground: #616161;
+--vscode-symbolIcon-operatorForeground: #616161;
+--vscode-symbolIcon-packageForeground: #616161;
+--vscode-symbolIcon-propertyForeground: #616161;
+--vscode-symbolIcon-referenceForeground: #616161;
+--vscode-symbolIcon-snippetForeground: #616161;
+--vscode-symbolIcon-stringForeground: #616161;
+--vscode-symbolIcon-structForeground: #616161;
+--vscode-symbolIcon-textForeground: #616161;
+--vscode-symbolIcon-typeParameterForeground: #616161;
+--vscode-symbolIcon-unitForeground: #616161;
+--vscode-symbolIcon-variableForeground: #007acc;
+--vscode-editorSuggestWidget-background: #f3f3f3;
+--vscode-editorSuggestWidget-border: #c8c8c8;
+--vscode-editorSuggestWidget-foreground: #000000;
+--vscode-editorSuggestWidget-selectedForeground: #ffffff;
+--vscode-editorSuggestWidget-selectedIconForeground: #ffffff;
+--vscode-editorSuggestWidget-selectedBackground: #0060c0;
+--vscode-editorSuggestWidget-highlightForeground: #0066bf;
+--vscode-editorSuggestWidget-focusHighlightForeground: #bbe7ff;
+--vscode-editorSuggestWidgetStatus-foreground: rgba(0, 0, 0, 0.5);
+--vscode-editor-linkedEditingBackground: rgba(255, 0, 0, 0.3);
+--vscode-editorHoverWidget-highlightForeground: #0066bf;
+--vscode-editor-wordHighlightBackground: rgba(87, 87, 87, 0.25);
+--vscode-editor-wordHighlightStrongBackground: rgba(14, 99, 156, 0.25);
+--vscode-editorOverviewRuler-wordHighlightForeground: rgba(160, 160, 160, 0.8);
+--vscode-editorOverviewRuler-wordHighlightStrongForeground: rgba(192, 160, 192, 0.8); }</style><style type="text/css" media="screen" id="codiconStyles">.codicon-add:before { content: '\ea60'; }
+.codicon-plus:before { content: '\ea60'; }
+.codicon-gist-new:before { content: '\ea60'; }
+.codicon-repo-create:before { content: '\ea60'; }
+.codicon-lightbulb:before { content: '\ea61'; }
+.codicon-light-bulb:before { content: '\ea61'; }
+.codicon-repo:before { content: '\ea62'; }
+.codicon-repo-delete:before { content: '\ea62'; }
+.codicon-gist-fork:before { content: '\ea63'; }
+.codicon-repo-forked:before { content: '\ea63'; }
+.codicon-git-pull-request:before { content: '\ea64'; }
+.codicon-git-pull-request-abandoned:before { content: '\ea64'; }
+.codicon-record-keys:before { content: '\ea65'; }
+.codicon-keyboard:before { content: '\ea65'; }
+.codicon-tag:before { content: '\ea66'; }
+.codicon-tag-add:before { content: '\ea66'; }
+.codicon-tag-remove:before { content: '\ea66'; }
+.codicon-person:before { content: '\ea67'; }
+.codicon-person-follow:before { content: '\ea67'; }
+.codicon-person-outline:before { content: '\ea67'; }
+.codicon-person-filled:before { content: '\ea67'; }
+.codicon-git-branch:before { content: '\ea68'; }
+.codicon-git-branch-create:before { content: '\ea68'; }
+.codicon-git-branch-delete:before { content: '\ea68'; }
+.codicon-source-control:before { content: '\ea68'; }
+.codicon-mirror:before { content: '\ea69'; }
+.codicon-mirror-public:before { content: '\ea69'; }
+.codicon-star:before { content: '\ea6a'; }
+.codicon-star-add:before { content: '\ea6a'; }
+.codicon-star-delete:before { content: '\ea6a'; }
+.codicon-star-empty:before { content: '\ea6a'; }
+.codicon-comment:before { content: '\ea6b'; }
+.codicon-comment-add:before { content: '\ea6b'; }
+.codicon-alert:before { content: '\ea6c'; }
+.codicon-warning:before { content: '\ea6c'; }
+.codicon-search:before { content: '\ea6d'; }
+.codicon-search-save:before { content: '\ea6d'; }
+.codicon-log-out:before { content: '\ea6e'; }
+.codicon-sign-out:before { content: '\ea6e'; }
+.codicon-log-in:before { content: '\ea6f'; }
+.codicon-sign-in:before { content: '\ea6f'; }
+.codicon-eye:before { content: '\ea70'; }
+.codicon-eye-unwatch:before { content: '\ea70'; }
+.codicon-eye-watch:before { content: '\ea70'; }
+.codicon-circle-filled:before { content: '\ea71'; }
+.codicon-primitive-dot:before { content: '\ea71'; }
+.codicon-close-dirty:before { content: '\ea71'; }
+.codicon-debug-breakpoint:before { content: '\ea71'; }
+.codicon-debug-breakpoint-disabled:before { content: '\ea71'; }
+.codicon-debug-hint:before { content: '\ea71'; }
+.codicon-primitive-square:before { content: '\ea72'; }
+.codicon-edit:before { content: '\ea73'; }
+.codicon-pencil:before { content: '\ea73'; }
+.codicon-info:before { content: '\ea74'; }
+.codicon-issue-opened:before { content: '\ea74'; }
+.codicon-gist-private:before { content: '\ea75'; }
+.codicon-git-fork-private:before { content: '\ea75'; }
+.codicon-lock:before { content: '\ea75'; }
+.codicon-mirror-private:before { content: '\ea75'; }
+.codicon-close:before { content: '\ea76'; }
+.codicon-remove-close:before { content: '\ea76'; }
+.codicon-x:before { content: '\ea76'; }
+.codicon-repo-sync:before { content: '\ea77'; }
+.codicon-sync:before { content: '\ea77'; }
+.codicon-clone:before { content: '\ea78'; }
+.codicon-desktop-download:before { content: '\ea78'; }
+.codicon-beaker:before { content: '\ea79'; }
+.codicon-microscope:before { content: '\ea79'; }
+.codicon-vm:before { content: '\ea7a'; }
+.codicon-device-desktop:before { content: '\ea7a'; }
+.codicon-file:before { content: '\ea7b'; }
+.codicon-file-text:before { content: '\ea7b'; }
+.codicon-more:before { content: '\ea7c'; }
+.codicon-ellipsis:before { content: '\ea7c'; }
+.codicon-kebab-horizontal:before { content: '\ea7c'; }
+.codicon-mail-reply:before { content: '\ea7d'; }
+.codicon-reply:before { content: '\ea7d'; }
+.codicon-organization:before { content: '\ea7e'; }
+.codicon-organization-filled:before { content: '\ea7e'; }
+.codicon-organization-outline:before { content: '\ea7e'; }
+.codicon-new-file:before { content: '\ea7f'; }
+.codicon-file-add:before { content: '\ea7f'; }
+.codicon-new-folder:before { content: '\ea80'; }
+.codicon-file-directory-create:before { content: '\ea80'; }
+.codicon-trash:before { content: '\ea81'; }
+.codicon-trashcan:before { content: '\ea81'; }
+.codicon-history:before { content: '\ea82'; }
+.codicon-clock:before { content: '\ea82'; }
+.codicon-folder:before { content: '\ea83'; }
+.codicon-file-directory:before { content: '\ea83'; }
+.codicon-symbol-folder:before { content: '\ea83'; }
+.codicon-logo-github:before { content: '\ea84'; }
+.codicon-mark-github:before { content: '\ea84'; }
+.codicon-github:before { content: '\ea84'; }
+.codicon-terminal:before { content: '\ea85'; }
+.codicon-console:before { content: '\ea85'; }
+.codicon-repl:before { content: '\ea85'; }
+.codicon-zap:before { content: '\ea86'; }
+.codicon-symbol-event:before { content: '\ea86'; }
+.codicon-error:before { content: '\ea87'; }
+.codicon-stop:before { content: '\ea87'; }
+.codicon-variable:before { content: '\ea88'; }
+.codicon-symbol-variable:before { content: '\ea88'; }
+.codicon-array:before { content: '\ea8a'; }
+.codicon-symbol-array:before { content: '\ea8a'; }
+.codicon-symbol-module:before { content: '\ea8b'; }
+.codicon-symbol-package:before { content: '\ea8b'; }
+.codicon-symbol-namespace:before { content: '\ea8b'; }
+.codicon-symbol-object:before { content: '\ea8b'; }
+.codicon-symbol-method:before { content: '\ea8c'; }
+.codicon-symbol-function:before { content: '\ea8c'; }
+.codicon-symbol-constructor:before { content: '\ea8c'; }
+.codicon-symbol-boolean:before { content: '\ea8f'; }
+.codicon-symbol-null:before { content: '\ea8f'; }
+.codicon-symbol-numeric:before { content: '\ea90'; }
+.codicon-symbol-number:before { content: '\ea90'; }
+.codicon-symbol-structure:before { content: '\ea91'; }
+.codicon-symbol-struct:before { content: '\ea91'; }
+.codicon-symbol-parameter:before { content: '\ea92'; }
+.codicon-symbol-type-parameter:before { content: '\ea92'; }
+.codicon-symbol-key:before { content: '\ea93'; }
+.codicon-symbol-text:before { content: '\ea93'; }
+.codicon-symbol-reference:before { content: '\ea94'; }
+.codicon-go-to-file:before { content: '\ea94'; }
+.codicon-symbol-enum:before { content: '\ea95'; }
+.codicon-symbol-value:before { content: '\ea95'; }
+.codicon-symbol-ruler:before { content: '\ea96'; }
+.codicon-symbol-unit:before { content: '\ea96'; }
+.codicon-activate-breakpoints:before { content: '\ea97'; }
+.codicon-archive:before { content: '\ea98'; }
+.codicon-arrow-both:before { content: '\ea99'; }
+.codicon-arrow-down:before { content: '\ea9a'; }
+.codicon-arrow-left:before { content: '\ea9b'; }
+.codicon-arrow-right:before { content: '\ea9c'; }
+.codicon-arrow-small-down:before { content: '\ea9d'; }
+.codicon-arrow-small-left:before { content: '\ea9e'; }
+.codicon-arrow-small-right:before { content: '\ea9f'; }
+.codicon-arrow-small-up:before { content: '\eaa0'; }
+.codicon-arrow-up:before { content: '\eaa1'; }
+.codicon-bell:before { content: '\eaa2'; }
+.codicon-bold:before { content: '\eaa3'; }
+.codicon-book:before { content: '\eaa4'; }
+.codicon-bookmark:before { content: '\eaa5'; }
+.codicon-debug-breakpoint-conditional-unverified:before { content: '\eaa6'; }
+.codicon-debug-breakpoint-conditional:before { content: '\eaa7'; }
+.codicon-debug-breakpoint-conditional-disabled:before { content: '\eaa7'; }
+.codicon-debug-breakpoint-data-unverified:before { content: '\eaa8'; }
+.codicon-debug-breakpoint-data:before { content: '\eaa9'; }
+.codicon-debug-breakpoint-data-disabled:before { content: '\eaa9'; }
+.codicon-debug-breakpoint-log-unverified:before { content: '\eaaa'; }
+.codicon-debug-breakpoint-log:before { content: '\eaab'; }
+.codicon-debug-breakpoint-log-disabled:before { content: '\eaab'; }
+.codicon-briefcase:before { content: '\eaac'; }
+.codicon-broadcast:before { content: '\eaad'; }
+.codicon-browser:before { content: '\eaae'; }
+.codicon-bug:before { content: '\eaaf'; }
+.codicon-calendar:before { content: '\eab0'; }
+.codicon-case-sensitive:before { content: '\eab1'; }
+.codicon-check:before { content: '\eab2'; }
+.codicon-checklist:before { content: '\eab3'; }
+.codicon-chevron-down:before { content: '\eab4'; }
+.codicon-drop-down-button:before { content: '\eab4'; }
+.codicon-chevron-left:before { content: '\eab5'; }
+.codicon-chevron-right:before { content: '\eab6'; }
+.codicon-chevron-up:before { content: '\eab7'; }
+.codicon-chrome-close:before { content: '\eab8'; }
+.codicon-chrome-maximize:before { content: '\eab9'; }
+.codicon-chrome-minimize:before { content: '\eaba'; }
+.codicon-chrome-restore:before { content: '\eabb'; }
+.codicon-circle-outline:before { content: '\eabc'; }
+.codicon-debug-breakpoint-unverified:before { content: '\eabc'; }
+.codicon-circle-slash:before { content: '\eabd'; }
+.codicon-circuit-board:before { content: '\eabe'; }
+.codicon-clear-all:before { content: '\eabf'; }
+.codicon-clippy:before { content: '\eac0'; }
+.codicon-close-all:before { content: '\eac1'; }
+.codicon-cloud-download:before { content: '\eac2'; }
+.codicon-cloud-upload:before { content: '\eac3'; }
+.codicon-code:before { content: '\eac4'; }
+.codicon-collapse-all:before { content: '\eac5'; }
+.codicon-color-mode:before { content: '\eac6'; }
+.codicon-comment-discussion:before { content: '\eac7'; }
+.codicon-compare-changes:before { content: '\eafd'; }
+.codicon-credit-card:before { content: '\eac9'; }
+.codicon-dash:before { content: '\eacc'; }
+.codicon-dashboard:before { content: '\eacd'; }
+.codicon-database:before { content: '\eace'; }
+.codicon-debug-continue:before { content: '\eacf'; }
+.codicon-debug-disconnect:before { content: '\ead0'; }
+.codicon-debug-pause:before { content: '\ead1'; }
+.codicon-debug-restart:before { content: '\ead2'; }
+.codicon-debug-start:before { content: '\ead3'; }
+.codicon-debug-step-into:before { content: '\ead4'; }
+.codicon-debug-step-out:before { content: '\ead5'; }
+.codicon-debug-step-over:before { content: '\ead6'; }
+.codicon-debug-stop:before { content: '\ead7'; }
+.codicon-debug:before { content: '\ead8'; }
+.codicon-device-camera-video:before { content: '\ead9'; }
+.codicon-device-camera:before { content: '\eada'; }
+.codicon-device-mobile:before { content: '\eadb'; }
+.codicon-diff-added:before { content: '\eadc'; }
+.codicon-diff-ignored:before { content: '\eadd'; }
+.codicon-diff-modified:before { content: '\eade'; }
+.codicon-diff-removed:before { content: '\eadf'; }
+.codicon-diff-renamed:before { content: '\eae0'; }
+.codicon-diff:before { content: '\eae1'; }
+.codicon-discard:before { content: '\eae2'; }
+.codicon-editor-layout:before { content: '\eae3'; }
+.codicon-empty-window:before { content: '\eae4'; }
+.codicon-exclude:before { content: '\eae5'; }
+.codicon-extensions:before { content: '\eae6'; }
+.codicon-eye-closed:before { content: '\eae7'; }
+.codicon-file-binary:before { content: '\eae8'; }
+.codicon-file-code:before { content: '\eae9'; }
+.codicon-file-media:before { content: '\eaea'; }
+.codicon-file-pdf:before { content: '\eaeb'; }
+.codicon-file-submodule:before { content: '\eaec'; }
+.codicon-file-symlink-directory:before { content: '\eaed'; }
+.codicon-file-symlink-file:before { content: '\eaee'; }
+.codicon-file-zip:before { content: '\eaef'; }
+.codicon-files:before { content: '\eaf0'; }
+.codicon-filter:before { content: '\eaf1'; }
+.codicon-flame:before { content: '\eaf2'; }
+.codicon-fold-down:before { content: '\eaf3'; }
+.codicon-fold-up:before { content: '\eaf4'; }
+.codicon-fold:before { content: '\eaf5'; }
+.codicon-folder-active:before { content: '\eaf6'; }
+.codicon-folder-opened:before { content: '\eaf7'; }
+.codicon-gear:before { content: '\eaf8'; }
+.codicon-gift:before { content: '\eaf9'; }
+.codicon-gist-secret:before { content: '\eafa'; }
+.codicon-gist:before { content: '\eafb'; }
+.codicon-git-commit:before { content: '\eafc'; }
+.codicon-git-compare:before { content: '\eafd'; }
+.codicon-git-merge:before { content: '\eafe'; }
+.codicon-github-action:before { content: '\eaff'; }
+.codicon-github-alt:before { content: '\eb00'; }
+.codicon-globe:before { content: '\eb01'; }
+.codicon-grabber:before { content: '\eb02'; }
+.codicon-graph:before { content: '\eb03'; }
+.codicon-gripper:before { content: '\eb04'; }
+.codicon-heart:before { content: '\eb05'; }
+.codicon-home:before { content: '\eb06'; }
+.codicon-horizontal-rule:before { content: '\eb07'; }
+.codicon-hubot:before { content: '\eb08'; }
+.codicon-inbox:before { content: '\eb09'; }
+.codicon-issue-closed:before { content: '\eba4'; }
+.codicon-issue-reopened:before { content: '\eb0b'; }
+.codicon-issues:before { content: '\eb0c'; }
+.codicon-italic:before { content: '\eb0d'; }
+.codicon-jersey:before { content: '\eb0e'; }
+.codicon-json:before { content: '\eb0f'; }
+.codicon-kebab-vertical:before { content: '\eb10'; }
+.codicon-key:before { content: '\eb11'; }
+.codicon-law:before { content: '\eb12'; }
+.codicon-lightbulb-autofix:before { content: '\eb13'; }
+.codicon-link-external:before { content: '\eb14'; }
+.codicon-link:before { content: '\eb15'; }
+.codicon-list-ordered:before { content: '\eb16'; }
+.codicon-list-unordered:before { content: '\eb17'; }
+.codicon-live-share:before { content: '\eb18'; }
+.codicon-loading:before { content: '\eb19'; }
+.codicon-location:before { content: '\eb1a'; }
+.codicon-mail-read:before { content: '\eb1b'; }
+.codicon-mail:before { content: '\eb1c'; }
+.codicon-markdown:before { content: '\eb1d'; }
+.codicon-megaphone:before { content: '\eb1e'; }
+.codicon-mention:before { content: '\eb1f'; }
+.codicon-milestone:before { content: '\eb20'; }
+.codicon-mortar-board:before { content: '\eb21'; }
+.codicon-move:before { content: '\eb22'; }
+.codicon-multiple-windows:before { content: '\eb23'; }
+.codicon-mute:before { content: '\eb24'; }
+.codicon-no-newline:before { content: '\eb25'; }
+.codicon-note:before { content: '\eb26'; }
+.codicon-octoface:before { content: '\eb27'; }
+.codicon-open-preview:before { content: '\eb28'; }
+.codicon-package:before { content: '\eb29'; }
+.codicon-paintcan:before { content: '\eb2a'; }
+.codicon-pin:before { content: '\eb2b'; }
+.codicon-play:before { content: '\eb2c'; }
+.codicon-run:before { content: '\eb2c'; }
+.codicon-plug:before { content: '\eb2d'; }
+.codicon-preserve-case:before { content: '\eb2e'; }
+.codicon-preview:before { content: '\eb2f'; }
+.codicon-project:before { content: '\eb30'; }
+.codicon-pulse:before { content: '\eb31'; }
+.codicon-question:before { content: '\eb32'; }
+.codicon-quote:before { content: '\eb33'; }
+.codicon-radio-tower:before { content: '\eb34'; }
+.codicon-reactions:before { content: '\eb35'; }
+.codicon-references:before { content: '\eb36'; }
+.codicon-refresh:before { content: '\eb37'; }
+.codicon-regex:before { content: '\eb38'; }
+.codicon-remote-explorer:before { content: '\eb39'; }
+.codicon-remote:before { content: '\eb3a'; }
+.codicon-remove:before { content: '\eb3b'; }
+.codicon-replace-all:before { content: '\eb3c'; }
+.codicon-replace:before { content: '\eb3d'; }
+.codicon-repo-clone:before { content: '\eb3e'; }
+.codicon-repo-force-push:before { content: '\eb3f'; }
+.codicon-repo-pull:before { content: '\eb40'; }
+.codicon-repo-push:before { content: '\eb41'; }
+.codicon-report:before { content: '\eb42'; }
+.codicon-request-changes:before { content: '\eb43'; }
+.codicon-rocket:before { content: '\eb44'; }
+.codicon-root-folder-opened:before { content: '\eb45'; }
+.codicon-root-folder:before { content: '\eb46'; }
+.codicon-rss:before { content: '\eb47'; }
+.codicon-ruby:before { content: '\eb48'; }
+.codicon-save-all:before { content: '\eb49'; }
+.codicon-save-as:before { content: '\eb4a'; }
+.codicon-save:before { content: '\eb4b'; }
+.codicon-screen-full:before { content: '\eb4c'; }
+.codicon-screen-normal:before { content: '\eb4d'; }
+.codicon-search-stop:before { content: '\eb4e'; }
+.codicon-server:before { content: '\eb50'; }
+.codicon-settings-gear:before { content: '\eb51'; }
+.codicon-settings:before { content: '\eb52'; }
+.codicon-shield:before { content: '\eb53'; }
+.codicon-smiley:before { content: '\eb54'; }
+.codicon-sort-precedence:before { content: '\eb55'; }
+.codicon-split-horizontal:before { content: '\eb56'; }
+.codicon-split-vertical:before { content: '\eb57'; }
+.codicon-squirrel:before { content: '\eb58'; }
+.codicon-star-full:before { content: '\eb59'; }
+.codicon-star-half:before { content: '\eb5a'; }
+.codicon-symbol-class:before { content: '\eb5b'; }
+.codicon-symbol-color:before { content: '\eb5c'; }
+.codicon-symbol-customcolor:before { content: '\eb5c'; }
+.codicon-symbol-constant:before { content: '\eb5d'; }
+.codicon-symbol-enum-member:before { content: '\eb5e'; }
+.codicon-symbol-field:before { content: '\eb5f'; }
+.codicon-symbol-file:before { content: '\eb60'; }
+.codicon-symbol-interface:before { content: '\eb61'; }
+.codicon-symbol-keyword:before { content: '\eb62'; }
+.codicon-symbol-misc:before { content: '\eb63'; }
+.codicon-symbol-operator:before { content: '\eb64'; }
+.codicon-symbol-property:before { content: '\eb65'; }
+.codicon-wrench:before { content: '\eb65'; }
+.codicon-wrench-subaction:before { content: '\eb65'; }
+.codicon-symbol-snippet:before { content: '\eb66'; }
+.codicon-tasklist:before { content: '\eb67'; }
+.codicon-telescope:before { content: '\eb68'; }
+.codicon-text-size:before { content: '\eb69'; }
+.codicon-three-bars:before { content: '\eb6a'; }
+.codicon-thumbsdown:before { content: '\eb6b'; }
+.codicon-thumbsup:before { content: '\eb6c'; }
+.codicon-tools:before { content: '\eb6d'; }
+.codicon-triangle-down:before { content: '\eb6e'; }
+.codicon-triangle-left:before { content: '\eb6f'; }
+.codicon-triangle-right:before { content: '\eb70'; }
+.codicon-triangle-up:before { content: '\eb71'; }
+.codicon-twitter:before { content: '\eb72'; }
+.codicon-unfold:before { content: '\eb73'; }
+.codicon-unlock:before { content: '\eb74'; }
+.codicon-unmute:before { content: '\eb75'; }
+.codicon-unverified:before { content: '\eb76'; }
+.codicon-verified:before { content: '\eb77'; }
+.codicon-versions:before { content: '\eb78'; }
+.codicon-vm-active:before { content: '\eb79'; }
+.codicon-vm-outline:before { content: '\eb7a'; }
+.codicon-vm-running:before { content: '\eb7b'; }
+.codicon-watch:before { content: '\eb7c'; }
+.codicon-whitespace:before { content: '\eb7d'; }
+.codicon-whole-word:before { content: '\eb7e'; }
+.codicon-window:before { content: '\eb7f'; }
+.codicon-word-wrap:before { content: '\eb80'; }
+.codicon-zoom-in:before { content: '\eb81'; }
+.codicon-zoom-out:before { content: '\eb82'; }
+.codicon-list-filter:before { content: '\eb83'; }
+.codicon-list-flat:before { content: '\eb84'; }
+.codicon-list-selection:before { content: '\eb85'; }
+.codicon-selection:before { content: '\eb85'; }
+.codicon-list-tree:before { content: '\eb86'; }
+.codicon-debug-breakpoint-function-unverified:before { content: '\eb87'; }
+.codicon-debug-breakpoint-function:before { content: '\eb88'; }
+.codicon-debug-breakpoint-function-disabled:before { content: '\eb88'; }
+.codicon-debug-stackframe-active:before { content: '\eb89'; }
+.codicon-circle-small-filled:before { content: '\eb8a'; }
+.codicon-debug-stackframe-dot:before { content: '\eb8a'; }
+.codicon-debug-stackframe:before { content: '\eb8b'; }
+.codicon-debug-stackframe-focused:before { content: '\eb8b'; }
+.codicon-debug-breakpoint-unsupported:before { content: '\eb8c'; }
+.codicon-symbol-string:before { content: '\eb8d'; }
+.codicon-debug-reverse-continue:before { content: '\eb8e'; }
+.codicon-debug-step-back:before { content: '\eb8f'; }
+.codicon-debug-restart-frame:before { content: '\eb90'; }
+.codicon-call-incoming:before { content: '\eb92'; }
+.codicon-call-outgoing:before { content: '\eb93'; }
+.codicon-menu:before { content: '\eb94'; }
+.codicon-expand-all:before { content: '\eb95'; }
+.codicon-feedback:before { content: '\eb96'; }
+.codicon-group-by-ref-type:before { content: '\eb97'; }
+.codicon-ungroup-by-ref-type:before { content: '\eb98'; }
+.codicon-account:before { content: '\eb99'; }
+.codicon-bell-dot:before { content: '\eb9a'; }
+.codicon-debug-console:before { content: '\eb9b'; }
+.codicon-library:before { content: '\eb9c'; }
+.codicon-output:before { content: '\eb9d'; }
+.codicon-run-all:before { content: '\eb9e'; }
+.codicon-sync-ignored:before { content: '\eb9f'; }
+.codicon-pinned:before { content: '\eba0'; }
+.codicon-github-inverted:before { content: '\eba1'; }
+.codicon-debug-alt:before { content: '\eb91'; }
+.codicon-server-process:before { content: '\eba2'; }
+.codicon-server-environment:before { content: '\eba3'; }
+.codicon-pass:before { content: '\eba4'; }
+.codicon-stop-circle:before { content: '\eba5'; }
+.codicon-play-circle:before { content: '\eba6'; }
+.codicon-record:before { content: '\eba7'; }
+.codicon-debug-alt-small:before { content: '\eba8'; }
+.codicon-vm-connect:before { content: '\eba9'; }
+.codicon-cloud:before { content: '\ebaa'; }
+.codicon-merge:before { content: '\ebab'; }
+.codicon-export:before { content: '\ebac'; }
+.codicon-graph-left:before { content: '\ebad'; }
+.codicon-magnet:before { content: '\ebae'; }
+.codicon-notebook:before { content: '\ebaf'; }
+.codicon-redo:before { content: '\ebb0'; }
+.codicon-check-all:before { content: '\ebb1'; }
+.codicon-pinned-dirty:before { content: '\ebb2'; }
+.codicon-pass-filled:before { content: '\ebb3'; }
+.codicon-circle-large-filled:before { content: '\ebb4'; }
+.codicon-circle-large-outline:before { content: '\ebb5'; }
+.codicon-combine:before { content: '\ebb6'; }
+.codicon-gather:before { content: '\ebb6'; }
+.codicon-table:before { content: '\ebb7'; }
+.codicon-variable-group:before { content: '\ebb8'; }
+.codicon-type-hierarchy:before { content: '\ebb9'; }
+.codicon-type-hierarchy-sub:before { content: '\ebba'; }
+.codicon-type-hierarchy-super:before { content: '\ebbb'; }
+.codicon-git-pull-request-create:before { content: '\ebbc'; }
+.codicon-run-above:before { content: '\ebbd'; }
+.codicon-run-below:before { content: '\ebbe'; }
+.codicon-notebook-template:before { content: '\ebbf'; }
+.codicon-debug-rerun:before { content: '\ebc0'; }
+.codicon-workspace-trusted:before { content: '\ebc1'; }
+.codicon-workspace-untrusted:before { content: '\ebc2'; }
+.codicon-workspace-unspecified:before { content: '\ebc3'; }
+.codicon-terminal-cmd:before { content: '\ebc4'; }
+.codicon-terminal-debian:before { content: '\ebc5'; }
+.codicon-terminal-linux:before { content: '\ebc6'; }
+.codicon-terminal-powershell:before { content: '\ebc7'; }
+.codicon-terminal-tmux:before { content: '\ebc8'; }
+.codicon-terminal-ubuntu:before { content: '\ebc9'; }
+.codicon-terminal-bash:before { content: '\ebca'; }
+.codicon-arrow-swap:before { content: '\ebcb'; }
+.codicon-copy:before { content: '\ebcc'; }
+.codicon-person-add:before { content: '\ebcd'; }
+.codicon-filter-filled:before { content: '\ebce'; }
+.codicon-wand:before { content: '\ebcf'; }
+.codicon-debug-line-by-line:before { content: '\ebd0'; }
+.codicon-inspect:before { content: '\ebd1'; }
+.codicon-layers:before { content: '\ebd2'; }
+.codicon-layers-dot:before { content: '\ebd3'; }
+.codicon-layers-active:before { content: '\ebd4'; }
+.codicon-compass:before { content: '\ebd5'; }
+.codicon-compass-dot:before { content: '\ebd6'; }
+.codicon-compass-active:before { content: '\ebd7'; }
+.codicon-azure:before { content: '\ebd8'; }
+.codicon-issue-draft:before { content: '\ebd9'; }
+.codicon-git-pull-request-closed:before { content: '\ebda'; }
+.codicon-git-pull-request-draft:before { content: '\ebdb'; }
+.codicon-debug-all:before { content: '\ebdc'; }
+.codicon-debug-coverage:before { content: '\ebdd'; }
+.codicon-run-errors:before { content: '\ebde'; }
+.codicon-folder-library:before { content: '\ebdf'; }
+.codicon-debug-continue-small:before { content: '\ebe0'; }
+.codicon-beaker-stop:before { content: '\ebe1'; }
+.codicon-graph-line:before { content: '\ebe2'; }
+.codicon-graph-scatter:before { content: '\ebe3'; }
+.codicon-pie-chart:before { content: '\ebe4'; }
+.codicon-bracket:before { content: '\eb0f'; }
+.codicon-bracket-dot:before { content: '\ebe5'; }
+.codicon-bracket-error:before { content: '\ebe6'; }
+.codicon-lock-small:before { content: '\ebe7'; }
+.codicon-azure-devops:before { content: '\ebe8'; }
+.codicon-verified-filled:before { content: '\ebe9'; }
+.codicon-newline:before { content: '\ebea'; }
+.codicon-layout:before { content: '\ebeb'; }
+.codicon-layout-activitybar-left:before { content: '\ebec'; }
+.codicon-layout-activitybar-right:before { content: '\ebed'; }
+.codicon-layout-panel-left:before { content: '\ebee'; }
+.codicon-layout-panel-center:before { content: '\ebef'; }
+.codicon-layout-panel-justify:before { content: '\ebf0'; }
+.codicon-layout-panel-right:before { content: '\ebf1'; }
+.codicon-layout-panel:before { content: '\ebf2'; }
+.codicon-layout-sidebar-left:before { content: '\ebf3'; }
+.codicon-layout-sidebar-right:before { content: '\ebf4'; }
+.codicon-layout-statusbar:before { content: '\ebf5'; }
+.codicon-layout-menubar:before { content: '\ebf6'; }
+.codicon-layout-centered:before { content: '\ebf7'; }
+.codicon-layout-sidebar-right-off:before { content: '\ec00'; }
+.codicon-layout-panel-off:before { content: '\ec01'; }
+.codicon-layout-sidebar-left-off:before { content: '\ec02'; }
+.codicon-target:before { content: '\ebf8'; }
+.codicon-indent:before { content: '\ebf9'; }
+.codicon-record-small:before { content: '\ebfa'; }
+.codicon-error-small:before { content: '\ebfb'; }
+.codicon-arrow-circle-down:before { content: '\ebfc'; }
+.codicon-arrow-circle-left:before { content: '\ebfd'; }
+.codicon-arrow-circle-right:before { content: '\ebfe'; }
+.codicon-arrow-circle-up:before { content: '\ebff'; }
+.codicon-heart-filled:before { content: '\ec04'; }
+.codicon-map:before { content: '\ec05'; }
+.codicon-map-filled:before { content: '\ec06'; }
+.codicon-circle-small:before { content: '\ec07'; }
+.codicon-bell-slash:before { content: '\ec08'; }
+.codicon-bell-slash-dot:before { content: '\ec09'; }
+.codicon-comment-unresolved:before { content: '\ec0a'; }
+.codicon-git-pull-request-go-to-changes:before { content: '\ec0b'; }
+.codicon-git-pull-request-new-changes:before { content: '\ec0c'; }
+.codicon-dialog-error:before { content: '\ea87'; }
+.codicon-dialog-warning:before { content: '\ea6c'; }
+.codicon-dialog-info:before { content: '\ea74'; }
+.codicon-dialog-close:before { content: '\ea76'; }
+.codicon-tree-item-expanded:before { content: '\eab4'; }
+.codicon-tree-filter-on-type-on:before { content: '\eb83'; }
+.codicon-tree-filter-on-type-off:before { content: '\eb85'; }
+.codicon-tree-filter-clear:before { content: '\ea76'; }
+.codicon-tree-item-loading:before { content: '\eb19'; }
+.codicon-menu-selection:before { content: '\eab2'; }
+.codicon-menu-submenu:before { content: '\eab6'; }
+.codicon-menubar-more:before { content: '\ea7c'; }
+.codicon-scrollbar-button-left:before { content: '\eb6f'; }
+.codicon-scrollbar-button-right:before { content: '\eb70'; }
+.codicon-scrollbar-button-up:before { content: '\eb71'; }
+.codicon-scrollbar-button-down:before { content: '\eb6e'; }
+.codicon-toolbar-more:before { content: '\ea7c'; }
+.codicon-quick-input-back:before { content: '\ea9b'; }
+.codicon-widget-close:before { content: '\ea76'; }
+.codicon-goto-previous-location:before { content: '\eaa1'; }
+.codicon-goto-next-location:before { content: '\ea9a'; }
+.codicon-diff-review-insert:before { content: '\ea60'; }
+.codicon-diff-review-remove:before { content: '\eb3b'; }
+.codicon-diff-review-close:before { content: '\ea76'; }
+.codicon-diff-insert:before { content: '\ea60'; }
+.codicon-diff-remove:before { content: '\eb3b'; }
+.codicon-marker-navigation-next:before { content: '\ea9a'; }
+.codicon-marker-navigation-previous:before { content: '\eaa1'; }
+.codicon-find-selection:before { content: '\eb85'; }
+.codicon-find-collapsed:before { content: '\eab6'; }
+.codicon-find-expanded:before { content: '\eab4'; }
+.codicon-find-replace:before { content: '\eb3d'; }
+.codicon-find-replace-all:before { content: '\eb3c'; }
+.codicon-find-previous-match:before { content: '\eaa1'; }
+.codicon-find-next-match:before { content: '\ea9a'; }
+.codicon-folding-expanded:before { content: '\eab4'; }
+.codicon-folding-collapsed:before { content: '\eab6'; }
+.codicon-folding-manual-collapsed:before { content: '\eab6'; }
+.codicon-folding-manual-expanded:before { content: '\eab4'; }
+.codicon-suggest-more-info:before { content: '\eab6'; }
+.codicon-parameter-hints-next:before { content: '\eab4'; }
+.codicon-parameter-hints-previous:before { content: '\eab7'; }
+.codicon-extensions-warning-message:before { content: '\ea6c'; }
+.codicon-settings-sync-view-icon:before { content: '\ea77'; }</style><style type="text/css" media="screen" class="vscode-tokens-styles">
+.mtk1 { color: #000000; }
+.mtk2 { color: #ffffff; }
+.mtk3 { color: #000080; }
+.mtk4 { color: #008000; }
+.mtk5 { color: #0000ff; }
+.mtk6 { color: #098658; }
+.mtk7 { color: #811f3f; }
+.mtk8 { color: #800000; }
+.mtk9 { color: #ff0000; }
+.mtk10 { color: #cd3131; }
+.mtk11 { color: #a31515; }
+.mtk12 { color: #0451a5; }
+.mtk13 { color: #795e26; }
+.mtk14 { color: #267f99; }
+.mtk15 { color: #af00db; }
+.mtk16 { color: #001080; }
+.mtk17 { color: #0070c1; }
+.mtk18 { color: #d16969; }
+.mtk19 { color: #ee0000; }
+.mtk20 { color: #316bcd; }
+.mtk21 { color: #cd9731; }
+.mtk22 { color: #800080; }
+.mtki { font-style: italic; }
+.mtkb { font-weight: bold; }
+.mtku { text-decoration: underline; text-underline-position: under; }
+.mtks { text-decoration: line-through; }
+.mtks.mtku { text-decoration: underline line-through; text-underline-position: under; }</style><link charset="utf-8" rel="stylesheet" href="https://static.nowcoder.com/nc/jslib/katex@0.10.2/katex.min.css"><link charset="utf-8" rel="stylesheet" href="https://static.nowcoder.com/fe/file/lib/codemirror/1.2.0/index.css"><script async="" src="https://static.nowcoder.com/lib/wavedrom/2.6.8/skins.js"></script><script async="" src="https://static.nowcoder.com/lib/wavedrom/2.6.8/wavedrom.min.js"></script><style type="text/css" class="contributedFileIconTheme"></style><style type="text/css" class="contributedProductIconTheme"></style><script async="" src="https://static.nowcoder.com/nc/jslib/katex@0.10.2/katex.min.js"></script><script async="" src="https://static.nowcoder.com/fe/file/lib/codemirror/1.2.0/index.js"></script><script async="" src="https://static.nowcoder.com/nc/jslib/katex@0.10.2/contrib/auto-render.min.js"></script><style type="text/css">
+    .cm-error2 {
+        display: inline-block;
+        position: relative;
+    }
+    .cm-error2:before {
+        content: "~~~~~~~~~~~~";
+        font-size: 0.6em;
+        font-weight: 700;
+        font-family: Times New Roman, Serif;
+        color: red;
+        width: 100%;
+        position: absolute;
+        top: 12px;
+        left: -1px;
+        overflow: hidden;
+    }
+    </style></head>
+
+<body class="full-screen-body monaco-workbench tw-overflow-hidden el-popup-parent--hidden vs vscode-theme-defaults-themes-light_plus-json">
+<div class="nk-container nk-acm-container">
+            <div class="header-bar">
+        <div class="header-left">
+            <div class="question-title">
+                <i class="icon-list"></i>正方形检测
+            </div>
+        </div>
+        <div class="header-right">
+            <ul class="code-list-box">
+                <li>
+                    <a title="题解" href="/acm/problem/blogs/21842" class="code-list-dis" target="_blank">
+                        <i class="icon-nc-edit"></i>
+                        题解
+                    </a>
+                </li>
+                <li>
+                    <a title="讨论" href="/discuss/tag/105475?type=101" class="code-list-dis" target="_blank">
+                        <i class="icon-comment"></i>
+                        讨论
+                    </a>
+                </li>
+                <li>
+                    <a title="查看他人的提交" href="/acm/problem/21842/submit-list" class="code-list-rank" target="_blank">
+                        <i class="icon-trophy"></i>
+                        查看他人的提交
+                    </a>
+                </li>
+                            </ul>
+                    </div>
+    </div>
+        <div class="content-board nc-el-container" style="height: 670px; width: 1280px;">
+        <div class="js-left question-module">
+            <div class="terminal-topic">
+    <div class="question-intr mb2 mt2">
+        <div class="subject-item-wrap">
+                            <span>题号：NC21842</span><br>
+                        <span>时间限制：C/C++/Rust/Pascal 1秒，其他语言2秒</span><br>
+            <span>空间限制：C/C++/Rust/Pascal 32 M，其他语言64 M</span><br>
+            <span> 64bit IO Format: %lld</span><br>
+        </div>
+    </div>
+
+    <h2 class="subject-item-title">题目描述
+        <a title="只看题目描述" href="javascript:void(0)" class="icon-fullscreen"></a>
+        <a href="javascript:void(0);" class="icon-resize-small js-small-question" style="display:none;" title="收起全屏，编写代码"></a>
+    </h2>
+            <div class="subject-describe">
+            <div class="subject-question">给你平面直角坐标系中的四个点，判断这四个点是否构成一个正方形&nbsp;&nbsp;&nbsp; <br></div>
+                            <h2 style="font-size:14px;font-weight:bold;color:#34495e;">输入描述:</h2>
+                                                    <pre>第一行输入四个整数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>x</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">x_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.58056em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> (<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>0</mn><mo>≤</mo><msub><mi>x</mi><mi>i</mi></msub><mo>≤</mo><mn>10000</mn></mrow><annotation encoding="application/x-tex">0 \le x_i \le 10000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.78041em;vertical-align:-0.13597em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.7859700000000001em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span></span></span></span>)<br>第二行输入四个整数<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub></mrow><annotation encoding="application/x-tex">y_i</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> (<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mn>0</mn><mo>≤</mo><msub><mi>y</mi><mi>i</mi></msub><mo>≤</mo><mn>10000</mn></mrow><annotation encoding="application/x-tex">0 \le y_i \le 10000</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.78041em;vertical-align:-0.13597em;"></span><span class="mord">0</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.8304100000000001em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≤</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span><span class="mord">0</span></span></span></span>)</pre>
+                                                                            <h2 style="font-size:14px;font-weight:bold;color:#34495e;">输出描述:</h2>
+                                                    <pre>如果可以构成正方形，输出"It's a square"<br>否则输出"Not a square"</pre>
+                                                                            <div class="question-oi">
+                        <div class="question-oi-hd">
+                            示例1
+                        </div>
+                        <div class="question-oi-bd">
+                            <div class="question-oi-mod">
+                                <h2>输入</h2>
+                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="input1">复制</a>
+                                <textarea data-clipboard-text-id="input1" style="display:none;">0 0 2 2
+0 2 0 2</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>0 0 2 2
+0 2 0 2</pre>
+                                </div>
+                            </div>
+                            <div class="question-oi-mod">
+                                                                    <h2>输出</h2>
+                                                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="output1">复制</a>
+                                <textarea data-clipboard-text-id="output1" style="display:none;">It's a square</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>It's a square</pre>
+                                </div>
+                            </div>
+                                                    </div>
+                    </div>
+                                    <div class="question-oi">
+                        <div class="question-oi-hd">
+                            示例2
+                        </div>
+                        <div class="question-oi-bd">
+                            <div class="question-oi-mod">
+                                <h2>输入</h2>
+                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="input2">复制</a>
+                                <textarea data-clipboard-text-id="input2" style="display:none;">0 1 5 6
+1 6 0 5
+</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>0 1 5 6
+1 6 0 5
+</pre>
+                                </div>
+                            </div>
+                            <div class="question-oi-mod">
+                                                                    <h2>输出</h2>
+                                                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="output2">复制</a>
+                                <textarea data-clipboard-text-id="output2" style="display:none;">It's a square</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>It's a square</pre>
+                                </div>
+                            </div>
+                                                    </div>
+                    </div>
+                                    <div class="question-oi">
+                        <div class="question-oi-hd">
+                            示例3
+                        </div>
+                        <div class="question-oi-bd">
+                            <div class="question-oi-mod">
+                                <h2>输入</h2>
+                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="input3">复制</a>
+                                <textarea data-clipboard-text-id="input3" style="display:none;">0 0 7 7
+0 3 0 3</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>0 0 7 7
+0 3 0 3</pre>
+                                </div>
+                            </div>
+                            <div class="question-oi-mod">
+                                                                    <h2>输出</h2>
+                                                                <a class="code-copy-btn" href="javascript:void(0);" data-clipboard-text-id="output3">复制</a>
+                                <textarea data-clipboard-text-id="output3" style="display:none;">Not a square</textarea>
+                                <div class="question-oi-cont">
+                                    <pre>Not a square</pre>
+                                </div>
+                            </div>
+                                                    </div>
+                    </div>
+                                                </div>
+    </div>
+            <div class="topic-popup js-topic-menu" style="display:none;">
+                <div class="terminal-topic-wrap">
+                    <div class="terminal-topic-title">
+                        <i class="icon-list"></i>正方形检测
+                    </div>
+                    <div class="topic-popup-bd">
+                        <a href="?page=" class="back-to-all"><i class="icon-angle-left"></i>返回全部题目</a>
+                        <div class="topic-title-list">
+                            <h2></h2>
+                            <div class="js-list" style="overflow-y:auto;">
+                                <div class="js-list-tips">列表加载中...</div>
+                                <div class="js-ul-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div data-v-5f9d0b1e="" class="separator vertical"><div data-v-5f9d0b1e="" class="handle"><div data-v-5f9d0b1e=""></div> <div data-v-5f9d0b1e=""></div> <div data-v-5f9d0b1e=""></div> <div data-v-5f9d0b1e=""></div></div> <div data-v-5f9d0b1e="" class="fold"><i data-v-5f9d0b1e="" class="icon-angle-right"></i> <div data-v-5f9d0b1e="" class="tooltip tooltip-info right" style="width: 100px;"><div data-v-5f9d0b1e="" class="tooltip-arrow"><i data-v-5f9d0b1e=""></i></div> <div data-v-5f9d0b1e="" class="tooltip-inner">只看题目内容</div></div></div></div>
+                <div data-v-1e8a80d8="" class="workbench answer-module code-body-hidden"><div data-v-1e8a80d8="" class="editor-box maximize"><div data-v-1dc838d0="" data-v-1e8a80d8="" class="code-editor-box nc-el-container subject-eidt-box code-editor" style="position: relative; height: 623px; width: 635px;"><div data-v-1dc838d0="" class="code-editor-header theme-default"><div data-v-1dc838d0="" class="flex-row"><div data-v-8eb46ef2="" data-v-1dc838d0="" class="el-select el-select--small btn-language theme-default" templatebrushdata=""><!----><div class="el-input el-input--small el-input--prefix el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><span class="el-input__prefix"><span data-v-8eb46ef2="" class="flex-row language-tips"><a data-v-79ba69ea="" data-v-8eb46ef2="" tagtype="a" href="javascript:void(0);" class="ncicon el-tooltip color-gray  ncicon-bleed" aria-label="Demonstrate" aria-describedby="el-tooltip-8658" tabindex="0" style="font-size: 9px;"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 200 200" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g><path d="M99.9 200C44.68 199.94-.04 155.15 0 99.93.04 44.72 44.82-.02 100.03 0 155.25.02 200 44.78 200 100c-.03 55.25-44.85 100.02-100.1 100zM20 101.72a80 80 0 1 0 0-1.72v1.72zM110 150H90v-20h20v20zm0-40H90V50h20v60z"></path></g></svg></a></span><!----></span><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper language-select theme-default is-small" style="display: none; min-width: 160px;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----> <div data-v-8eb46ef2="" class="language-list"><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row selected" aria-describedby="el-tooltip-7483" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">C++（clang++18）</span> <span data-v-79ba69ea="" data-v-8eb46ef2="" tagtype="span" class="ncicon flex-none ml-1 color-green  ncicon-bleed" aria-label="Check"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M250.06 489.09 648.12 72.97c16.09-16.72 16.09-43.74 0-60.46a40.27 40.27 0 0 0-58.34 0L206.32 413.56 70.44 266.42a40.27 40.27 0 0 0-58.34 0c-16.13 16.72-16.13 43.74 0 60.46l150.45 162.2c11.72 12.08 27.19 18.75 43.77 18.75 16.55 0 32.1-6.67 43.74-18.74z" transform="translate(203.13 253.92)"></path></svg></span></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-475" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">C++(g++ 13)</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-8757" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">C(gcc 10)</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-5422" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Java</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-7866" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">C</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-3507" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Python2</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-3491" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Python3</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9359" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">pypy2</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1888" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">pypy3</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-5083" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">C#</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-7543" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">PHP</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-3483" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">JavaScript V8</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-4853" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">JavaScript Node</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1388" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">R</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-2719" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Go</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9883" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Ruby</span> <!----></li></div><div data-v-8eb46ef2="" class="language-list"><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-2896" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Rust</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-997" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Swift</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-7172" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">ObjC</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-7703" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Pascal</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-8983" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">matlab</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9913" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">bash</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-3868" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Scala</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9164" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Kotlin</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9273" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">Groovy</span> <!----></li><li data-v-8eb46ef2="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1655" tabindex="0"><span data-v-8eb46ef2="" class="lang-option-item flex-auto">TypeScript</span> <!----></li></div></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div> <span data-v-1cb21da2="" data-v-1dc838d0="" class="ml-2"><span class="el-popover__reference-wrapper"><a data-v-1cb21da2="" href="javascript:void(0);" class="flex-row btn-mode-tips theme-default hover" aria-describedby="el-popover-2769" tabindex="0"><span data-v-1cb21da2="" class="tips-dot"></span> <span data-v-1cb21da2="" class="tips-title">ACM模式</span></a></span></span></div> <!----> <div data-v-1dc838d0="" class="flex-row"><span data-v-70ec239a="" data-v-1dc838d0=""><div role="tooltip" id="el-popover-4692" aria-hidden="true" class="el-popover el-popper help-popover" tabindex="0" style="display: none;"><!----> <div data-v-70ec239a=""><div data-v-70ec239a="" class="help-title">做题遇到困难？</div> <div data-v-70ec239a="" class="help-list"><div data-v-70ec239a="" class="help-item">题目纠错</div> <div data-v-70ec239a="" class="help-item">查看编程常见问题</div> <!----></div></div></div><span class="el-popover__reference-wrapper"><span data-v-e3c2685e="" data-v-70ec239a="" class="el-tooltip btn-icon theme-default flex-row-center el-popover__reference" aria-describedby="el-popover-4692" tabindex="0"><a data-v-79ba69ea="" data-v-70ec239a="" tagtype="a" href="javascript:void(0);" class="ncicon  ncicon-bleed" aria-label="QuestionSign"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M507.8342 152.3503c196.3287 0 355.4839 159.1552 355.4839 355.4839S704.1629 863.318 507.834 863.318c-196.3286 0-355.4838-159.1552-355.4838-355.484 0-196.3286 159.1552-355.4838 355.4839-355.4838zm0 50.7834c-168.2709 0-304.7005 136.4296-304.7005 304.7005 0 168.2708 136.4296 304.7005 304.7005 304.7005 168.2708 0 304.7005-136.4297 304.7005-304.7005 0-168.2709-136.4297-304.7005-304.7005-304.7005zm-3.6564 460.7071c10.3598 0 19.5008 3.047 26.8136 10.3598 6.7034 6.7035 10.3598 15.235 10.3598 25.5949 0 10.9692-3.6564 19.5008-10.9692 26.2042-7.3128 6.7034-15.8444 10.3599-26.2042 10.3599-10.3599 0-18.8915-3.6565-26.2043-10.3599-7.3128-7.3128-10.3598-15.8444-10.3598-26.2042s3.047-18.8914 10.3598-25.5949c7.3128-7.3128 15.8444-10.3598 26.2043-10.3598zm9.141-371.1252c39.0016 0 70.0811 10.3598 93.8477 32.2983 22.5479 20.7196 34.1265 49.3615 34.1265 85.9255 0 27.423-7.9222 51.1897-23.1572 71.3-6.094 7.3127-22.5479 23.1572-49.3615 46.9238-13.4068 11.5786-22.5479 22.5478-28.6419 33.517-7.9222 13.4069-11.5786 28.0325-11.5786 44.4863v14.0163h-48.752v-14.0163c0-20.1102 3.6563-37.7828 10.9691-53.0178 8.5317-18.282 28.6419-41.4393 61.5495-70.6906l2.5979-2.5987c8.452-8.4611 14.7978-14.9077 18.1218-19.3397 12.188-15.235 18.282-31.0795 18.282-48.1427 0-24.376-7.3128-43.2675-20.7196-56.6743-14.0162-14.6256-34.1265-21.329-59.7213-21.329-30.47 0-53.018 9.7504-67.6435 29.8606-13.4069 17.0633-20.1103 40.2205-20.1103 70.0812h-48.1426c0-42.6581 11.5786-76.7846 35.9546-102.3794 24.376-26.8137 58.5025-40.2205 102.3794-40.2205z"></path></svg></a></span></span></span> <!----> <!----> <span data-v-e3c2685e="" data-v-1dc838d0="" class="el-tooltip btn-icon theme-default flex-row-center" aria-describedby="el-tooltip-9331" tabindex="0"><span data-v-79ba69ea="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="Download" download="snippet.cpp"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M757.76 870.4H256v-71.68h501.76v71.68zM506.88 727.04 291.84 512l50.53-50.53 128.67 128.3V153.6h71.68v436.17l128.67-128.3L721.92 512 506.88 727.04z"></path></svg></span></span> <span data-v-e3c2685e="" data-v-1dc838d0="" class="el-tooltip btn-icon theme-default flex-row-center" aria-describedby="el-tooltip-3262" tabindex="0"><a data-v-79ba69ea="" data-v-1dc838d0="" tagtype="a" href="javascript:void(0);" class="ncicon  ncicon-bleed" aria-label="Refresh"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M304.82 0C146.58-.22 14.57 120.96 1.12 278.77-12.34 436.58 97.25 578.4 253.23 605.03c155.99 26.62 306.34-70.82 345.9-224.18h-79.18c-38.7 109.58-153.41 172.62-266.56 146.5-113.13-26.13-188.66-133.1-175.5-248.57C91.05 163.3 188.71 76.12 304.82 76.18a225.14 225.14 0 0 1 160.68 67.78L343.06 266.6H609.4V0l-89.45 89.5A302.92 302.92 0 0 0 304.82 0z" transform="translate(203.13 203.13)"></path></svg></a></span> <span data-v-1dc838d0=""><div role="tooltip" id="el-popover-4944" aria-hidden="true" class="el-popover el-popper setting-popover" tabindex="0" style="display: none;"><!----> <div class="nc-el-container"><div data-v-6c8a92ac="" class="info-block theme-default"><div data-v-6c8a92ac="" class="info-title">编辑器快捷键</div> <div data-v-6c8a92ac="" class="info-line"> <div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">保存并提交</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+Enter</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">行注释</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+/</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">代码左缩进</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+[</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">代码右缩进</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+]</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">剪切</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+X</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">撤销</div> <div data-v-6c8a92ac="" class="flex-none">Ctrl+Z</div></div><!----><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">快速加载复制代码 </div> <div data-v-6c8a92ac="" class="flex-none">Ctrl + ,</div></div><div data-v-6c8a92ac="" class="info-item flex-row"><div data-v-6c8a92ac="" class="flex-auto">快速加载最优代码 </div> <div data-v-6c8a92ac="" class="flex-none">Ctrl + j</div></div></div></div></div></div><span class="el-popover__reference-wrapper"><span data-v-e3c2685e="" class="el-tooltip btn-icon theme-default flex-row-center el-popover__reference" aria-describedby="el-popover-4944" tabindex="0"><a data-v-79ba69ea="" tagtype="a" href="javascript:void(0);" class="ncicon  ncicon-bleed" aria-label="KeyBindings"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M607.96.35v88.77l13.88.01a88.78 88.78 0 0 1 88.78 88.79v399.52a88.78 88.78 0 0 1-88.78 88.79H89.14a88.78 88.78 0 0 1-88.8-88.79V177.92a88.78 88.78 0 0 1 88.8-88.79l443.91-.01V.35h74.91zm13.88 163.7H89.14c-6.71 0-12.3 4.75-13.6 11.07l-.28 2.8v399.52c0 6.7 4.75 12.3 11.08 13.6l2.8.28h532.7c6.7 0 12.3-4.76 13.59-11.08l.28-2.8V177.92c0-6.7-4.76-12.3-11.08-13.6l-2.8-.28zM222.3 399.87v74.9h-88.79v-74.9h88.79zm355.13 0v74.9H266.7v-74.9h310.74zM222.31 266.7v74.91h-88.79V266.7h88.79zm133.17 0v74.91H266.7V266.7h88.78zm221.96 0v74.91H399.88V266.7h177.56z" transform="translate(152.35 152.35)"></path></svg></a></span></span></span> <span data-v-1dc838d0=""><div role="tooltip" id="el-popover-3487" aria-hidden="true" class="el-popover el-popper setting-popover theme-default" tabindex="0" style="display: none;"><!----> <div class="nc-el-container"><div data-v-6c8a92ac="" class="info-block theme-default"><div data-v-6c8a92ac="" class="info-title">通用</div> <div data-v-6c8a92ac="" class="info-line split-item"> <div data-v-fd15c9a6="" class="info-item select-item theme-default" data-v-6c8a92ac=""><div data-v-fd15c9a6="" class="mb-2 flex-row"><span data-v-fd15c9a6="" class="select-icon"><span data-v-79ba69ea="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="Theme" data-v-fd15c9a6=""><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M354.79 0C96.51 0 0 226.93 0 354.05s92.27 356.91 347.7 356.91c0 0 63.88 1.4 63.88-55.67 0-57.06-28.4-38.55-28.4-79.97s28.4-59.93 42.57-59.93c14.16 0 103.59 7.13 154.69-12.85 49.64-19.97 130.53-81.37 130.53-187.05C709.57 222.67 613.07 0 354.79 0zM139.07 355.45c-34.1 0-61.03-27.1-61.03-61.4s26.94-61.4 61.03-61.4 61.03 27.1 61.03 61.4-26.94 61.4-61.03 61.4zm114.98-152.76c-34.1 0-61.03-27.1-61.03-61.4 0-34.29 26.94-61.39 61.03-61.39s61.03 27.1 61.03 61.4c1.38 32.83-27.01 61.4-61.03 61.4zm198.64 0c-34.1 0-61.03-27.1-61.03-61.4 0-34.29 26.94-61.39 61.03-61.39s61.03 27.1 61.03 61.4c0 32.83-26.94 61.4-61.03 61.4zm116.36 152.76c-34.09 0-61.03-27.1-61.03-61.4s26.94-61.4 61.03-61.4c34.1 0 61.03 27.1 61.03 61.4 1.39 34.3-26.94 61.4-61.03 61.4z" transform="translate(152.35 152.35)"></path></svg></span></span> <span data-v-fd15c9a6="" class="select-title">主题</span></div> <div data-v-fd15c9a6="" class="el-select el-select--mini"><!----><div class="el-input el-input--mini el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper setting-select-popper theme-default is-mini" style="display: none;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row selected" aria-describedby="el-tooltip-2202" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">牛客经典</span> <span data-v-79ba69ea="" data-v-fd15c9a6="" tagtype="span" class="ncicon flex-none ml-1 color-green  ncicon-bleed" aria-label="Check"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M250.06 489.09 648.12 72.97c16.09-16.72 16.09-43.74 0-60.46a40.27 40.27 0 0 0-58.34 0L206.32 413.56 70.44 266.42a40.27 40.27 0 0 0-58.34 0c-16.13 16.72-16.13 43.74 0 60.46l150.45 162.2c11.72 12.08 27.19 18.75 43.77 18.75 16.55 0 32.1-6.67 43.74-18.74z" transform="translate(203.13 253.92)"></path></svg></span></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-425" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">3024-night</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-6422" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">base16-dark</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-8271" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">ambiance</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-9919" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">yonce</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-174" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">cobalt</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-6142" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">ayu-dark</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1804" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">codemirror</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-6759" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">eclipse</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-4855" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">idea</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-6507" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">mdn-like</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1573" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">solarized light</span> <!----></li></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div></div> <div data-v-fd15c9a6="" class="info-item select-item theme-default" data-v-6c8a92ac=""><div data-v-fd15c9a6="" class="mb-2 flex-row"><span data-v-fd15c9a6="" class="select-icon"><span data-v-79ba69ea="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="FontSize" data-v-fd15c9a6=""><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M298.18 0c10 0 20.52 7.5 23.53 16.78L484.8 520.03l106.88-328.27c2.97-9.14 13.5-16.56 23.73-16.56h58.46c10.13 0 20.72 7.36 23.7 16.56L811.76 544.1c2.97 9.14-2.76 16.56-12.77 16.56h-45.44c-10.02 0-20.28-7.61-22.98-17.2l-15.42-54.84c-2.67-9.5-12.8-17.21-23.42-17.21h-96.5c-10.26 0-20.72 7.6-23.42 17.2l-15.42 54.84c-2.67 9.5-13.4 17.2-23.39 17.2h-42.87c-1.98 0-3.8-.27-5.43-.78-1.6.51-3.38.79-5.3.79h-81.72c-10.26 0-20.75-7.73-23.34-16.97l-26.97-95.88c-2.63-9.37-13.12-16.97-23.41-16.97H166.81c-10.3 0-20.82 7.73-23.41 16.97l-26.97 95.88c-2.63 9.37-13.13 16.97-22.94 16.97H13.52c-10.04 0-15.73-7.5-12.71-16.78l171.61-527.1C175.44 7.52 186.12 0 195.98 0zm-57.9 98.7-65.36 234.25c-2.58 9.25 3.4 16.75 13.75 16.75h113.42c10.18 0 16.25-7.73 13.7-16.75L249.7 98.7c-2.62-9.25-6.89-9.03-9.4 0zm407.66 149.83c-2.64-9.38-7-9.08-9.53 0l-41.88 150.1c-2.62 9.38 3.36 16.99 13.25 16.99h67.32c9.94 0 15.77-7.91 13.2-16.99l-42.36-150.1z" transform="translate(101.57 203.13)"></path></svg></span></span> <span data-v-fd15c9a6="" class="select-title">字体大小</span></div> <div data-v-fd15c9a6="" class="el-select el-select--mini"><!----><div class="el-input el-input--mini el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper setting-select-popper theme-default is-mini" style="display: none;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row selected" aria-describedby="el-tooltip-8556" tabindex="0" style="font-size: 14px;"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">默认</span> <span data-v-79ba69ea="" data-v-fd15c9a6="" tagtype="span" class="ncicon flex-none ml-1 color-green  ncicon-bleed" aria-label="Check"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M250.06 489.09 648.12 72.97c16.09-16.72 16.09-43.74 0-60.46a40.27 40.27 0 0 0-58.34 0L206.32 413.56 70.44 266.42a40.27 40.27 0 0 0-58.34 0c-16.13 16.72-16.13 43.74 0 60.46l150.45 162.2c11.72 12.08 27.19 18.75 43.77 18.75 16.55 0 32.1-6.67 43.74-18.74z" transform="translate(203.13 253.92)"></path></svg></span></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-6115" tabindex="0" style="font-size: 12px;"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">小</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-7245" tabindex="0" style="font-size: 16px;"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">大</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-8319" tabindex="0" style="font-size: 18px;"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">更大</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1742" tabindex="0" style="font-size: 20px;"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">加大</span> <!----></li></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div></div> <div data-v-fd15c9a6="" class="info-item select-item theme-default" data-v-6c8a92ac=""><div data-v-fd15c9a6="" class="mb-2 flex-row"><span data-v-fd15c9a6="" class="select-icon"><span data-v-79ba69ea="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="Indentation" data-v-fd15c9a6=""><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g transform="translate(101.57 355.48)"><rect width="812.53" height="152.35" x="0" y="0" rx="50.78"></rect> <rect width="812.53" height="50.78" x="0" y="253.92" rx="25.39"></rect> <rect width="50.78" height="203.13" x="0" y="177.74" rx="25.39"></rect> <rect width="50.78" height="203.13" x="761.75" y="177.74" rx="25.39"></rect></g></svg></span></span> <span data-v-fd15c9a6="" class="select-title">Tab长度</span></div> <div data-v-fd15c9a6="" class="el-select el-select--mini"><!----><div class="el-input el-input--mini el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper setting-select-popper theme-default is-mini" style="display: none;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-1299" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">2个空格</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row selected" aria-describedby="el-tooltip-7142" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">4个空格</span> <span data-v-79ba69ea="" data-v-fd15c9a6="" tagtype="span" class="ncicon flex-none ml-1 color-green  ncicon-bleed" aria-label="Check"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M250.06 489.09 648.12 72.97c16.09-16.72 16.09-43.74 0-60.46a40.27 40.27 0 0 0-58.34 0L206.32 413.56 70.44 266.42a40.27 40.27 0 0 0-58.34 0c-16.13 16.72-16.13 43.74 0 60.46l150.45 162.2c11.72 12.08 27.19 18.75 43.77 18.75 16.55 0 32.1-6.67 43.74-18.74z" transform="translate(203.13 253.92)"></path></svg></span></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-8611" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">8个空格</span> <!----></li></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div></div> <div data-v-fd15c9a6="" class="info-item select-item theme-default" data-v-6c8a92ac=""><div data-v-fd15c9a6="" class="mb-2 flex-row"><span data-v-fd15c9a6="" class="select-icon"><span data-v-79ba69ea="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="KeyBindings" data-v-fd15c9a6=""><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M607.96.35v88.77l13.88.01a88.78 88.78 0 0 1 88.78 88.79v399.52a88.78 88.78 0 0 1-88.78 88.79H89.14a88.78 88.78 0 0 1-88.8-88.79V177.92a88.78 88.78 0 0 1 88.8-88.79l443.91-.01V.35h74.91zm13.88 163.7H89.14c-6.71 0-12.3 4.75-13.6 11.07l-.28 2.8v399.52c0 6.7 4.75 12.3 11.08 13.6l2.8.28h532.7c6.7 0 12.3-4.76 13.59-11.08l.28-2.8V177.92c0-6.7-4.76-12.3-11.08-13.6l-2.8-.28zM222.3 399.87v74.9h-88.79v-74.9h88.79zm355.13 0v74.9H266.7v-74.9h310.74zM222.31 266.7v74.91h-88.79V266.7h88.79zm133.17 0v74.91H266.7V266.7h88.78zm221.96 0v74.91H399.88V266.7h177.56z" transform="translate(152.35 152.35)"></path></svg></span></span> <span data-v-fd15c9a6="" class="select-title">键位绑定</span></div> <div data-v-fd15c9a6="" class="el-select el-select--mini"><!----><div class="el-input el-input--mini el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper setting-select-popper theme-default is-mini" style="display: none;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row selected" aria-describedby="el-tooltip-2160" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">默认</span> <span data-v-79ba69ea="" data-v-fd15c9a6="" tagtype="span" class="ncicon flex-none ml-1 color-green  ncicon-bleed" aria-label="Check"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M250.06 489.09 648.12 72.97c16.09-16.72 16.09-43.74 0-60.46a40.27 40.27 0 0 0-58.34 0L206.32 413.56 70.44 266.42a40.27 40.27 0 0 0-58.34 0c-16.13 16.72-16.13 43.74 0 60.46l150.45 162.2c11.72 12.08 27.19 18.75 43.77 18.75 16.55 0 32.1-6.67 43.74-18.74z" transform="translate(203.13 253.92)"></path></svg></span></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-4314" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">Vim</span> <!----></li><li data-v-fd15c9a6="" class="el-tooltip el-select-dropdown__item item flex-row" aria-describedby="el-tooltip-3638" tabindex="0"><span data-v-fd15c9a6="" class="lang-option-item flex-auto">Emacs</span> <!----></li></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div></div></div></div> <div data-v-6c8a92ac="" class="info-block theme-default"><div data-v-6c8a92ac="" class="info-title">检测</div> <div data-v-6c8a92ac="" class="info-line"> <div data-v-17461c6e="" class="switch-item info-item" data-v-6c8a92ac=""><div data-v-17461c6e="" class="flex-auto">代码自动补全</div> <div data-v-17461c6e="" role="switch" aria-checked="true" class="ml-1 flex-none el-switch is-checked el-switch__normal"><input type="checkbox" name="" true-value="true" class="el-switch__input"><!----><span class="el-switch__core" style="width: 40px;"></span><!----></div></div> <div data-v-17461c6e="" class="switch-item info-item" data-v-6c8a92ac=""><div data-v-17461c6e="" class="flex-auto">函数方法参数文档提示</div> <div data-v-17461c6e="" role="switch" aria-checked="true" class="ml-1 flex-none el-switch is-checked el-switch__normal"><input type="checkbox" name="" true-value="true" class="el-switch__input"><!----><span class="el-switch__core" style="width: 40px;"></span><!----></div></div></div></div></div></div><span class="el-popover__reference-wrapper"><span data-v-e3c2685e="" class="el-tooltip btn-icon theme-default flex-row-center el-popover__reference" aria-describedby="el-popover-3487" tabindex="0"><a data-v-79ba69ea="" tagtype="a" href="javascript:void(0);" class="ncicon  ncicon-bleed" aria-label="Setting"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M565.42 863.32h-129.4a35.55 35.55 0 0 1-34.72-27.94l-14.47-66.98a284.46 284.46 0 0 1-54.57-31.53l-65.3 20.8a35.55 35.55 0 0 1-41.6-16.1l-64.83-112.02a35.76 35.76 0 0 1 6.86-44.04l50.66-46.22a287.96 287.96 0 0 1 0-62.99l-50.66-46.1a35.76 35.76 0 0 1-6.86-44.08l64.7-112.09a35.55 35.55 0 0 1 41.59-16.1l65.3 20.8a287.1 287.1 0 0 1 27.05-17.78 291.8 291.8 0 0 1 27.66-13.72l14.5-66.9a35.55 35.55 0 0 1 34.7-27.98h129.4a35.54 35.54 0 0 1 34.69 27.98l14.64 66.93c9.99 4.4 19.7 9.36 29.12 14.86a269.98 269.98 0 0 1 25.41 16.68l65.34-20.8a35.55 35.55 0 0 1 41.56 16.1l64.7 112.09a35.75 35.75 0 0 1-6.86 44.04l-50.66 46.21c2.3 20.94 2.3 42.06 0 63l50.66 46.21a35.75 35.75 0 0 1 6.86 44.04l-64.7 112.09a35.55 35.55 0 0 1-41.56 16.1l-65.34-20.8a283.2 283.2 0 0 1-54.53 31.5l-14.64 66.8a35.55 35.55 0 0 1-34.7 27.94zm-220.4-205.15 29.15 21.33c6.57 4.84 13.42 9.29 20.52 13.33a221 221 0 0 0 20.58 10.52l33.16 14.54 16.25 74.33h72.16l16.25-74.37 33.16-14.54a218.55 218.55 0 0 0 41-23.67l29.18-21.33 72.55 23.1 36.08-62.49-56.27-51.3 3.98-35.97a214.31 214.31 0 0 0 0-47.35l-3.98-35.97 56.3-51.4-36.1-62.54-72.56 23.11-29.19-21.33a221.38 221.38 0 0 0-40.99-23.85l-33.16-14.54-16.25-74.33h-72.16l-16.32 74.36-33.1 14.5a211.19 211.19 0 0 0-20.57 10.42A213.67 213.67 0 0 0 374.28 336l-29.18 21.33-72.52-23.1-36.16 62.7 56.28 51.23-3.98 36a214.31 214.31 0 0 0 0 47.36l3.98 35.97-56.28 51.3 36.09 62.5 72.51-23.11zm155.56-8.14c-78.53 0-142.19-63.67-142.19-142.2 0-78.53 63.66-142.19 142.2-142.19 78.53 0 142.19 63.66 142.19 142.2-.1 78.49-63.7 142.09-142.2 142.19zm0-213.3a71.1 71.1 0 1 0 71.1 74.3v14.22-17.42a71.1 71.1 0 0 0-71.1-71.1z"></path></svg></a></span></span></span> <span data-v-e3c2685e="" data-v-1dc838d0="" class="el-tooltip btn-icon theme-default flex-row-center" aria-describedby="el-tooltip-1408" tabindex="0"><a data-v-79ba69ea="" data-v-1dc838d0="" tagtype="a" href="javascript:void(0);" class="ncicon  ncicon-bleed" aria-label="Full"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M512 819.2H204.8l.3-307.2h87.47v219.43H512v87.77zM818.85 512h-87.42V292.57H512V204.8h307.2l-.35 307.2z"></path></svg></a></span></div></div> <div data-v-1dc838d0="" class="code-font fs-14"><div class="CodeMirror cm-s-monokai CodeMirror-overlayscroll" style="width: 100%; height: 573px;"><div style="overflow: hidden; position: relative; width: 3px; height: 0px; top: 4px; left: 58px;"><textarea autocorrect="off" autocapitalize="off" spellcheck="false" tabindex="0" style="position: absolute; bottom: -1em; padding: 0px; width: 1000px; height: 1em; outline: none;"></textarea></div><div class="CodeMirror-overlayscroll-horizontal" cm-not-content="true" style="display: none;"><div></div></div><div class="CodeMirror-overlayscroll-vertical" cm-not-content="true" style="display: none;"><div></div></div><div class="CodeMirror-scrollbar-filler" cm-not-content="true"></div><div class="CodeMirror-gutter-filler" cm-not-content="true"></div><div class="CodeMirror-scroll" tabindex="-1"><div class="CodeMirror-sizer" style="margin-left: 54px; margin-bottom: 0px; border-right-width: 50px; min-height: 29px; min-width: 7px; padding-right: 0px; padding-bottom: 0px;"><div style="position: relative; top: 0px;"><div class="CodeMirror-lines" role="presentation"><div role="presentation" style="position: relative; outline: none;"><div class="CodeMirror-measure"><pre class="CodeMirror-line-like"><span>xxxxxxxxxx</span></pre></div><div class="CodeMirror-measure"></div><div style="position: relative; z-index: 1;"></div><div class="CodeMirror-cursors"><div class="CodeMirror-cursor" style="left: 4px; top: 0px; height: 21px;">&nbsp;</div></div><div class="CodeMirror-code" role="presentation"><div style="position: relative;"><div class="CodeMirror-gutter-wrapper" style="left: -54px;"><div class="CodeMirror-linenumber CodeMirror-gutter-elt" style="left: 25px; width: 21px;">1</div></div><pre class=" CodeMirror-line " role="presentation"><span role="presentation" style="padding-right: 0.1px;"><span cm-text="">​</span></span></pre></div></div></div></div></div></div><div style="position: absolute; height: 50px; width: 1px; border-bottom: 0px solid transparent; top: 29px;"></div><div class="CodeMirror-gutters" style="height: 79px; left: 0px;"><div class="CodeMirror-gutter CodeMirror-lsp-gutters"></div><div class="CodeMirror-gutter CodeMirror-debug-breakpoints"></div><div class="CodeMirror-gutter CodeMirror-linenumbers" style="width: 29px;"></div></div></div></div></div> <!----></div><span style="display:none"></span></div> <div data-v-1e8a80d8="" class="composite-panel minimize"><div data-v-1e8a80d8="" class="panel-header"><div data-v-561c93c4="" data-v-1e8a80d8="" class="separator"><button data-v-561c93c4="" class="btn-toggle"><i data-v-561c93c4="" class="icon-angle-up"></i></button></div> <div data-v-1e8a80d8="" class="flex-auto"><div data-v-4a7347c0="" data-v-1e8a80d8="" class="tab-list"><span data-v-4a7347c0="" role="tab" class="tab-item">运行结果</span><span data-v-4a7347c0="" role="tab" class="tab-item">自测输入</span></div> <div data-v-7adb1a25="" data-v-b02698da="" data-v-1e8a80d8="" style="display: inline-block;"></div> <button data-v-202383e0="" data-v-1e8a80d8="" class="el-tooltip btn-test" aria-describedby="el-tooltip-4828" tabindex="0"><i data-v-202383e0="" class="mr-1 icon-code-start"></i>自测运行</button></div> <button data-v-1e8a80d8="" class="btn-submit nc-req-auth">保存并提交</button></div> <div data-v-1e8a80d8="" class="panel-body" style="display: none;"><div data-v-6241d369="" data-v-68a28b68="" data-v-1e8a80d8="" class="mlr-3 code-submit-result light" data-simplebar-auto-hide="false" style="height: 100%;"> <div data-v-6241d369="" class="mtb-2"><div data-v-6241d369=""><div data-v-6241d369="" class="flex-row-center color-gray mb-2">保存并提交之后，这里将会显示运行结果</div></div></div> <!----> <!----> <!----></div> <div data-v-cc82eef4="" data-v-1e8a80d8="" class="flex-column flex-auto plr-3 bg-white input-area" style="align-items: stretch; height: 100%; display: none;"><div data-v-cc82eef4="" class="textarea-wrapper flex-column flex-auto p-2 mtb-2"><textarea data-v-cc82eef4="" id="ncmd-input-area-5_1785518369056_1731" placeholder="请输入示例或载入测试用例" class="flex-auto"></textarea> <label data-v-cc82eef4="" for="ncmd-input-area-5_1785518369056_1731"></label> <div data-v-cc82eef4="" class="control-bar flex-row"><button data-v-cc82eef4="" class="btn-sys-case">载入示例 1</button><button data-v-cc82eef4="" class="btn-sys-case">载入示例 2</button><button data-v-cc82eef4="" class="btn-sys-case">载入示例 3</button></div></div> <!----></div></div></div></div>
+    </div>
+
+
+</div>
+
+        <textarea id="javaTpl" style="display:none;"></textarea>
+    <textarea id="cTpl" style="display:none;"></textarea>
+
+            <textarea id="pythonTpl" style="display:none;">         
+        </textarea>
+         
+                 <textarea id="cSharpTpl" style="display:none;">         
+        </textarea>
+         
+                 <textarea id="jsTpl" style="display:none;">         
+        </textarea>
+         
+                 <textarea id="phpTpl" style="display:none;">         
+        </textarea>
+         
+                 <textarea id="jsV8Tpl" style="display:none;">         
+        </textarea>
+         
+                      <textarea id="python3Tpl" style="display:none;">              
+             </textarea>
+         
+                      <textarea id="goTpl" style="display:none;">              
+             </textarea>
+         
+                       <textarea id="purecTpl" style="display:none;">              
+              </textarea>
+         
+             <textarea id="rubyTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="scalaTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="kotlinTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="groovyTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="tsTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="swiftTpl" style="display:none;">          
+         </textarea>
+     
+             <textarea id="rustTpl" style="display:none;">          
+         </textarea>
+     
+        
+        
+
+                    <div class="js-sample-io" style="display:none;">
+            <textarea data-type="input">0 0 2 2
+0 2 0 2</textarea>
+            <textarea data-type="output">It's a square</textarea>
+        </div>
+                <div class="js-sample-io" style="display:none;">
+            <textarea data-type="input">0 1 5 6
+1 6 0 5
+</textarea>
+            <textarea data-type="output">It's a square</textarea>
+        </div>
+                <div class="js-sample-io" style="display:none;">
+            <textarea data-type="input">0 0 7 7
+0 3 0 3</textarea>
+            <textarea data-type="output">Not a square</textarea>
+        </div>
+            
+<script async="" src="https://assets.growingio.com/2.1/gio.js"></script><script src="//hm.baidu.com/hm.js?a808a1326b6c06c437de769d1b85b870"></script><script type="text/javascript">
+window.codeJudgeType = '0';
+window.supportLang = 'java,cpp';
+window.supportSelfTest =  true ;
+//前端根据codeJudgeType直接判断了，这个参数暂时没有用
+window.isVOJProblem = 'false';
+</script>
+
+    
+<script>
+        window.isLogin = false;
+        window.globalInfo = {
+        canLoadInIframe: 'true'
+    };
+            window.useNeteaseCaptcha = true;
+        window.globalInfo.isAcmCompleteInfo = false;
+        window.globalInfo.isAcmSuperAdmin = false;
+    window.globalInfo.acmUserPlanType = 2;
+    window.globalInfo.hasAcmUserPlanType = false;
+    window.showCodeCompleteV2 = true;
+</script>
+
+<script type="text/javascript">
+window.ncDeployImageRoot = "//static.nowcoder.com/acm";
+window.ncJsInDev =  false ;
+window.ncJsInPre = false;
+window.ncJsVersion = "1.03.12";
+window.ncJsPluginVersion = "1.0.17";
+window.ncIsInNowcoderMainSite = true;
+</script>
+
+<script type="text/javascript">
+(function () {
+var oBody = document.body;
+var sOverflow = oBody.style.overflow;
+var sUa = (window.navigator || {}).userAgent || '';
+var m = sUa.match(/MSIE ([^;]*)|Trident.*; rv(?:\s|:)?([0-9.]+)/) || [];
+var nVersion = +m[1] || +m[2] || 0;
+nVersion && nVersion <= 8 && _fShowMask();
+
+function _fShowMask() {
+    oBody.style.overflow = 'hidden';
+    var nWidth = window.document.documentElement.clientWidth;
+    var nHeight = window.document.documentElement.clientHeight;
+    var nTop = ('pageYOffset' in window ? window.pageYOffset : document.documentElement.scrollTop) || 0;
+    var sHtml = [
+    '<div style="position:absolute;left:0;top:' + nTop + 'px;z-index:99999;width:' + nWidth + 'px;height:' + nHeight + 'px;">',
+        '<div style="position:absolute;left:0;top:0;width:100%;height:100%;background:#000;opacity:0.5;filter:alpha(opacity=50);"></div>',
+        '<div class="pop-box" style="width:800px;z-index:100000;left:' + (nWidth - 800) / 2 + 'px;top:' + Math.max(0, (nHeight - 624) / 2) + nTop + 'px;">',
+            '<div class="pop-title"><h1>浏览器版本过低提示</h1><a href="javascript:void(0);" onclick="closeIE8GlobalMask()" class="pop-close" title="关闭"></a></div>',
+            '<div class="pop-content clearfix">',
+                '<div class="pop-subject-tips-wrapper">',
+                    '<a href="javascript:void(0);"><img src="//static.nowcoder.com/fe/style/images/common/res/tips/13.png"></a>',
+                    '<div class="pop-exit-main">你使用的浏览器版本过低，无法正常访问牛客<br />请使用牛客APP或更换浏览器。</div>',
+                    '<div class="pop-download-browser">',
+                        '<ul class="pop-browser-list">',
+                            '<li><p>下载牛客APP</p><div class="pic"><img src="https://uploadfiles.nowcoder.com/app/app_download.png"></div></li>',
+                            '<li><a href="https://static.nowcoder.com/b/i/googlechrome74_32.exe" target="_blank"><p>下载Chrome浏览器</p><div class="pic"><img src="//static.nowcoder.com/images/res/browser/chrome.png"></div></a></li>',
+                            '<li><a href="https://www.firefox.com.cn/download/#more" target="_blank"><p>下载Firefox浏览器</p><div class="pic"><img src="//static.nowcoder.com/images/res/browser/firefox.png"></div></a></li>',
+                        '</ul>',
+                        '<a href="javascript:void(0);" onclick="closeIE8GlobalMask()" class="link-green">我知道访问会出错，但是我还要继续用这个浏览器浏览 &gt;&gt;</a>',
+                    '</div>',
+                '</div>',
+            '</div>',
+        '</div>',
+    '</div>'].join('');
+    var oDv = document.createElement('div');
+    oDv.innerHTML = sHtml;
+    oBody.appendChild(oDv);
+    window.closeIE8GlobalMask = function () {
+        oBody.removeChild(oDv);
+        oBody.style.overflow = sOverflow;
+        _fShowBar();
+    };
+}
+
+function _fShowBar() {
+    var oDv = document.createElement('div');
+    oDv.innerHTML = '<div class="tip-block-box" onclick="closeIE8GlobalBar()" style="position:fixed;left:0;top:54px;width:100%;z-index:99999;"><div class="tip-block">你使用的浏览器版本过低，无法正常访问牛客，请使用牛客APP或更换浏览器，<a href="javascript:void(0);">点击查看详情</a>。</div></div>';
+    oBody.appendChild(oDv);
+    window.closeIE8GlobalBar  = function () {
+        oBody.removeChild(oDv);
+        _fShowMask();
+    };
+}
+})();
+</script>
+
+<script crossorigin="anonymous" src="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/vendor.dll.js" type="text/javascript"></script>
+                <script crossorigin="anonymous" src="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/runtime.js" type="text/javascript"></script>
+<script crossorigin="anonymous" src="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/common.js" type="text/javascript"></script>
+<script crossorigin="anonymous" src="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/lib/env.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?a808a1326b6c06c437de769d1b85b870";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+
+(function () {
+!function(e,t,n,g,i){e[i]=e[i]||function(){(e[i].q=e[i].q||[]).push(arguments)},n=t.createElement("script"),tag=t.getElementsByTagName("script")[0],n.async=1,n.src=('https:'==document.location.protocol?'https://':'http://')+g,tag.parentNode.insertBefore(n,tag)}(window,document,"script","assets.growingio.com/2.1/gio.js","gio");
+  gio('init', 'c196c3667d214851b11233f5c17f99d5', {});
+  gio('config',  {host : 'grow.nowcoder.com'});
+
+      gio('clearUserId');
+  
+
+  gio('send');
+})();
+
+</script>
+
+<script type="text/javascript">
+    window.pageInfo = {
+    isPdfContent: false,
+            creatorId: '301599',
+        questionId: '302120',
+        problemId: '21842',
+            uuid: 'a9be1219fcd045429380104bd412859f',
+                        tagId: '4', //定制
+        subTagId: '0', //定制
+        doneQuestionId: '21842', //定制
+        selfType: '8', //定制自测
+
+            codeJudgeType: '0',
+        supportLang: 'java,cpp'
+                 // 用户模板代码（JSON格式，key为语言ID，value为代码模板，仅对战页面注入）
+    };
+</script>
+<script type="text/javascript" crossorigin="anonymous" src="//static.nowcoder.com/acm/nowcoder/2.0.108/javascripts-acm/page/terminal/code/main.entry.js"></script>
+
+
+<div class="v-modal" tabindex="0" style="z-index: 2000;"></div><div data-v-2cf13b74="" class="el-dialog__wrapper" style="z-index: 2001;"><div role="dialog" aria-modal="true" aria-label="dialog" class="el-dialog nc-popup  el-dialog--medium is-no-title" style="margin-top: 85px; width: 690px; border-radius: 10px;"><div class="el-dialog__header"><span class="el-dialog__title"></span><!----></div><div class="el-dialog__body"><!----> <div data-v-2cf13b74="" class="ncp-container nc-el-container"><i data-v-2cf13b74="" class="ncp-close el-dialog__close el-icon el-icon-close"></i> <div data-v-2cf13b74="" class="ncp-content  "><div data-v-1645b03a="" class="login-container"><div data-v-2dc772b4="" data-v-1645b03a="" class="ptb-10 plr-10 txt-center" style="background-color: rgba(50, 202, 153, 0.05);"><img data-v-2dc772b4="" width="104" height="28" src="https://static.nowcoder.com/fe/file/logo/1.png"> <div data-v-2dc772b4="" class="wx-login-title">微信登录</div> <div data-v-2dc772b4="" class="wx-login-prcode"><!----> <img data-v-2dc772b4="" width="132" height="132" src="https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=gQFT7zwAAAAAAAAAAS5odHRwOi8vd2VpeGluLnFxLmNvbS9xLzAyOHFla1pwNUVhV2UxdXVwSTFHMTIAAgQh2WxqAwR9AAAA"></div> <div data-v-2dc772b4="" class="prcode-txt">扫码关注【牛客】即可登录</div></div> <div data-v-1645b03a="" class="flex-auto plr-15 pt-5 pb-6"><div data-v-1645b03a="" class="txt-right" style="margin: 0px -25px 20px;"><span data-v-1645b03a="" class="el-tooltip" aria-describedby="el-tooltip-5495" tabindex="0"><span data-v-79ba69ea="" data-v-1645b03a="" tagtype="span" class="ncicon icon-mode-toggle  ncicon-bleed" aria-label="Qrcode"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g transform="translate(163.84 122.88)" stroke="currentColor" fill="none" fill-rule="evenodd"><rect stroke-width="40.96" x="20.48" y="20.48" width="286.72" height="286.72" rx="61.44"></rect> <rect fill="currentColor" x="102.4" y="102.4" width="122.88" height="122.88" rx="40.96"></rect> <g transform="translate(0 409.6)"><rect stroke-width="40.96" x="20.48" y="20.48" width="286.72" height="286.72" rx="61.44"></rect> <rect fill="currentColor" x="102.4" y="102.4" width="122.88" height="122.88" rx="40.96"></rect></g> <g transform="translate(409.6)"><rect stroke-width="40.96" x="20.48" y="20.48" width="286.72" height="286.72" rx="61.44"></rect> <rect fill="currentColor" x="102.4" y="102.4" width="122.88" height="122.88" rx="40.96"></rect></g> <rect stroke-width="40.96" x="446.655" y="430.08" width="1" height="40.96" rx=".5"></rect> <rect stroke-width="40.96" x="580.42" y="430.08" width="1" height="40.96" rx=".5"></rect> <rect stroke-width="40.96" x="703.3" y="430.08" width="1" height="40.96" rx=".5"></rect> <rect stroke-width="40.96" x="446.655" y="552.96" width="1" height="163.84" rx=".5"></rect> <rect stroke-width="40.96" x="580.42" y="552.96" width="1" height="163.84" rx=".5"></rect> <rect stroke-width="40.96" x="703.3" y="552.96" width="1" height="163.84" rx=".5"></rect></g></svg></span></span></div> <div data-v-0246e432="" data-v-1645b03a=""><div data-v-5a2acb0c="" data-v-0246e432="" class="txt-center mb-8"><ul data-v-5a2acb0c="" class="tab-list"><li data-v-5a2acb0c="" class="tab-active-bar" style="width: 86px; transform: translateX(0px);"></li> <li data-v-5a2acb0c="" class="tab-item active">
+            注册登录
+        </li><li data-v-5a2acb0c="" class="tab-item">
+            密码登录
+        </li></ul></div> <!----> <form data-v-78427183="" data-v-0246e432="" class="el-form nc-el-container" origin=""><div data-v-78427183="" class="el-form-item"><!----><div class="el-form-item__content"><div data-v-78427183="" class="el-input el-input-group el-input-group--prepend"><div class="el-input-group__prepend"><div data-v-78427183="" class="el-select" style="width: 106px;"><!----><div class="el-input el-input--suffix"><!----><input type="text" readonly="readonly" autocomplete="off" placeholder="请选择" class="el-input__inner"><!----><span class="el-input__suffix"><span class="el-input__suffix-inner"><i class="el-select__caret el-input__icon el-icon-arrow-up"></i><!----><!----><!----><!----><!----></span><!----></span><!----><!----></div><div class="el-select-dropdown el-popper" style="display: none; min-width: 106px;"><!----><div class="el-scrollbar nowcoder-custom" style=""><div class="el-select-dropdown__wrap el-scrollbar__wrap el-scrollbar__wrap--hidden-default"><ul class="el-scrollbar__view el-select-dropdown__list"><!----><li class="el-tooltip el-select-dropdown__item item selected" aria-describedby="el-tooltip-4639" tabindex="0"><span>中国 +86</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8492" tabindex="0"><span>美国 +1</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3618" tabindex="0"><span>加拿大 +1</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5241" tabindex="0"><span>俄罗斯 +7</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9111" tabindex="0"><span>埃及 +20</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5560" tabindex="0"><span>南非 +27</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5902" tabindex="0"><span>希腊 +30</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3582" tabindex="0"><span>荷兰 +31</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8473" tabindex="0"><span>比利时 +32</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4297" tabindex="0"><span>法国 +33</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6956" tabindex="0"><span>西班牙 +34</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-598" tabindex="0"><span>匈牙利 +36</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4899" tabindex="0"><span>意大利 +39</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1954" tabindex="0"><span>罗马尼亚 +40</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-812" tabindex="0"><span>瑞士 +41</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4795" tabindex="0"><span>奥地利 +43</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2669" tabindex="0"><span>英国 +44</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8573" tabindex="0"><span>丹麦 +45</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2549" tabindex="0"><span>瑞典 +46</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1572" tabindex="0"><span>斯瓦尔巴岛 +47</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9206" tabindex="0"><span>波兰 +48</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8808" tabindex="0"><span>德国 +49</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5653" tabindex="0"><span>秘鲁 +51</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5991" tabindex="0"><span>墨西哥 +52</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8544" tabindex="0"><span>古巴 +53</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8452" tabindex="0"><span>阿根廷 +54</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9833" tabindex="0"><span>巴西 +55</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4308" tabindex="0"><span>智利 +56</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9336" tabindex="0"><span>哥伦比亚 +57</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-374" tabindex="0"><span>委内瑞拉 +58</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7999" tabindex="0"><span>马来西亚 +60</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3363" tabindex="0"><span>澳大利亚 +61</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4781" tabindex="0"><span>印度尼西亚 +62</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-931" tabindex="0"><span>菲律宾 +63</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-187" tabindex="0"><span>新西兰 +64</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8468" tabindex="0"><span>新加坡 +65</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6142" tabindex="0"><span>泰国 +66</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-895" tabindex="0"><span>日本 +81</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-838" tabindex="0"><span>韩国 +82</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1846" tabindex="0"><span>越南 +84</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3468" tabindex="0"><span>土耳其 +90</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2709" tabindex="0"><span>印度 +91</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8868" tabindex="0"><span>巴基斯坦 +92</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-286" tabindex="0"><span>阿富汗 +93</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9182" tabindex="0"><span>斯里兰卡 +94</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5141" tabindex="0"><span>缅甸 +95</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3997" tabindex="0"><span>伊朗 +98</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1528" tabindex="0"><span>南苏丹 +211</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1439" tabindex="0"><span>摩洛哥 +212</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6010" tabindex="0"><span>阿尔及利亚 +213</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9113" tabindex="0"><span>突尼斯 +216</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1914" tabindex="0"><span>利比亚 +218</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9872" tabindex="0"><span>冈比亚 +220</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7179" tabindex="0"><span>塞内加尔 +221</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9635" tabindex="0"><span>毛里塔尼亚 +222</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5077" tabindex="0"><span>马里 +223</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4301" tabindex="0"><span>几内亚 +224</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3342" tabindex="0"><span>科特迪瓦 +225</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2390" tabindex="0"><span>布基纳法索 +226</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8588" tabindex="0"><span>尼日尔 +227</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2442" tabindex="0"><span>多哥 +228</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9071" tabindex="0"><span>贝宁 +229</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5412" tabindex="0"><span>毛里求斯 +230</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4201" tabindex="0"><span>利比里亚 +231</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2327" tabindex="0"><span>塞拉利 +232</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7888" tabindex="0"><span>加纳 +233</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9742" tabindex="0"><span>尼日利亚 +234</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4119" tabindex="0"><span>乍得 +235</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4651" tabindex="0"><span>中非 +236</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-890" tabindex="0"><span>喀麦隆 +237</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-541" tabindex="0"><span>佛得角 +238</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-732" tabindex="0"><span>圣多美和普林西比 +239</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9285" tabindex="0"><span>赤道几内亚 +240</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6650" tabindex="0"><span>加蓬 +241</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7166" tabindex="0"><span>刚果 +242</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5558" tabindex="0"><span>刚果 +243</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6358" tabindex="0"><span>安哥拉 +244</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7251" tabindex="0"><span>几内亚比绍 +245</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-848" tabindex="0"><span>阿森松岛 +247</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8072" tabindex="0"><span>塞舌尔 +248</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2118" tabindex="0"><span>苏丹 +249</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6304" tabindex="0"><span>卢旺达 +250</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6605" tabindex="0"><span>埃塞俄比亚 +251</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5337" tabindex="0"><span>索马里 +252</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5276" tabindex="0"><span>吉布提 +253</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8605" tabindex="0"><span>肯尼亚 +254</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8099" tabindex="0"><span>坦桑尼亚 +255</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1407" tabindex="0"><span>乌干达 +256</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6745" tabindex="0"><span>布隆迪 +257</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3255" tabindex="0"><span>莫桑比克 +258</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3295" tabindex="0"><span>赞比亚 +260</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5194" tabindex="0"><span>马达加斯加 +261</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9864" tabindex="0"><span>留尼汪 +262</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6631" tabindex="0"><span>津巴布韦 +263</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5171" tabindex="0"><span>纳米尼亚 +264</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1795" tabindex="0"><span>马拉维 +265</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4526" tabindex="0"><span>莱索托 +266</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9992" tabindex="0"><span>博茨瓦纳 +267</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2901" tabindex="0"><span>斯威士兰 +268</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-102" tabindex="0"><span>马约特 +269</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3155" tabindex="0"><span>阿鲁巴 +297</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1541" tabindex="0"><span>法罗群岛 +298</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6420" tabindex="0"><span>格陵兰 +299</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6716" tabindex="0"><span>直布罗陀 +350</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7586" tabindex="0"><span>葡萄牙 +351</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6906" tabindex="0"><span>卢森堡 +352</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7560" tabindex="0"><span>爱尔兰 +353</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2967" tabindex="0"><span>冰岛 +354</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2884" tabindex="0"><span>阿尔巴尼亚 +355</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8386" tabindex="0"><span>马耳他 +356</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1478" tabindex="0"><span>塞浦路斯 +357</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9935" tabindex="0"><span>芬兰 +358</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5355" tabindex="0"><span>保加利亚 +359</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9803" tabindex="0"><span>立陶宛 +370</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-690" tabindex="0"><span>拉脱维亚 +371</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4898" tabindex="0"><span>爱沙尼亚 +372</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8035" tabindex="0"><span>摩尔多瓦 +373</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4885" tabindex="0"><span>亚美尼亚 +374</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2917" tabindex="0"><span>白俄罗斯 +375</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1772" tabindex="0"><span>安道尔 +376</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8600" tabindex="0"><span>摩纳哥 +377</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3482" tabindex="0"><span>圣马力诺 +378</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9597" tabindex="0"><span>乌克兰 +380</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8028" tabindex="0"><span>塞尔维亚和黑山 +381</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6636" tabindex="0"><span>黑山 +382</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-574" tabindex="0"><span>克罗地亚 +385</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5461" tabindex="0"><span>斯洛文尼亚 +386</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3740" tabindex="0"><span>波黑 +387</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6144" tabindex="0"><span>马其顿 +389</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-442" tabindex="0"><span>捷克 +420</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8145" tabindex="0"><span>斯洛伐克 +421</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3154" tabindex="0"><span>列支敦士登 +423</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-488" tabindex="0"><span>伯利兹 +501</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6050" tabindex="0"><span>危地马拉 +502</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3851" tabindex="0"><span>萨尔瓦多 +503</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4819" tabindex="0"><span>洪都拉斯 +504</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1830" tabindex="0"><span>尼加拉瓜 +505</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2650" tabindex="0"><span>哥斯达黎加 +506</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-611" tabindex="0"><span>巴拿马 +507</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2043" tabindex="0"><span>圣皮埃尔和密克隆 +508</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-918" tabindex="0"><span>海地 +509</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1644" tabindex="0"><span>瓜德罗普 +590</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2997" tabindex="0"><span>玻利维亚 +591</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2930" tabindex="0"><span>圭亚那 +592</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5748" tabindex="0"><span>厄瓜多尔 +593</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-169" tabindex="0"><span>法属圭亚那 +594</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7863" tabindex="0"><span>巴拉圭 +595</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4375" tabindex="0"><span>马提尼克 +596</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2483" tabindex="0"><span>苏里南 +597</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5845" tabindex="0"><span>乌拉圭 +598</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6477" tabindex="0"><span>荷属安的列斯 +599</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4251" tabindex="0"><span>东帝汶 +670</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5510" tabindex="0"><span>文莱 +673</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7208" tabindex="0"><span>巴布亚新几内亚 +675</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5275" tabindex="0"><span>汤加 +676</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7629" tabindex="0"><span>所罗门群岛 +677</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6932" tabindex="0"><span>瓦努阿图 +678</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9908" tabindex="0"><span>斐济 +679</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-157" tabindex="0"><span>帕劳 +680</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7938" tabindex="0"><span>库克群岛 +682</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1426" tabindex="0"><span>萨摩亚 +685</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7859" tabindex="0"><span>基里巴斯 +686</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6204" tabindex="0"><span>新喀里多尼亚 +687</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8419" tabindex="0"><span>法属波利尼西亚 +689</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5946" tabindex="0"><span>中国香港 +852</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8978" tabindex="0"><span>中国澳门 +853</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1602" tabindex="0"><span>柬埔寨 +855</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4766" tabindex="0"><span>老挝 +856</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-586" tabindex="0"><span>孟加拉国 +880</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9870" tabindex="0"><span>中国台湾 +886</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4213" tabindex="0"><span>马尔代夫 +960</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1458" tabindex="0"><span>黎巴嫩 +961</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2267" tabindex="0"><span>约旦 +962</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2448" tabindex="0"><span>叙利亚 +963</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-3708" tabindex="0"><span>伊拉克 +964</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6809" tabindex="0"><span>科威特 +965</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4068" tabindex="0"><span>沙特阿拉伯 +966</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4821" tabindex="0"><span>也门 +967</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7965" tabindex="0"><span>阿曼 +968</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-56" tabindex="0"><span>巴勒斯坦 +970</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2975" tabindex="0"><span>阿拉伯联合酋长国 +971</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9297" tabindex="0"><span>以色列 +972</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6812" tabindex="0"><span>巴林 +973</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4504" tabindex="0"><span>卡塔尔 +974</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6017" tabindex="0"><span>不丹 +975</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-359" tabindex="0"><span>蒙古 +976</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-139" tabindex="0"><span>尼泊尔 +977</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2507" tabindex="0"><span>塔吉克斯坦 +992</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9538" tabindex="0"><span>土库曼斯坦 +993</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2533" tabindex="0"><span>阿塞拜疆 +994</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4667" tabindex="0"><span>格鲁吉亚 +995</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1559" tabindex="0"><span>吉尔吉斯斯坦 +996</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8526" tabindex="0"><span>乌兹别克斯坦 +998</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-5834" tabindex="0"><span>巴哈马 +1242</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1137" tabindex="0"><span>巴巴多斯 +1246</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7830" tabindex="0"><span>安圭拉 +1264</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-1548" tabindex="0"><span>安提瓜和巴布达 +1268</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8199" tabindex="0"><span>英属维尔京群岛 +1284</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-321" tabindex="0"><span>美属维尔京群岛 +1340</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-963" tabindex="0"><span>开曼群岛 +1345</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-11" tabindex="0"><span>百慕大 +1441</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2916" tabindex="0"><span>格林纳达 +1473</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4390" tabindex="0"><span>特克斯和凯科斯群岛 +1649</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-9847" tabindex="0"><span>蒙特塞拉特 +1664</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7463" tabindex="0"><span>关岛 +1671</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7923" tabindex="0"><span>东萨摩亚 +1684</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4314" tabindex="0"><span>荷属圣马丁 +1721</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-804" tabindex="0"><span>圣卢西亚 +1758</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4943" tabindex="0"><span>多米尼克 +1767</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-4425" tabindex="0"><span>圣文森特和格林纳丁斯 +1784</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-2783" tabindex="0"><span>波多黎各 +1787</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-8533" tabindex="0"><span>多米尼加 +1809</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6882" tabindex="0"><span>特立尼达和多巴哥 +1868</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-7439" tabindex="0"><span>圣基茨和尼维斯 +1869</span></li><li class="el-tooltip el-select-dropdown__item item" aria-describedby="el-tooltip-6356" tabindex="0"><span>牙买加 +1876</span></li></ul></div><div class="el-scrollbar__bar is-horizontal"><div class="el-scrollbar__thumb" style="transform: translateX(0%);"></div></div><div class="el-scrollbar__bar is-vertical"><div class="el-scrollbar__thumb" style="transform: translateY(0%);"></div></div></div><!----></div></div></div><input type="text" autocomplete="off" placeholder="请输入手机号码" class="el-input__inner"><!----><!----><!----><!----></div><!----></div></div> <div data-v-78427183="" class="el-form-item"><!----><div class="el-form-item__content"><div data-v-2c6319ca="" data-v-78427183="" class="el-input el-input-group el-input-group--append interactive"><!----><input type="text" autocomplete="off" placeholder="请输入验证码" class="el-input__inner"><!----><!----><div class="el-input-group__append"><button data-v-2c6319ca="" type="button" class="el-button el-button--default"><!----><!----><span class="">发送验证码</span></button></div><!----></div><!----></div></div> <button data-v-78427183="" type="button" class="el-button mt-10 el-button--primary" style="display: block; width: 100%;"><!----><!----><span class="">注册/登录</span></button></form> <!----> <div data-v-0ce01015="" data-v-0246e432="" class="third-party mtb-8"><div data-v-0ce01015="" class="txt-center">社交账号登录</div> <ul data-v-0ce01015="" class="mt-2"><li data-v-0ce01015="" class="nc-js-action-oauth"><span data-v-79ba69ea="" data-v-0ce01015="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="QQ"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g fill-rule="nonzero" fill="none"><path d="M529.083 973.034c-79.293 0-152.082-26.541-198.943-66.178-23.8 7.112-54.245 18.55-73.454 32.74-16.449 12.136-14.392 24.51-11.431 29.502 13.007 21.954 223.16 14.019 283.828 7.187v-3.251zm0 0c79.304 0 152.086-26.541 198.956-66.178 23.788 7.112 54.237 18.55 73.452 32.74 16.436 12.136 14.388 24.51 11.42 29.502-13.007 21.954-223.155 14.019-283.828 7.187v-3.251z" fill="#F6C556"></path> <path d="M529.532 497.784c130.95-.886 235.898-26.237 271.46-35.954C809.47 459.508 814 455.35 814 455.35c.033-1.196.538-21.321.538-31.697 0-174.832-82.525-350.505-285.486-350.511-202.96.006-285.49 175.686-285.49 350.504 0 10.39.504 30.508.543 31.698 0 0 3.69 3.89 10.439 5.776 32.835 9.136 139.757 35.746 274.022 36.663h.967zm355.845 145.64c-8.117-26.123-19.195-56.584-30.419-85.839 0 0-6.452-.798-9.723.145-100.677 29.248-222.714 47.893-315.703 46.766h-.967c-92.471 1.108-213.677-17.316-314.02-46.28-3.833-1.106-11.4-.631-11.4-.631-11.224 29.255-22.302 59.723-30.419 85.839-38.713 124.574-26.167 176.124-16.62 177.275 20.492 2.48 79.755-93.768 79.755-93.768 0 97.803 88.301 247.973 290.509 249.354h5.364c202.2-1.38 290.502-151.55 290.502-249.354 0 0 59.27 96.247 79.761 93.774 9.542-1.157 22.087-52.713-16.62-177.281z" fill="#0E0E0D"></path> <path d="M456.837 331.42c-27.534 1.247-51.058-30.114-52.538-69.992-1.491-39.889 19.6-73.237 47.134-74.483 27.503-1.234 51.018 30.115 52.512 70.005 1.506 39.895-19.594 73.244-47.108 74.47zm196.968-69.992c-1.474 39.871-24.996 71.239-52.53 69.993-27.522-1.234-48.614-34.576-47.107-74.464 1.49-39.891 25.002-71.24 52.51-70.012 27.533 1.246 48.627 34.594 47.127 74.483z" fill="#FFF"></path> <path d="M702.727 387.739c-7.352-16.291-81.456-34.45-173.186-34.45h-.989c-91.737 0-165.834 18.159-173.193 34.456a5.479 5.479 0 0 0-.537 2.321 5.577 5.577 0 0 0 1.012 3.139c6.2 9.028 88.479 53.693 172.718 53.693h.989c84.232 0 166.51-44.652 172.711-53.693a5.547 5.547 0 0 0 1.013-3.152 5.421 5.421 0 0 0-.538-2.308" fill="#F6C556"></path> <path d="M490.678 262.022c1.259 15.753-7.383 29.749-19.272 31.273-11.912 1.532-22.574-9.997-23.838-25.75-1.246-15.766 7.383-29.76 19.252-31.28 11.932-1.542 22.611 9.997 23.858 25.75v.007zm75.643 5.265c2.434-4.361 19.004-27.282 53.313-18.937 9.017 2.195 13.185 5.423 14.065 6.688 1.296 1.873 1.658 4.541.336 8.135-2.607 7.125-7.991 6.93-10.972 5.536-1.929-.898-25.825-16.829-47.843 6.94-1.517 1.628-4.224 2.19-6.788.254-2.575-1.949-3.63-5.883-2.111-8.616z" fill="#333"></path> <path d="M529.517 598.765h-.97c-63.24.759-139.92-7.616-214.182-22.258-6.353 36.81-10.187 83.082-6.897 138.258 8.326 139.46 91.15 227.129 218.993 228.394h5.189c127.849-1.265 210.664-88.934 219.002-228.394 3.29-55.187-.55-101.447-6.907-138.264-74.27 14.648-150.968 23.03-214.222 22.258" fill="#FFF"></path> <path d="M813.995 455.351l40.96 102.225c-102.462 30.887-229.42 50.791-325.427 49.634h-.97c-16.906.203-34.772-.246-53.296-1.293l-.002 122.316c-62.99 8.781-125.857-3.897-125.857-3.897v-132.97c-50.35-8.503-100.729-20.062-146.263-33.79l40.96-102.225c.416.126 122.554 38.612 284.459 39.7h.969c162.171-1.095 284.467-39.7 284.467-39.7z" fill="#E14847"></path></g></svg></span> QQ</li> <li data-v-0ce01015="" class="nc-js-action-oauth"><span data-v-79ba69ea="" data-v-0ce01015="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="Weibo"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g fill-rule="nonzero" fill="none"><path d="M928.248 226.7c-60.007-67.508-150.019-92.512-230.028-75.009-20.003 5-30.004 22.502-27.504 42.505 5 20.003 22.503 30.004 42.505 27.503 57.508-12.5 122.516 5.001 165.021 52.506 42.505 47.507 55.008 112.515 35.005 170.022-2.502 10.001-2.502 17.502 2.5 27.504 5 7.5 12.501 15.001 20.002 17.501 17.502 5 37.504-5 45.006-22.503 22.502-82.51 7.5-172.52-52.507-240.029z" fill="#FFAE36"></path> <path d="M820.735 446.727c15.002 5 32.504-2.5 37.505-20.003 12.5-40.004 5-82.51-25.003-115.013-30.004-32.504-72.51-45.006-112.515-37.506-17.502 2.502-27.504 20.003-22.502 35.006 2.501 17.501 20.003 27.503 35.004 22.502 20.003-5 40.005 2.5 55.007 17.502 15.002 15.002 17.502 37.505 12.501 57.508-5 17.501 5 35.004 20.003 40.004zm-60.007 57.508c-12.502-5.002-22.504-7.502-15.003-22.503 15.003-37.505 15.003-70.009 0-92.512-30.003-42.505-112.513-40.005-205.025 0 0 0-30.004 12.501-22.503-10 15.002-47.507 12.502-85.012-10-107.514-50.006-50.007-185.024 2.5-300.038 117.514-85.01 87.511-135.016 177.521-135.016 257.532 0 152.519 195.024 245.03 385.048 245.03 250.03 0 415.05-145.018 415.05-260.033 0-70.008-60.008-110.013-112.513-127.514zM458.19 836.775c-152.52 15.002-282.536-55.007-292.537-152.519-10.001-100.012 105.012-192.523 257.532-207.525C575.704 461.73 705.72 531.738 715.722 629.25c10.001 100.013-105.013 192.525-257.531 207.526z" fill="#D81E06"></path> <path d="M473.192 551.74c-72.509-20.003-155.02 17.503-185.023 80.01-32.504 65.008 0 137.517 72.51 160.02 75.008 25.003 165.02-12.502 195.024-82.511 30.003-67.508-7.502-137.516-82.511-157.519zm-55.007 167.52c-15.002 22.504-45.005 35.005-70.009 22.504-22.502-10.001-30.003-37.505-15.001-60.008 15.001-22.503 45.005-32.504 67.508-22.503 25.003 7.502 32.504 35.004 17.502 60.008z" fill="#000"></path></g></svg></span> 微博</li></ul></div> <div data-v-0246e432="" class="protocol txt-center"><label data-v-0246e432="" class="el-checkbox el-tooltip login-page-agreement-checkbox" aria-describedby="el-tooltip-2496" tabindex="0" style="margin-right: 4px;"><span class="el-checkbox__input"><span class="el-checkbox__inner"></span><input type="checkbox" aria-hidden="false" class="el-checkbox__original" value=""></span><!----></label>
+                同意
+                <a data-v-0246e432="" href="https://static.nowcoder.com/protocol/register.html" target="_blank" class="color-green">《注册协议》</a>
+                和
+                <a data-v-0246e432="" href="https://static.nowcoder.com/protocol/privacy-policy.html" target="_blank" class="color-green">《隐私政策》</a> <div data-v-0246e432="">未注册手机验证后自动登录</div></div></div></div></div></div> <!----></div></div><!----></div></div><div role="tooltip" id="el-popover-2769" aria-hidden="false" class="el-popover el-popper mode-tips-popover" tabindex="0" style="position: absolute; top: 88px; left: 727px; transform-origin: center top; z-index: 2001;" x-placement="bottom"><!----> <div data-v-1cb21da2="" class="el-tooltip mode-tips-wrapper" aria-describedby="el-tooltip-9057" tabindex="0"><div data-v-1cb21da2="" class="mode-tips-container"><div data-v-1cb21da2="" class="title">
+                        ACM模式
+                        <span data-v-79ba69ea="" data-v-1cb21da2="" tagtype="span" class="ncicon select-icon  ncicon-bleed" aria-label="xuanzhong"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 1024 1024" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><path d="M512 64c247.4236 0 448 200.5764 448 448S759.4236 960 512 960 64 759.4236 64 512 264.5764 64 512 64zm224.0064 291.6723c-18.7452-18.7452-49.137-18.7452-67.8822 0L458.1127 565.6824l-103.2369-103.237c-18.7451-18.7451-49.137-18.7451-67.8822 0-18.7452 18.7452-18.7452 49.1371 0 67.8823l137.1787 137.1787c9.3726 9.3726 21.6569 14.0589 33.9411 14.0589l.737-.0056c12.0375-.1837 24.019-4.8682 33.2042-14.0533l243.9518-243.9518c18.7452-18.7452 18.7452-49.1371 0-67.8823z"></path></svg></span></div> <div data-v-1cb21da2="" class="desc">
+                        请通过代码实现题目，过程中的输入输出处理方式请参考题目输入输出描述或
+                         <a data-v-1cb21da2="" href="javascript:void(0)" class="color-green ml-1"><span data-v-79ba69ea="" data-v-1cb21da2="" tagtype="span" class="ncicon  ncicon-bleed" aria-label="Demonstrate"><svg data-v-79ba69ea="" focusable="false" viewBox="0 0 200 200" fill="currentColor" width="1.2em" height="1.2em" aria-hidden="true"><g><path d="M99.9 200C44.68 199.94-.04 155.15 0 99.93.04 44.72 44.82-.02 100.03 0 155.25.02 200 44.78 200 100c-.03 55.25-44.85 100.02-100.1 100zM20 101.72a80 80 0 1 0 0-1.72v1.72zM110 150H90v-20h20v20zm0-40H90V50h20v60z"></path></g></svg></span>查看语言环境详情
+                        </a></div></div></div> <!----><!----> <!----><div x-arrow="" class="popper__arrow" style="left: 124.5px;"></div></div></body></html>

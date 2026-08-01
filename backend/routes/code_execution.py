@@ -1,8 +1,9 @@
 """代码编译与执行路由"""
-import subprocess, os, uuid, time, json
+import subprocess, os, uuid, time, json, logging
 from datetime import datetime
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional
 from database import SessionLocal, get_db_sync
 from models import Submission, Exercise, StudentProfile
 from problem_detail_service import get_problem_detail as resolve_problem_detail
@@ -12,6 +13,8 @@ from routes.scrape import (
     _build_nowcoder_headers, _parse_nowcoder_detail,
 )
 from problem_media_service import serve_problem_media
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/code", tags=["code"])
 WORK_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "generated")
@@ -90,7 +93,7 @@ async def get_problem_media(media_key: str):
 
 
 @router.get("/problem-detail")
-async def get_problem_detail(platform: str = "", pid: str = "", url: str = ""):
+async def get_problem_detail(platform: str = "", pid: str = "", url: str = "", force: bool = False):
     """Return a stable local-first problem detail response."""
     try:
         identity = resolve_problem_identity(platform, pid, url)
@@ -101,6 +104,12 @@ async def get_problem_detail(platform: str = "", pid: str = "", url: str = ""):
             "samples": [], "hints": [], "url": url, "source": "invalid",
             "error": str(exc),
         }
+
+    # 如果 force=true，直接使用 Playwright 获取，跳过缓存
+    if force and identity.platform == "nowcoder":
+        logger.info(f"强制刷新题目 {pid}...")
+        detail = await _fetch_nowcoder_detail(identity.native_id)
+        return detail
 
     detail, _ = await resolve_problem_detail(
         identity.platform,
@@ -220,40 +229,38 @@ async def _fetch_leetcode_detail(slug: str):
 
 
 async def _fetch_nowcoder_detail(pid: str):
-    import httpx
-
     identity = resolve_problem_identity("nowcoder", pid)
+
+    # 直接使用 Playwright 获取题面（绕过 WAF）
+    logger.info(f"使用 Playwright 获取题目 {pid}...")
     try:
-        async with httpx.AsyncClient(timeout=httpx.Timeout(15.0), follow_redirects=True) as client:
-            resp = await client.get(identity.canonical_url, headers=_build_nowcoder_headers())
-            resp.raise_for_status()
-        parsed = _parse_nowcoder_detail(resp.text)
-        detail = _bound_nowcoder_detail(parsed)
-        detail["url"] = identity.canonical_url
-        meaningful = any(
-            detail.get(key) not in (None, "", [])
-            for key in (
-                "description", "input_description", "output_description",
-                "notes", "constraints", "hints", "samples",
-            )
-        )
-        if not meaningful:
-            detail["error"] = "牛客题面解析失败，请重新登录或稍后重试"
-        for key in ("time_limit", "space_limit", "accepted", "submitted", "ac_rate"):
-            if parsed.get(key) is not None:
-                detail[key] = parsed[key]
-        if parsed.get("media"):
-            detail["media"] = parsed["media"]
-        if parsed.get("waf_blocked"):
-            detail["error"] = "被牛客 WAF 拦截"
-    except Exception as exc:
-        detail = {
-            "title": "",
-            "description": "",
-            "samples": [],
-            "url": identity.canonical_url,
-            "error": str(exc)[:100],
-        }
+        from playwright_helper import fetch_nowcoder_with_playwright
+        playwright_detail = await fetch_nowcoder_with_playwright(pid)
+
+        if playwright_detail and playwright_detail.get("description"):
+            detail = _bound_nowcoder_detail(playwright_detail)
+            detail["url"] = identity.canonical_url
+            for key in ("time_limit", "space_limit", "accepted", "submitted", "ac_rate"):
+                if playwright_detail.get(key) is not None:
+                    detail[key] = playwright_detail[key]
+            if playwright_detail.get("media"):
+                detail["media"] = playwright_detail["media"]
+            detail["source"] = "playwright"
+            logger.info(f"Playwright 获取成功!")
+            return detail
+        else:
+            logger.warning(f"Playwright 未获取到有效内容")
+    except Exception as e:
+        logger.warning(f"Playwright 获取失败: {e}")
+
+    # 兜底：返回基本结构
+    detail = {
+        "title": "",
+        "description": "",
+        "samples": [],
+        "url": identity.canonical_url,
+        "error": "题面获取失败，请检查 Playwright 是否正确安装",
+    }
     return detail
 
 
@@ -312,6 +319,19 @@ class AISummaryRequest(BaseModel):
     compile_output: str = ""
     runtime_ms: float = 0.0
     memory_kb: float = 0.0
+
+
+class AIJudgeRequest(BaseModel):
+    code: str
+    problem_title: str = ""
+    problem_description: str = ""
+    problem_input: str = ""
+    problem_output: str = ""
+    samples: list = []
+    model: str = ""
+    api_key: str = ""
+    api_base: str = ""
+    api_model: str = ""
 
 
 @router.get("/g++-check")
@@ -652,6 +672,133 @@ async def ai_summary(req: AISummaryRequest):
         return {"summary": result.get("content", "") if isinstance(result, dict) else str(result)}
     except Exception as e:
         return {"summary": f"AI 总结暂不可用: {str(e)[:100]}"}
+
+
+@router.post("/ai-judge")
+async def ai_judge(req: AIJudgeRequest):
+    """使用 AI 判断代码是否正确解决了题目"""
+    if not req.code.strip():
+        raise HTTPException(400, "代码不能为空")
+
+    # 构建样例信息
+    samples_text = ""
+    if req.samples:
+        samples_text = "\n".join(
+            f"样例 {i+1}:\n输入: {s.get('input', '')}\n期望输出: {s.get('output', '')}"
+            for i, s in enumerate(req.samples[:5])
+        )
+
+    system_prompt = """你是一位资深的 C++ 算法竞赛裁判。你的任务是分析学生的代码，判断它是否能正确解决给定的题目。
+
+你需要：
+1. 理解题目的要求（输入输出格式、约束条件）
+2. 分析代码的算法逻辑是否正确
+3. 检查边界条件处理
+4. 如果代码有明显错误，指出具体问题
+
+请以 JSON 格式返回你的判断结果，格式如下：
+{
+  "pass": true/false,
+  "analysis": "简短的分析说明（不超过150字）",
+  "issues": ["问题1", "问题2"]  // 如果有问题的话
+}"""
+
+    user_prompt = f"""【题目】{req.problem_title}
+
+【题目描述】
+{req.problem_description[:2000]}
+
+{'【输入格式】' + req.problem_input[:500] if req.problem_input else ''}
+{'【输出格式】' + req.problem_output[:500] if req.problem_output else ''}
+
+{'【样例】' + samples_text if samples_text else ''}
+
+【学生代码】
+```cpp
+{req.code[:3000]}
+```
+
+请判断这段代码是否能正确解决上述题目。"""
+
+    try:
+        from llm_service import chat_completion, chat_with_json_output
+
+        # 使用传入的模型参数，如果没有则用默认配置
+        result = await chat_with_json_output(
+            system_prompt=system_prompt,
+            user_message=user_prompt,
+            api_key=req.api_key or None,
+            model=req.api_model or req.model or None,
+            api_base=req.api_base or None,
+        )
+
+        # 解析结果
+        passed = result.get("pass", False)
+        analysis = result.get("analysis", "")
+        issues = result.get("issues", [])
+
+        if not isinstance(passed, bool):
+            # 尝试从字符串解析
+            passed = str(passed).lower() in ("true", "1", "yes")
+
+        # 保存提交记录
+        submission_id = 0
+        db = get_db_sync()
+        try:
+            submission = Submission(
+                student_id=1,
+                problem_id="",
+                problem_title=req.problem_title,
+                code=req.code,
+                language="cpp",
+                status="accepted" if passed else "wrong_answer",
+            )
+            db.add(submission)
+            db.commit()
+            submission_id = submission.id
+        except Exception as e:
+            db.rollback()
+            logger.warning(f"保存提交记录失败: {e}")
+        finally:
+            db.close()
+
+        return {
+            "status": "completed",
+            "passed": passed,
+            "total": 1,
+            "all_pass": passed,
+            "analysis": analysis,
+            "issues": issues,
+            "submission_id": submission_id,
+            "results": [{
+                "index": 1,
+                "stdin": "",
+                "expected": "正确解答",
+                "actual": "通过" if passed else "未通过",
+                "stderr": "",
+                "passed": passed,
+                "runtime_ms": 0,
+            }],
+        }
+    except Exception as e:
+        logger.error(f"AI Judge 错误: {e}")
+        return {
+            "status": "error",
+            "passed": False,
+            "total": 1,
+            "all_pass": False,
+            "analysis": f"AI 判断失败: {str(e)[:200]}",
+            "issues": [str(e)[:200]],
+            "results": [{
+                "index": 1,
+                "stdin": "",
+                "expected": "正确解答",
+                "actual": "AI 判断失败",
+                "stderr": str(e)[:200],
+                "passed": None,
+                "runtime_ms": 0,
+            }],
+        }
 
 
 # ---- helpers ----

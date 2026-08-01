@@ -178,14 +178,11 @@ async def _resolve_problem_detail(
             {"error": "不支持的平台"}, identity, "unavailable",
         ), False
 
-    # Nowcoder is known to require authentication; avoid a guaranteed WAF request.
-    if identity.platform == "nowcoder" and not has_nowcoder_cookie():
-        live = {"error": "未配置 NOWCODER_COOKIE，已跳过牛客实时请求；本地题库仍可使用"}
-    else:
-        try:
-            live = await fetcher(identity.native_id)
-        except Exception as exc:
-            live = {"error": f"获取失败: {str(exc)[:200]}"}
+    # Try to fetch live data even without cookie (may work for some problems)
+    try:
+        live = await fetcher(identity.native_id)
+    except Exception as exc:
+        live = {"error": f"获取失败: {str(exc)[:200]}"}
 
     detail = normalize_problem_detail(live, identity, "live")
     if detail.get("error"):
@@ -194,6 +191,9 @@ async def _resolve_problem_detail(
             fallback = normalize_problem_detail(summary, identity, "catalog_summary")
             fallback["description"] = "本地题库尚未缓存完整题面。实时访问可选配置 NOWCODER_COOKIE，或点击下方原题链接查看。"
             fallback["warning"] = detail["error"]
+            # Pass through needs_cookie flag if present
+            if detail.get("needs_cookie"):
+                fallback["needs_cookie"] = True
             return fallback, False
         return detail, False
 

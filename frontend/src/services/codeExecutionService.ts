@@ -270,8 +270,10 @@ export async function fetchProblemDetail(
   pid: string,
   url?: string,
   signal?: AbortSignal,
+  force?: boolean,
 ): Promise<ProblemDetail> {
   const params = new URLSearchParams({ platform, pid, url: url || '' })
+  if (force) params.set('force', 'true')
   const resp = await fetch(`${API_BASE}/code/problem-detail?${params}`, { signal })
   const body: unknown = await resp.json().catch(() => null)
   if (!resp.ok) {
@@ -291,5 +293,42 @@ export async function generateAISummary(data: Record<string, any>): Promise<{ su
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
+  return resp.json()
+}
+
+export interface AIJudgeRequest {
+  code: string
+  problem_title?: string
+  problem_description?: string
+  problem_input?: string
+  problem_output?: string
+  samples?: { input: string; output: string }[]
+  model?: string
+  api_key?: string
+  api_base?: string
+  api_model?: string
+}
+
+export interface AIJudgeResult {
+  status: string
+  passed: boolean
+  total: number
+  all_pass: boolean
+  analysis?: string
+  issues?: string[]
+  submission_id?: number
+  results: TestResult[]
+}
+
+export async function aiJudge(req: AIJudgeRequest): Promise<AIJudgeResult> {
+  const resp = await fetch(`${API_BASE}/code/ai-judge`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!resp.ok) {
+    const err: unknown = await resp.json().catch(() => null)
+    throw new Error(errorMessage(err) || 'AI 判断失败')
+  }
   return resp.json()
 }
